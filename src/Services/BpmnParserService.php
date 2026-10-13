@@ -49,7 +49,7 @@ class BpmnParserService
             throw new Exception('Invalid BPMN file: <bpmn:process> element not found.');
         }
 
-        DB::transaction(function () use ($version, $process, $messageMap) {
+        DB::transaction(function () use ($version, $process, $messageMap, $bpmnUri) {
             // Clear existing elements if re-parsing
             $version->nodes()->delete();
             $version->edges()->delete();
@@ -68,6 +68,13 @@ class BpmnParserService
                 $elements = $process->xpath(".//bpmn:{$type}");
 
                 foreach ($elements as $element) {
+                    // XPath namespace registrations are per-node and are NOT inherited
+                    // by child elements. Registering on the root alone means any document
+                    // that doesn't itself declare xmlns:camunda blows up with
+                    // "Undefined namespace prefix" as soon as we query extension elements.
+                    $element->registerXPathNamespace('bpmn', $bpmnUri);
+                    $element->registerXPathNamespace('camunda', 'http://camunda.org/schema/1.0/bpmn');
+
                     $attributes = $element->attributes();
                     $bpmnId = (string) $attributes['id'];
                     $name = (string) ($attributes['name'] ?? '');
