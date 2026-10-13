@@ -30,10 +30,25 @@ class BpmnEngineServiceProvider extends ServiceProvider
             ->middleware(config('bpmn-engine.api_middleware', ['api']))
             ->group(__DIR__ . '/../routes/api.php');
 
-        // Tell the host app where to find web routes
-        Route::prefix(config('bpmn-engine.prefix', 'bpmn/workflows'))
-            ->middleware(config('bpmn-engine.middleware', ['web']))
+        // Tell the host app where to find web routes.
+        // `prefix` is the canonical path segment for the whole package: it drives
+        // these standalone routes AND the Filament resource slug (see the stubs).
+        $webPrefix = trim(config('bpmn-engine.prefix', 'bpmn/workflows'), '/');
+        $webMiddleware = config('bpmn-engine.middleware', ['web']);
+
+        Route::prefix($webPrefix)
+            ->middleware($webMiddleware)
             ->group(__DIR__ . '/../routes/web.php');
+
+        // The standalone Blade dashboard is optional. A Filament-only host can set
+        // `bpmn-engine.dashboard` to false and rely on the panel resource instead;
+        // the designer and instance routes registered above remain available so the
+        // engine still works headlessly.
+        if (config('bpmn-engine.dashboard', true)) {
+            Route::prefix($webPrefix)
+                ->middleware($webMiddleware)
+                ->group(__DIR__ . '/../routes/dashboard.php');
+        }
 
         // Listen to all events to check for start event triggers
         Event::listen('*', [WorkflowTriggerListener::class, 'handle']);

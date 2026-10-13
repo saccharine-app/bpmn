@@ -4,11 +4,9 @@ use Illuminate\Support\Facades\Route;
 use Saccharine\BpmnEngine\Http\Controllers\WorkflowController;
 use Saccharine\BpmnEngine\Http\Controllers\WorkflowInstanceController;
 
-// The main entry point to view and manage workflows
-Route::get('/definitions', [WorkflowController::class, 'index'])->name('bpmn.index');
-
-// Process form submission to create new workflows
-Route::post('/definitions', [WorkflowController::class, 'store'])->name('bpmn.store');
+// NOTE: The standalone dashboard entry points (bpmn.index / bpmn.store) live in
+// routes/dashboard.php so a Filament-only host can disable them via
+// config('bpmn-engine.dashboard') while keeping everything below live.
 
 // The design editor canvas
 Route::get('/definitions/{definition}/design', [WorkflowController::class, 'design'])->name('bpmn.design');

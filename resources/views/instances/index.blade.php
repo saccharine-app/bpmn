@@ -15,7 +15,7 @@
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Active Instances</h1>
                 <p class="text-sm text-gray-500 mt-1">Monitor tokens and control live workflow executions.</p>
             </div>
-            <a href="{{ route('bpmn.index') }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-900">
+            <a href="{{ \Saccharine\BpmnEngine\Support\BpmnRouteHelper::dashboardUrl() }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-900">
                 &larr; Back to Designer
             </a>
         </div>

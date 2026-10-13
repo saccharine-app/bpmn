@@ -78,7 +78,16 @@ class WorkflowDefinitionResource extends Resource
 
     public static function getSlug(?Panel $panel = null): string
     {
-        // Strips leading/trailing slashes and appends the specific resource path
+        // The Filament slug is derived from the same config key that drives the
+        // package's standalone web prefix, so a single key relocates both UIs in
+        // step. Filament prepends the panel path itself (host-controlled, e.g.
+        // /admin), so the default prefix "bpmn/workflows" resolves to:
+        //
+        //   /admin/bpmn/workflows/definitions   (in the panel)
+        //   /bpmn/workflows/definitions         (standalone Blade dashboard)
+        //
+        // Do NOT hardcode a literal here: deriving from the config keeps the two
+        // UIs from drifting apart when a host customises the prefix.
         $prefix = trim(config('bpmn-engine.prefix', 'bpmn/workflows'), '/');
         
         return $prefix . '/definitions';

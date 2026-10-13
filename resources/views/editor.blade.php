@@ -90,7 +90,7 @@
                 // modeler instance can be accessed from window/wrapper
                 const { xml } = await window.__bpmnModelerInstance.saveXML({ format: true });
                 
-                const response = await fetch('/api/bpmn/workflows/{{ $definition->id }}/versions', {
+                const response = await fetch('{{ rtrim(config('bpmn-engine.api_prefix', 'api/bpmn'), '/') }}/workflows/{{ $definition->id }}/versions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -126,7 +126,7 @@
             });
 
             if (response.ok) {
-                window.location.href = '{{ route('bpmn.index') }}';
+                window.location.href = '{{ \Saccharine\BpmnEngine\Support\BpmnRouteHelper::dashboardUrl() }}';
             }
         });
     </script>

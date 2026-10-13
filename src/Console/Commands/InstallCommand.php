@@ -53,7 +53,8 @@ class InstallCommand extends Command
         }
 
         $this->info('BPMN Engine installed successfully!');
-        $this->line('You can now navigate to /bpmn/workflows to start designing.');
+        $prefix = trim(config('bpmn-engine.prefix', 'bpmn/workflows'), '/');
+        $this->line("You can now navigate to /{$prefix}/definitions to start designing.");
     }
 
     /**

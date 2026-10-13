@@ -63,6 +63,53 @@ The package provides an installation command to publish configurations, frontend
 php artisan bpmn:install
 ```
 
+## **Routing**
+
+The package exposes a **single canonical URL surface**, driven by one config key:
+
+```php
+// config/bpmn-engine.php
+'prefix' => 'bpmn/workflows',
+```
+
+That key drives both presentation layers in step:
+
+| Surface | URL | Route name |
+| --- | --- | --- |
+| Standalone Blade dashboard | `/bpmn/workflows/definitions` | `bpmn.index` |
+| Filament panel table | `/admin/bpmn/workflows/definitions` | `filament.admin.resources.bpmn.workflows.definitions.index` |
+| Designer canvas | `/bpmn/workflows/definitions/{id}/design` | `bpmn.design` |
+| Instance control | `/bpmn/workflows/instances` | `bpmn.instances.index` |
+
+Filament prepends its own panel path (host-controlled, e.g. `admin`) to the
+resource slug, so changing `prefix` relocates both UIs together. The designer and
+instance routes are UI-agnostic and shared by both layers — only the list/index
+view is duplicated, which keeps maintenance to a minimum.
+
+### **Which UI do I get?**
+
+`bpmn.index` is the canonical entry point and resolves to whichever UI the host
+has installed:
+
+1. `config('bpmn-engine.dashboard_url')`, when explicitly set
+2. The Filament resource table, when a panel has the BPMN resources registered
+   (disable with `bpmn-engine.filament_redirect => false`)
+3. The package's own Blade dashboard
+
+Every "back to dashboard" link in the designer uses the same resolution, so
+entering the designer from Filament returns you to Filament instead of ejecting
+you to the standalone view.
+
+### **Going headless or Filament-only**
+
+- `bpmn-engine.dashboard => false` — stops registering the standalone
+  `bpmn.index`/`bpmn.store` routes. The designer, instance control, and
+  version-save routes stay live.
+- `bpmn-engine.middleware` — defaults to `['web']` for local ergonomics. **In
+  production set this to `['web', 'auth']`**, otherwise
+  `/bpmn/workflows/definitions` is reachable by any guest. Filament panels are
+  always behind their own guard regardless of this value.
+
 ## **Quickstart: The Interactive Demo**
 
 You can instantly scaffold an "Order Processing" workflow to see the engine in action:
@@ -71,7 +118,7 @@ You can instantly scaffold an "Order Processing" workflow to see the engine in a
 php artisan bpmn:demo
 ```
 
-This command generates a demo trigger and activity, registers them in your config, and seeds your database with a complete BPMN diagram. Navigate to /bpmn/workflows in your browser to view the generated diagram, and follow the terminal instructions to dispatch the event and watch the background worker execute the logic.
+This command generates a demo trigger and activity, registers them in your config, and seeds your database with a complete BPMN diagram. Navigate to /bpmn/workflows/definitions in your browser to view the generated diagram, and follow the terminal instructions to dispatch the event and watch the background worker execute the logic.
 
 ## **Acknowledgments**
 

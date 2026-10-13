@@ -58,12 +58,16 @@ class WorkflowInstanceResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                // Open the Live Visual Tracker (points to your package's custom blade view)
+                // Bridge to the package's instance tracking. NOTE: the engine does not
+                // ship a per-instance tracker view yet, so this points at the shared
+                // instances index (bpmn.instances.index) rather than a route that
+                // does not exist. Add a `track` route + view to the package before
+                // referencing one here.
                 Action::make('track')
-                    ->label('Live Tracker')
+                    ->label('Open Instances')
                     ->icon('heroicon-o-eye')
                     ->color('info')
-                    ->url(fn (WorkflowInstance $record): string => route('bpmn.instances.track', $record->id)) // Adjust to your tracking route
+                    ->url(fn (WorkflowInstance $record): string => route('bpmn.instances.index'))
                     ->openUrlInNewTab(),
 
                 // Intervention: Suspend

@@ -5,8 +5,10 @@ namespace Saccharine\BpmnEngine\Http\Controllers;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
+use Saccharine\BpmnEngine\Support\BpmnRouteHelper;
 use Saccharine\BpmnEngine\Models\WorkflowDefinition;
 use Saccharine\BpmnEngine\Services\BpmnParserService;
 use Saccharine\BpmnEngine\Enums\WorkflowPermission;
@@ -27,6 +29,19 @@ class WorkflowController extends Controller
     public function index()
     {
         Gate::authorize(WorkflowPermission::VIEW->value);
+
+        // When a Filament panel has the BPMN resources registered, forward to it so
+        // the package always exposes one canonical entry point (bpmn.index) that
+        // resolves to whichever UI the host has installed. Set
+        // `bpmn-engine.filament_redirect` to false to pin this route to the
+        // standalone Blade dashboard.
+        if (config('bpmn-engine.filament_redirect', true)) {
+            $filamentRoute = BpmnRouteHelper::filamentResourceRoute();
+
+            if ($filamentRoute !== null) {
+                return redirect()->route($filamentRoute);
+            }
+        }
 
         $definitions = WorkflowDefinition::with('versions')->get();
         return view('bpmn-engine::dashboard', compact('definitions'));
@@ -66,7 +81,10 @@ class WorkflowController extends Controller
         $nextVersionNumber = $definition->versions()->max('version') + 1;
 
         try {
-            DB::transaction(function () use ($definition, $nextVersionNumber, $request) {
+            // The closure has its own scope, so the created version id has to be
+            // returned out of it — referencing $version below from the outer scope
+            // would throw "Undefined variable" on every save.
+            $versionId = DB::transaction(function () use ($definition, $nextVersionNumber, $request) {
                 if ($request->boolean('is_active')) {
                     $definition->versions()->update(['is_active' => false]);
                 }
@@ -80,20 +98,19 @@ class WorkflowController extends Controller
 
                 // Compile the XML into relational tables
                 $this->parser->parseAndStore($version, $request->input('xml'));
+
+                return $version->id;
             });
 
             return response()->json([
                 'success'    => true,
                 'message'    => 'Workflow version compiled successfully.',
-                'version_id' => $version->id
+                'version_id' => $versionId
             ], 201);
 
         } catch (Exception $e) {
-            // If the XML is malformed, clean up the orphaned version record
-            if (isset($version)) {
-                $version->delete();
-            }
-
+            // A throw inside the transaction rolls it back, so the version row is
+            // already gone — no manual cleanup needed.
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to compile workflow: ' . $e->getMessage()
