@@ -3,35 +3,27 @@
 namespace Saccharine\BpmnEngine\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
+use Orchestra\Testbench\Concerns\WithWorkbench;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Support\Facades\Gate;
-use Workflow\Providers\WorkflowServiceProvider;
-use Saccharine\BpmnEngine\BpmnEngineServiceProvider;
 
 class TestCase extends Orchestra
 {
+    use WithWorkbench;
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // This ensures Laravel's core schema migrations (like users) are run if needed
         $this->loadLaravelMigrations();
-
-        // Automatically grant BPMN gates during test runs so they don't throw 403s
-        // The '?' is critical here! It tells Laravel to run this even for guests.
-        Gate::before(function (?Authenticatable $user, $ability) {
-            if (str_starts_with($ability, 'Bpmn:')) {
-                return true; // Auto-pass all BPMN permissions during testing
-            }
-        });
     }
 
     /**
      * Define environment setup.
-     * This is where we mock the .env variables for Testbench.
+     *
+     * Workbench reads package providers from `testbench.yaml`, so they are no
+     * longer registered here. This hook only tunes runtime config for tests.
      */
     protected function getEnvironmentSetUp($app)
     {
@@ -57,25 +49,12 @@ class TestCase extends Orchestra
     }
 
     /**
-     * Boot the package's service provider.
-     */
-    protected function getPackageProviders($app)
-    {
-        return [
-            WorkflowServiceProvider::class,
-            BpmnEngineServiceProvider::class,
-        ];
-    }
-
-    /**
-     * Tell Testbench to run the package's internal database migrations.
+     * Load the third-party Durable Workflow migrations that the engine depends
+     * on. The package's own migrations are already loaded by the service
+     * provider, and Workbench additionally loads `workbench/database/migrations`.
      */
     protected function defineDatabaseMigrations()
     {
-        // Load the core Durable Workflow migrations first (creates 'workflows', 'workflow_logs', etc.)
         $this->loadMigrationsFrom(__DIR__ . '/../vendor/durable-workflow/workflow/src/migrations');
-        
-        // Then load our package's migrations
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 }
