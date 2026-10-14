@@ -42,6 +42,10 @@ window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback) {
         elementTemplates: elementTemplates
     });
 
+    // Expose the modeler so host pages can extract XML (e.g. the editor's
+    // `bpmn:save-requested` bridge reads window.__bpmnModelerInstance).
+    window.__bpmnModelerInstance = modeler;
+
     function showTemplateErrors(errors) {
         console.error('Failed to parse element templates', errors);
 
@@ -76,8 +80,9 @@ window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback) {
 
     render();
 
-    // Attach the save event to the button
-    document.getElementById('save-button').addEventListener('click', async () => {
+    // Attach the save event to the legacy standalone button (optional: the
+    // workbench header dispatches `bpmn:save-requested` custom events instead).
+    document.getElementById('save-button')?.addEventListener('click', async () => {
         try {
             const { xml } = await modeler.saveXML({ format: true });
             saveCallback(xml);

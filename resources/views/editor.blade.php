@@ -77,12 +77,10 @@
 
         const initialXml = dbXml ? dbXml : defaultBlankXml;
 
-        // Initialize modeler via bundled entry point
-        window.initBpmnDesigner(initialXml, elementTemplates, (xml) => {
-            // Handled via custom events below
-        });
-
-        // Bridge Workbench Events to the Backend API
+        // Bridge Workbench Events to the Backend API.
+        // NOTE: these listeners are registered BEFORE initBpmnDesigner runs so a
+        // failure inside the designer bundle can never leave the workbench
+        // buttons (Save Draft / Publish & Activate / Archive) unwired.
         window.addEventListener('bpmn:save-requested', async (event) => {
             const shouldActivate = event.detail.activate;
             
@@ -129,6 +127,16 @@
                 window.location.href = '{{ \Saccharine\BpmnEngine\Support\BpmnRouteHelper::dashboardUrl() }}';
             }
         });
+
+        // Initialize modeler via bundled entry point (guarded so a missing or
+        // stale bundle degrades gracefully instead of aborting this script)
+        if (typeof window.initBpmnDesigner === 'function') {
+            window.initBpmnDesigner(initialXml, elementTemplates, (xml) => {
+                // Handled via custom events above
+            });
+        } else {
+            console.error('bpmn-engine bundle failed to load: window.initBpmnDesigner is unavailable.');
+        }
     </script>
 </body>
 </html>
