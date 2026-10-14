@@ -30,6 +30,17 @@ it('registers the designer and instance routes under the same prefix', function 
         ->and(Route::has('bpmn.instances.halt'))->toBeTrue();
 });
 
+it('leaves the standalone web routes unauthenticated by default', function () {
+    // The `['web']` default is deliberate (local/demo ergonomics); hosts opt
+    // into auth via config('bpmn-engine.middleware'). See
+    // MiddlewareConfigurationTest for the opt-in behaviour.
+    $middleware = Route::getRoutes()->getByName('bpmn.design')->gatherMiddleware();
+
+    expect($middleware)
+        ->toContain('web')
+        ->not->toContain('auth');
+});
+
 it('redirects the documented short URL to the dashboard instead of 404ing', function () {
     $this->get('/bpmn/workflows')
         ->assertRedirect(route('bpmn.index'));

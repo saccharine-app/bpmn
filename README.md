@@ -110,6 +110,27 @@ you to the standalone view.
   `/bpmn/workflows/definitions` is reachable by any guest. Filament panels are
   always behind their own guard regardless of this value.
 
+  Two things to know when enabling `auth`:
+
+  - `auth` means "must be logged in" — any authenticated user passes. It is
+    not the Filament panel guard, and the designer canvas intentionally stays
+    on the standalone `/bpmn/workflows/...` path (Filament only prepends
+    `/admin` to the resource table).
+  - On Filament hosts, Laravel's `auth` middleware redirects guests to a route
+    named `login`, but Filament registers `filament.admin.auth.login` instead —
+    without one of the following, guests get a `Route [login] not defined`
+    500 instead of a redirect. Fix it once in your app:
+
+    ```php
+    // bootstrap/app.php
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->redirectGuestsTo('/admin/login');
+    })
+    ```
+
+    Alternatively, register a route named `login` that forwards to your login
+    page.
+
 ## **Quickstart: The Interactive Demo**
 
 You can instantly scaffold an "Order Processing" workflow to see the engine in action:

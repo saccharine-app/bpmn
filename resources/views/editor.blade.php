@@ -88,7 +88,9 @@
                 // modeler instance can be accessed from window/wrapper
                 const { xml } = await window.__bpmnModelerInstance.saveXML({ format: true });
                 
-                const response = await fetch('{{ rtrim(config('bpmn-engine.api_prefix', 'api/bpmn'), '/') }}/workflows/{{ $definition->id }}/versions', {
+                // url() keeps this absolute (a bare relative path would resolve
+                // against the designer's own URL and 404).
+                const response = await fetch('{{ url(rtrim(config('bpmn-engine.api_prefix', 'api/bpmn'), '/')) }}/workflows/{{ $definition->id }}/versions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

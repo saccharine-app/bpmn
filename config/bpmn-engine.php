@@ -104,6 +104,12 @@ return [
     | /bpmn/workflows/definitions is reachable by any guest. Filament panels
     | are always behind their own guard regardless of this value.
     |
+    | Filament hosts: the `auth` middleware redirects guests to a route named
+    | `login`, but Filament registers `filament.admin.auth.login` instead — add
+    | `$middleware->redirectGuestsTo('/admin/login');` to the withMiddleware()
+    | callback in bootstrap/app.php, otherwise guests receive a
+    | "Route [login] not defined" 500 instead of a login redirect.
+    |
     */
     'middleware' => ['web'],
     'api_middleware' => ['api'],

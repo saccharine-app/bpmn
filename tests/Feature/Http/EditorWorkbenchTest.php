@@ -81,3 +81,18 @@ it('ships a compiled bundle in sync with the designer source', function () {
     expect($bundle)->toContain('__bpmnModelerInstance')
         ->and($bundle)->not->toContain('getElementById(`save-button`).addEventListener');
 });
+
+it('renders an absolute version-save URL the browser cannot resolve against the designer path', function () {
+    $definition = WorkflowDefinition::create([
+        'name' => 'Order Fulfilment',
+        'key'  => 'order-fulfilment',
+    ]);
+
+    $html = $this->get(route('bpmn.design', $definition->id))->getContent();
+
+    // A relative `fetch('api/bpmn/...')` would resolve against
+    // /bpmn/workflows/definitions/{id}/design and 404 with a combined path.
+    expect($html)
+        ->toContain("fetch('http://localhost/api/bpmn/workflows/{$definition->id}/versions'")
+        ->not->toContain("fetch('api/bpmn/");
+});
