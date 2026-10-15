@@ -5,6 +5,7 @@ namespace Saccharine\BpmnEngine\Http\Controllers;
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Saccharine\BpmnEngine\Models\WorkflowInstance;
 use Saccharine\BpmnEngine\Enums\WorkflowInstanceStatus;
@@ -27,6 +28,20 @@ class WorkflowInstanceController extends Controller
 
         // We will build a 'bpmn-engine::instances.index' view to display this table
         return view('bpmn-engine::instances.index', compact('instances'));
+    }
+    
+    /**
+     * Display a list of all active and historical workflow instances.
+     */
+    public function track($id)
+    {
+        Gate::authorize(WorkflowPermission::VIEW->value);
+
+        // Eager load the version, definition, and active tokens
+        $instance = WorkflowInstance::findOrFail($id);
+
+        // We will build a 'bpmn-engine::instances.index' view to display this table
+        return view('bpmn-engine::instances.track', compact('instance'));
     }
 
     /**
@@ -113,6 +128,27 @@ class WorkflowInstanceController extends Controller
             'status'      => $instance->status->value,
             'active_node_ids' => $instance->tokens->pluck('bpmn_element_id')->values()->toArray(),
             'updated_at'  => $instance->updated_at?->toIso8601String(),
+        ]);
+    }
+
+    public function telemetry($id): JsonResponse
+    {
+        Gate::authorize(WorkflowPermission::VIEW->value);
+
+        $instance = WorkflowInstance::with(['tokens', 'version.definition'])->findOrFail($id);
+        
+        $history = DB::table('workflow_histories')
+            ->where('workflow_instance_id', $id)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return response()->json([
+            'instance_id'     => $instance->id,
+            'status'          => $instance->status->value,
+            'active_tokens'   => $instance->tokens->pluck('bpmn_element_id')->values()->toArray(),
+            'history_trail'   => $history->pluck('bpmn_element_id')->unique()->values()->toArray(),
+            'history_log'     => $history,
+            'updated_at'      => $instance->updated_at?->toIso8601String(),
         ]);
     }
 }

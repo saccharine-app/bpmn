@@ -12,6 +12,7 @@ use function Workflow\all;
 use Saccharine\BpmnEngine\Models\WorkflowVersion;
 use Saccharine\BpmnEngine\Models\WorkflowEdge;
 use Saccharine\BpmnEngine\Models\WorkflowToken;
+use Saccharine\BpmnEngine\Models\WorkflowHistory;
 use Saccharine\BpmnEngine\Services\GatewayRouter;
 use Saccharine\BpmnEngine\Handlers\NodeHandlerFactory;
 use RuntimeException;
@@ -189,6 +190,17 @@ class BpmnInterpreterWorkflow extends Workflow
                 $userData, 
                 $instanceId
             );
+
+            yield WorkflowStub::sideEffect(function () use ($instanceId, $currentNodeId, $node, $userData) {
+                WorkflowHistory::create([
+                    'workflow_instance_id' => $instanceId,
+                    'bpmn_element_id'      => $currentNodeId,
+                    'node_type'            => $node->type,
+                    'status'               => 'completed',
+                    'state_snapshot'       => json_encode($userData),
+                    'completed_at'         => now(),
+                ]);
+            });
 
             // Terminal Condition (End of Process)
             if ($node->type === 'endEvent') {

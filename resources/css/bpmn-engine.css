@@ -1,0 +1,22 @@
+/* Steady blue highlight for traversed historical nodes */
+.bpmn-history-completed:not(.djs-connection) .djs-visual > :nth-child(1) {
+    stroke: #3b82f6 !important;
+    stroke-width: 2px !important;
+    fill: #eff6ff !important;
+}
+
+/* Pulsing green highlight for active tokens */
+.bpmn-active-token:not(.djs-connection) .djs-visual > :nth-child(1) {
+    stroke: #22c55e !important;
+    stroke-width: 3.5px !important;
+    fill: #dcfce7 !important;
+}
+
+/* Red highlight for failed/halted nodes */
+.bpmn-failed-token:not(.djs-connection) .djs-visual > :nth-child(1) {
+    stroke: #ef4444 !important;
+    stroke-width: 3.5px !important;
+    fill: #fee2e2 !important;
+}
+
+.bpmn-active-token { animation: pulse 1.6s infinite; }

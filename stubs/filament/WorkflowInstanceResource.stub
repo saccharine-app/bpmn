@@ -64,10 +64,10 @@ class WorkflowInstanceResource extends Resource
                 // does not exist. Add a `track` route + view to the package before
                 // referencing one here.
                 Action::make('track')
-                    ->label('Open Instances')
+                    ->label('Live Cockpit')
                     ->icon('heroicon-o-eye')
                     ->color('info')
-                    ->url(fn (WorkflowInstance $record): string => route('bpmn.instances.index'))
+                    ->url(fn (WorkflowInstance $record): string => route('bpmn.instances.track', $record->id))
                     ->openUrlInNewTab(),
 
                 // Intervention: Suspend

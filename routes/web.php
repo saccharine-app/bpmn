@@ -17,6 +17,7 @@ Route::delete('/definitions/{definition}', [WorkflowController::class, 'destroy'
 
 // Instance Tracking & Control Routes
 Route::get('/instances', [WorkflowInstanceController::class, 'index'])->name('bpmn.instances.index');
+Route::get('/instances/{id}/track', [WorkflowInstanceController::class, 'track'])->name('bpmn.instances.track');
 Route::post('/instances/{id}/suspend', [WorkflowInstanceController::class, 'suspend'])->name('bpmn.instances.suspend');
 Route::post('/instances/{id}/resume', [WorkflowInstanceController::class, 'resume'])->name('bpmn.instances.resume');
 Route::post('/instances/{id}/halt', [WorkflowInstanceController::class, 'halt'])->name('bpmn.instances.halt');

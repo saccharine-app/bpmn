@@ -4,6 +4,7 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import '@bpmn-io/properties-panel/dist/assets/properties-panel.css';
 import '@bpmn-io/element-template-chooser/dist/element-template-chooser.css';
 import 'bpmn-js-token-simulation/assets/css/bpmn-js-token-simulation.css';
+import '../css/bpmn-engine.css';
 
 // --- Module Imports ---
 import BpmnModeler from 'bpmn-js/lib/Modeler';
@@ -98,7 +99,11 @@ window.initBpmnViewer = function(initialXml, containerSelector) {
     const viewer = new BpmnNavigatedViewer({
         container: containerSelector
     });
+    
+    let currentActive = [];
+    let currentHistory = [];
 
+    
     async function render() {
         try {
             await viewer.importXML(initialXml);
@@ -107,24 +112,37 @@ window.initBpmnViewer = function(initialXml, containerSelector) {
             console.error('Error rendering tracking diagram:', err);
         }
     }
-
     render();
 
     // Return a control object so the host app can easily update markers
     return {
-        viewer: viewer,
-        updateTokens: function(activeNodeIds, previousNodeIds = []) {
+        viewer,
+        syncState: function(activeNodeIds = [], historyNodeIds = [], isFailed = false) {
             const canvas = viewer.get('canvas');
-            
-            // Clean up old markers
-            previousNodeIds.forEach(nodeId => {
-                try { canvas.removeMarker(nodeId, 'bpmn-active-token'); } catch (e) {}
+
+            // Remove obsolete active markers
+            currentActive.forEach(id => {
+                if (!activeNodeIds.includes(id)) {
+                    canvas.removeMarker(id, 'bpmn-active-token');
+                    canvas.removeMarker(id, 'bpmn-failed-token');
+                }
             });
 
-            // Apply new markers
-            activeNodeIds.forEach(nodeId => {
-                try { canvas.addMarker(nodeId, 'bpmn-active-token'); } catch (e) {}
+            // Mark completed trail nodes
+            historyNodeIds.forEach(id => {
+                if (!activeNodeIds.includes(id)) {
+                    canvas.addMarker(id, 'bpmn-history-completed');
+                }
             });
+
+            // Mark active / pulsing tokens
+            activeNodeIds.forEach(id => {
+                canvas.removeMarker(id, 'bpmn-history-completed');
+                canvas.addMarker(id, isFailed ? 'bpmn-failed-token' : 'bpmn-active-token');
+            });
+
+            currentActive = activeNodeIds;
+            currentHistory = historyNodeIds;
         }
     };
 };
