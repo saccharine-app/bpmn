@@ -191,16 +191,18 @@ class BpmnInterpreterWorkflow extends Workflow
                 $instanceId
             );
 
-            yield WorkflowStub::sideEffect(function () use ($instanceId, $currentNodeId, $node, $userData) {
-                WorkflowHistory::create([
-                    'workflow_instance_id' => $instanceId,
-                    'bpmn_element_id'      => $currentNodeId,
-                    'node_type'            => $node->type,
-                    'status'               => 'completed',
-                    'state_snapshot'       => json_encode($userData),
-                    'completed_at'         => now(),
-                ]);
-            });
+            if ($instanceId !== null) {
+                yield WorkflowStub::sideEffect(function () use ($instanceId, $currentNodeId, $node, $userData) {
+                    WorkflowHistory::create([
+                        'workflow_instance_id' => $instanceId,
+                        'bpmn_element_id'      => $currentNodeId,
+                        'node_type'            => $node->type,
+                        'status'               => 'completed',
+                        'state_snapshot'       => json_encode($userData),
+                        'completed_at'         => now(),
+                    ]);
+                });
+            }
 
             // Terminal Condition (End of Process)
             if ($node->type === 'endEvent') {
