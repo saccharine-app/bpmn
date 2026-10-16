@@ -14,7 +14,7 @@ It bridges the gap between visual business diagrams and real-world execution by 
 3. **Pause**: The workflow routes through an Exclusive Gateway and safely hibernates at a User Task wait state.
 4. **Resume & Deliver**: An operator approves the task directly from the Live Cockpit, resuming the coroutine and delivering the notification to Mailpit.
 
-![bpmn-engine video demo](assets/demo.mp4)
+https://github.com/user-attachments/assets/4b4f7225-0dec-4d8d-819e-0c8678654207
 
 ## **Key Features**
 
