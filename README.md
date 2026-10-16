@@ -8,6 +8,14 @@ It bridges the gap between visual business diagrams and real-world execution by 
 
 ***Status: v0.4.0-alpha. This package is actively being developed. The core execution engine, token tracking, and manual intervention layers are operational, but it is not yet recommended for production environments.***
 
+## 50-Second Tour:
+1. **Model**: Configure dynamic recipient parameters inside the embedded visual designer and publish the blueprint.
+2. **Trigger**: An Eloquent `DemoOrder` event fires in the background, matching the start trigger.
+3. **Pause**: The workflow routes through an Exclusive Gateway and safely hibernates at a User Task wait state.
+4. **Resume & Deliver**: An operator approves the task directly from the Live Cockpit, resuming the coroutine and delivering the notification to Mailpit.
+
+![bpmn-engine video demo](assets/demo.mp4)
+
 ## **Key Features**
 
 > * **No Heavy Infrastructure:** Runs entirely on your existing Laravel queue system (database, Redis, SQS, etc.).
