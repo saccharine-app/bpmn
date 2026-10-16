@@ -151,4 +151,37 @@ class WorkflowInstanceController extends Controller
             'updated_at'      => $instance->updated_at?->toIso8601String(),
         ]);
     }
+
+    public function submitUserTask(Request $request, $id, $elementId): JsonResponse
+    {
+        Gate::authorize(WorkflowPermission::EDIT->value);
+
+        $instance = WorkflowInstance::with('tokens')->findOrFail($id);
+
+        // Verify that the token is actively waiting on this specific node
+        $hasToken = $instance->tokens()->where('bpmn_element_id', $elementId)->exists();
+        if (!$hasToken) {
+            return response()->json([
+                'success' => false,
+                'message' => "No active token sitting at element [{$elementId}]."
+            ], 422);
+        }
+
+        $workflow = WorkflowStub::load($instance->durable_workflow_id);
+
+        // The payload can be form data or a simple action trigger
+        $payload = $request->input('payload', [
+            'approved_by' => auth()->user()?->name ?? 'Admin / Operator',
+            'decision'    => 'approved',
+            'submitted_at'=> now()->toIso8601String(),
+        ]);
+
+        // Fires #[SignalMethod] submitUserTask($payload) on BpmnInterpreterWorkflow
+        $workflow->submitUserTask($payload);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Task [{$elementId}] submitted. Workflow will resume on next queue cycle."
+        ]);
+    }
 }

@@ -102,8 +102,42 @@ window.initBpmnViewer = function(initialXml, containerSelector) {
     
     let currentActive = [];
     let currentHistory = [];
+    const eventBus = viewer.get('eventBus');
 
+    eventBus.on('element.click', function(event) {
+        const element = event.element;
+        
+        // Only intercept if this node is currently an active token
+        if (!currentActive.includes(element.id)) {
+            return;
+        }
+
+        // Check if it's a User Task
+        if (element.type === 'bpmn:UserTask') {
+            openTaskModal(element.id, element.businessObject.name || 'User Task Approval');
+        }
+    });
     
+    async function completeTask(elementId, payload) {
+        const res = await fetch(`/api/bpmn/instances/${instanceId}/tasks/${elementId}/submit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ payload: payload })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            closeTaskModal();
+            // The polling loop will naturally clear the green marker on the next beat!
+        } else {
+            alert(data.message);
+        }
+    }
+
     async function render() {
         try {
             await viewer.importXML(initialXml);

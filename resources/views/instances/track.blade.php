@@ -59,6 +59,59 @@ Loading payload...
         </aside>
     </div>
 
+    <!-- User Task Interaction Modal -->
+    <div id="task-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-200">
+        <div id="task-modal-container" class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden transform transition-all duration-200 scale-95 opacity-0">
+            <!-- Header -->
+            <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    <h3 id="task-modal-title" class="font-bold text-sm tracking-wide">Human Task Approval</h3>
+                </div>
+                <button type="button" onclick="closeTaskModal()" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+            </div>
+
+            <!-- Body Form -->
+            <form id="task-modal-form" class="p-6 space-y-4">
+                <input type="hidden" id="task-modal-element-id" value="" />
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Decision</label>
+                    <select id="task-input-decision" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="approved">Approve & Continue</option>
+                        <option value="rejected">Reject</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Approver Name</label>
+                    <input type="text" id="task-input-approver" value="Manager / Operator" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" required />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Review Notes</label>
+                    <textarea id="task-input-notes" rows="3" placeholder="Optional comments to pass into workflow payload..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                </div>
+
+                <!-- Context Hint -->
+                <p class="text-[11px] text-slate-500 italic">
+                    Submitting this form injects the payload into the workflow's inbox and signals the queue worker to advance past this step.
+                </p>
+
+                <!-- Actions -->
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" id="task-submit-btn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+                        <span>Submit & Resume</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="{{ asset('vendor/bpmn-engine/bpmn-engine.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -86,6 +139,106 @@ Loading payload...
                     console.error('Telemetry polling failed', e);
                 }
             }, pollRate);
+        });
+
+        // Global references
+        const modalBackdrop = document.getElementById('task-modal-backdrop');
+        const modalContainer = document.getElementById('task-modal-container');
+        const modalTitle = document.getElementById('task-modal-title');
+        const modalElementId = document.getElementById('task-modal-element-id');
+        const modalForm = document.getElementById('task-modal-form');
+        const submitBtn = document.getElementById('task-submit-btn');
+
+        /**
+         * Opens the approval modal for a paused User Task.
+         */
+        function openTaskModal(elementId, taskLabel) {
+            modalElementId.value = elementId;
+            modalTitle.textContent = taskLabel || `User Task: ${elementId}`;
+
+            // Reset button state
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<span>Submit & Resume</span><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
+
+            // Show backdrop
+            modalBackdrop.classList.remove('hidden');
+
+            // Smooth enter animation
+            setTimeout(() => {
+                modalContainer.classList.remove('scale-95', 'opacity-0');
+                modalContainer.classList.add('scale-100', 'opacity-100');
+            }, 20);
+        }
+
+        /**
+         * Closes and resets the modal.
+         */
+        function closeTaskModal() {
+            modalContainer.classList.remove('scale-100', 'opacity-100');
+            modalContainer.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modalBackdrop.classList.add('hidden');
+            }, 150);
+        }
+
+        // Close modal on backdrop click or Escape key
+        modalBackdrop.addEventListener('click', (e) => {
+            if (e.target === modalBackdrop) closeTaskModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modalBackdrop.classList.contains('hidden')) {
+                closeTaskModal();
+            }
+        });
+
+        // Handle Form Submission
+        modalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const elementId = modalElementId.value;
+            const payload = {
+                decision: document.getElementById('task-input-decision').value,
+                approved_by: document.getElementById('task-input-approver').value.trim(),
+                comments: document.getElementById('task-input-notes').value.trim(),
+                submitted_at: new Date().toISOString(),
+            };
+
+            // UI Feedback: Loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span>Resuming...</span>`;
+
+            try {
+                const response = await fetch(`/api/bpmn/instances/{{ $instance->id }}/tasks/${elementId}/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ payload: payload })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    closeTaskModal();
+                    // Optional: trigger immediate re-poll so the UI reflects the resume instantly
+                    if (typeof triggerPoll === 'function') {
+                        triggerPoll();
+                    }
+                } else {
+                    alert('Error submitting task: ' + (result.message || 'Unknown error'));
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Retry Submission';
+                }
+            } catch (err) {
+                console.error('Submission request failed', err);
+                alert('Network error while submitting task.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Retry Submission';
+            }
         });
     </script>
 </body>

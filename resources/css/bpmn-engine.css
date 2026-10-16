@@ -19,4 +19,7 @@
     fill: #fee2e2 !important;
 }
 
-.bpmn-active-token { animation: pulse 1.6s infinite; }
+.bpmn-active-token {
+    animation: pulse 1.6s infinite;
+    cursor: pointer !important;
+}

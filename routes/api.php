@@ -12,3 +12,5 @@ Route::get('/instances/{id}/tokens', [WorkflowInstanceController::class, 'tokens
     ->name('bpmn.api.instances.tokens');
 Route::get('/instances/{id}/telemetry', [WorkflowInstanceController::class, 'telemetry'])
     ->name('bpmn.api.instances.telemetry');
+Route::post('/instances/{id}/tasks/{elementId}/submit', [WorkflowInstanceController::class, 'submitUserTask'])
+    ->name('bpmn.api.instances.task.submit');
