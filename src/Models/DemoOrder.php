@@ -1,9 +1,9 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Models;
+namespace Saccharine\Bpmn\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Saccharine\BpmnEngine\Traits\TriggersBpmnWorkflows;
+use Saccharine\Bpmn\Traits\TriggersBpmnWorkflows;
 
 class DemoOrder extends Model
 {

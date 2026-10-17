@@ -9,7 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Panel;
-use Saccharine\BpmnEngine\Models\DemoOrder;
+use Saccharine\Bpmn\Models\DemoOrder;
 use App\Filament\Resources\Bpmn\DemoOrderResource\Pages;
 
 class DemoOrderResource extends Resource
@@ -97,7 +97,7 @@ class DemoOrderResource extends Resource
 
     public static function getSlug(?Panel $panel = null): string
     {
-        $prefix = trim(config('bpmn-engine.prefix', 'bpmn/workflows'), '/');
+        $prefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
         return $prefix . '/demo-orders';
     }
 }

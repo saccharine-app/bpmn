@@ -1,21 +1,21 @@
 <?php
 
-namespace Saccharine\BpmnEngine;
+namespace Saccharine\Bpmn;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
-use Saccharine\BpmnEngine\Listeners\WorkflowTriggerListener;
-use Saccharine\BpmnEngine\Enums\WorkflowPermission;
-use Saccharine\BpmnEngine\Support\PermissionManifest;
+use Saccharine\Bpmn\Listeners\WorkflowTriggerListener;
+use Saccharine\Bpmn\Enums\WorkflowPermission;
+use Saccharine\Bpmn\Support\PermissionManifest;
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Models\WorkflowInstance;
-use Saccharine\BpmnEngine\Policies\WorkflowDefinitionPolicy;
-use Saccharine\BpmnEngine\Policies\WorkflowInstancePolicy;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowInstance;
+use Saccharine\Bpmn\Policies\WorkflowDefinitionPolicy;
+use Saccharine\Bpmn\Policies\WorkflowInstancePolicy;
 
-class BpmnEngineServiceProvider extends ServiceProvider
+class BpmnServiceProvider extends ServiceProvider
 {
     public function boot()
     {
@@ -23,28 +23,28 @@ class BpmnEngineServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         // Tell the host app where to find Blade templates
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'bpmn-engine');
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'saccharine-bpmn');
 
         // Load the package's internal API routes
-        Route::prefix(config('bpmn-engine.api_prefix', 'api/bpmn'))
-            ->middleware(config('bpmn-engine.api_middleware', ['api']))
+        Route::prefix(config('saccharine-bpmn.api_prefix', 'api/bpmn'))
+            ->middleware(config('saccharine-bpmn.api_middleware', ['api']))
             ->group(__DIR__ . '/../routes/api.php');
 
         // Tell the host app where to find web routes.
         // `prefix` is the canonical path segment for the whole package: it drives
         // these standalone routes AND the Filament resource slug (see the stubs).
-        $webPrefix = trim(config('bpmn-engine.prefix', 'bpmn/workflows'), '/');
-        $webMiddleware = config('bpmn-engine.middleware', ['web']);
+        $webPrefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
+        $webMiddleware = config('saccharine-bpmn.middleware', ['web']);
 
         Route::prefix($webPrefix)
             ->middleware($webMiddleware)
             ->group(__DIR__ . '/../routes/web.php');
 
         // The standalone Blade dashboard is optional. A Filament-only host can set
-        // `bpmn-engine.dashboard` to false and rely on the panel resource instead;
+        // `saccharine-bpmn.dashboard` to false and rely on the panel resource instead;
         // the designer and instance routes registered above remain available so the
         // engine still works headlessly.
-        if (config('bpmn-engine.dashboard', true)) {
+        if (config('saccharine-bpmn.dashboard', true)) {
             Route::prefix($webPrefix)
                 ->middleware($webMiddleware)
                 ->group(__DIR__ . '/../routes/dashboard.php');
@@ -56,37 +56,37 @@ class BpmnEngineServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             // Register custom artisan commands
             $this->commands([
-                \Saccharine\BpmnEngine\Console\Commands\MakeActivityCommand::class,
-                \Saccharine\BpmnEngine\Console\Commands\MakeTriggerCommand::class,
-                \Saccharine\BpmnEngine\Console\Commands\MakeTemplateCommand::class,
-                \Saccharine\BpmnEngine\Console\Commands\InstallCommand::class,
-                \Saccharine\BpmnEngine\Console\Commands\DemoCommand::class,
-                \Saccharine\BpmnEngine\Console\Commands\InstanceControlCommand::class,
-                \Saccharine\BpmnEngine\Console\Commands\MakeFilamentCommand::class,
-                \Saccharine\BpmnEngine\Console\Commands\TestOrderCommand::class,
+                \Saccharine\Bpmn\Console\Commands\MakeActivityCommand::class,
+                \Saccharine\Bpmn\Console\Commands\MakeTriggerCommand::class,
+                \Saccharine\Bpmn\Console\Commands\MakeTemplateCommand::class,
+                \Saccharine\Bpmn\Console\Commands\InstallCommand::class,
+                \Saccharine\Bpmn\Console\Commands\DemoCommand::class,
+                \Saccharine\Bpmn\Console\Commands\InstanceControlCommand::class,
+                \Saccharine\Bpmn\Console\Commands\MakeFilamentCommand::class,
+                \Saccharine\Bpmn\Console\Commands\TestOrderCommand::class,
             ]);
 
             // Allow the host app to publish the config file
             $this->publishes([
-                __DIR__ . '/../config/bpmn-engine.php' => config_path('bpmn-engine.php'),
-            ], 'bpmn-engine-config');
+                __DIR__ . '/../config/saccharine-bpmn.php' => config_path('saccharine-bpmn.php'),
+            ], 'saccharine-bpmn-config');
             
             // Allow host applications to customize/override the view layout if needed
             $this->publishes([
-                __DIR__ . '/../resources/views' => resource_path('views/vendor/bpmn-engine'),
-            ], 'bpmn-engine-views');
+                __DIR__ . '/../resources/views' => resource_path('views/vendor/saccharine/bpmn'),
+            ], 'saccharine-bpmn-views');
             
             // Publish compiled frontend assets
             $this->publishes([
-                __DIR__ . '/../public' => public_path('vendor/bpmn-engine'),
-            ], 'bpmn-engine-assets');
+                __DIR__ . '/../public' => public_path('vendor/saccharine/bpmn'),
+            ], 'saccharine-bpmn-assets');
         }
 
         $this->registerGates();
 
         // Map the Enum cases into an associative array: ['bpmn:view' => 'View Workflows']
         $permissionMap = [];
-        foreach (\Saccharine\BpmnEngine\Enums\WorkflowPermission::cases() as $permission) {
+        foreach (\Saccharine\Bpmn\Enums\WorkflowPermission::cases() as $permission) {
             $permissionMap[$permission->value] = $permission->label();
         }
 
@@ -109,18 +109,18 @@ class BpmnEngineServiceProvider extends ServiceProvider
     {
         // Merge the host app's published config with our package defaults
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/bpmn-engine.php', 'bpmn-engine'
+            __DIR__ . '/../config/saccharine-bpmn.php', 'saccharine-bpmn'
         );
 
         // Register the internal DemoOrder alias fallback
         config([
-            'bpmn-engine.triggers.demo_order_created' => \Saccharine\BpmnEngine\Models\DemoOrder::class . '@created',
-            'bpmn-engine.activities.bpmn_send_notification' => \Saccharine\BpmnEngine\Workflows\Activities\SendNotificationActivity::class,
+            'saccharine-bpmn.triggers.demo_order_created' => \Saccharine\Bpmn\Models\DemoOrder::class . '@created',
+            'saccharine-bpmn.activities.bpmn_send_notification' => \Saccharine\Bpmn\Workflows\Activities\SendNotificationActivity::class,
         ]);
     }
 
     /**
-     * Register the default authorization gates for the BPMN Engine.
+     * Register the default authorization gates.
      */
     protected function registerGates()
     {

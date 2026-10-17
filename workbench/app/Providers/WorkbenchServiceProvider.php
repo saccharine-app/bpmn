@@ -10,7 +10,7 @@ use Illuminate\Support\ServiceProvider;
  * Workbench host application service provider.
  *
  * This provider stands in for the host application that would normally
- * consume the BPMN Engine package. It holds the glue that a real app
+ * consume the BPMN package. It holds the glue that a real app
  * (e.g. saccharine-demo) would provide, so the package can be developed
  * and integration-tested without a host application.
  */

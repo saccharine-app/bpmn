@@ -95,7 +95,7 @@ return [
     | Package Routing Middleware
     |--------------------------------------------------------------------------
     |
-    | These middleware will be assigned to every BPMN Engine route. You can
+    | These middleware will be assigned to every BPMN route. You can
     | add your own middleware here to protect the designer and dashboard
     | behind a login, such as the 'auth' middleware.
     |

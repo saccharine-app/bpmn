@@ -1,14 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
 
 /*
 |--------------------------------------------------------------------------
 | Authenticated Route Configuration
 |--------------------------------------------------------------------------
 |
-| Guards the `bpmn-engine.middleware` contract: the config key must drive
+| Guards the `saccharine-bpmn.middleware` contract: the config key must drive
 | the standalone web routes at registration time, and enabling `auth` must
 | produce a proper guest redirect (Filament hosts need a `login` route or
 | redirectGuestsTo — without one, Laravel throws "Route [login] not
@@ -16,7 +16,7 @@ use Saccharine\BpmnEngine\Models\WorkflowDefinition;
 |
 */
 
-uses(Saccharine\BpmnEngine\Tests\Concerns\ForcesBpmnAuthMiddleware::class);
+uses(Saccharine\Bpmn\Tests\Concerns\ForcesBpmnAuthMiddleware::class);
 
 it('applies the configured auth middleware to the designer route', function () {
     $middleware = Route::getRoutes()->getByName('bpmn.design')->gatherMiddleware();

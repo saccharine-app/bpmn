@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Contracts;
+namespace Saccharine\Bpmn\Contracts;
 
 interface BpmnTriggerableEvent
 {
@@ -11,7 +11,7 @@ interface BpmnTriggerableEvent
     public function getBusinessKey(): string;
 
     /**
-     * The initial payload data that will be passed into the BPMN engine.
+     * The initial payload data that will be passed into the engine.
      */
     public function getWorkflowPayload(): array;
 }

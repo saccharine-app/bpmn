@@ -1,6 +1,6 @@
 <?php
 
-use Saccharine\BpmnEngine\Services\WorkflowExpressionEvaluator;
+use Saccharine\Bpmn\Services\WorkflowExpressionEvaluator;
 
 it('evaluates valid basic math and boolean expressions', function () {
     $evaluator = new WorkflowExpressionEvaluator();

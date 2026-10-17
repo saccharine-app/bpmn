@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Support;
+namespace Saccharine\Bpmn\Support;
 
 class PermissionManifest
 {

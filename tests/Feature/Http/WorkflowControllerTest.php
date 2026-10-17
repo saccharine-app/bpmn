@@ -1,8 +1,8 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\WorkflowNode;
 
 it('accepts an xml payload and compiles a new workflow version', function () {
     // Setup an existing definition to attach the version to

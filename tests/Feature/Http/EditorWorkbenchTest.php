@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\File;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
 
 /*
 |--------------------------------------------------------------------------
@@ -9,7 +9,7 @@ use Saccharine\BpmnEngine\Models\WorkflowDefinition;
 |--------------------------------------------------------------------------
 |
 | Guards against the regression where the legacy `save-button` binding in
-| resources/js/bpmn-engine.js threw a TypeError (the element was removed
+| resources/js/saccharine-bpmn.js threw a TypeError (the element was removed
 | when the workbench header shipped). That exception aborted the editor's
 | inline script BEFORE the `bpmn:save-requested` listener was registered,
 | leaving the workbench buttons (Save Draft / Publish & Activate /
@@ -17,7 +17,7 @@ use Saccharine\BpmnEngine\Models\WorkflowDefinition;
 |
 */
 
-const BPMN_ENGINE_WORKBENCH_PACKAGE_PATH = __DIR__ . '/../../..';
+const SACCHARINE_BPMN_WORKBENCH_PACKAGE_PATH = __DIR__ . '/../../..';
 
 it('renders the designer page with the workbench action buttons', function () {
     $definition = WorkflowDefinition::create([
@@ -62,7 +62,7 @@ it('registers the workbench event bridge before initializing the designer', func
 });
 
 it('exposes the modeler instance the editor bridge depends on', function () {
-    $source = File::get(BPMN_ENGINE_WORKBENCH_PACKAGE_PATH . '/resources/js/bpmn-engine.js');
+    $source = File::get(SACCHARINE_BPMN_WORKBENCH_PACKAGE_PATH . '/resources/js/saccharine-bpmn.js');
 
     // editor.blade.php reads window.__bpmnModelerInstance.saveXML(...)
     expect($source)->toContain('window.__bpmnModelerInstance = modeler;');
@@ -73,7 +73,7 @@ it('exposes the modeler instance the editor bridge depends on', function () {
 });
 
 it('ships a compiled bundle in sync with the designer source', function () {
-    $bundle = File::get(BPMN_ENGINE_WORKBENCH_PACKAGE_PATH . '/public/bpmn-engine.js');
+    $bundle = File::get(SACCHARINE_BPMN_WORKBENCH_PACKAGE_PATH . '/public/saccharine-bpmn.js');
 
     // `npx vite build` must be re-run after editing resources/js — the host
     // app loads the compiled public/ bundle, never the raw source file.

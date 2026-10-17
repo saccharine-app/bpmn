@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Tests;
+namespace Saccharine\Bpmn\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
 use Orchestra\Testbench\Concerns\WithWorkbench;

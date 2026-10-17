@@ -1,12 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Saccharine\BpmnEngine\Http\Controllers\WorkflowController;
-use Saccharine\BpmnEngine\Http\Controllers\WorkflowInstanceController;
+use Saccharine\Bpmn\Http\Controllers\WorkflowController;
+use Saccharine\Bpmn\Http\Controllers\WorkflowInstanceController;
 
 // NOTE: The standalone dashboard entry points (bpmn.index / bpmn.store) live in
 // routes/dashboard.php so a Filament-only host can disable them via
-// config('bpmn-engine.dashboard') while keeping everything below live.
+// config('saccharine-bpmn.dashboard') while keeping everything below live.
 
 // The design editor canvas
 Route::get('/definitions/{definition}/design', [WorkflowController::class, 'design'])->name('bpmn.design');

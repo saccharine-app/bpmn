@@ -1,12 +1,12 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Handlers\Nodes\Tasks;
+namespace Saccharine\Bpmn\Handlers\Nodes\Tasks;
 
-use Saccharine\BpmnEngine\Contracts\BpmnNodeHandlerInterface;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
-use Saccharine\BpmnEngine\Handlers\Traits\EvaluatesBoundaryEvents;
+use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Handlers\Traits\EvaluatesBoundaryEvents;
 use Throwable;
 
 // Service Tasks (Business Logic)
@@ -22,7 +22,7 @@ class ServiceTaskHandler implements BpmnNodeHandlerInterface
         ?int $instanceId
     ): \Generator
     {
-        $activityClass = config("bpmn-engine.activities.{$node->implementation}");
+        $activityClass = config("saccharine-bpmn.activities.{$node->implementation}");
 
         try {
             // Attempt the standard execution

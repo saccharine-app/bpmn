@@ -1,9 +1,9 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Console\Commands;
+namespace Saccharine\Bpmn\Console\Commands;
 
 use Illuminate\Console\Command;
-use Saccharine\BpmnEngine\Models\DemoOrder;
+use Saccharine\Bpmn\Models\DemoOrder;
 
 class TestOrderCommand extends Command
 {

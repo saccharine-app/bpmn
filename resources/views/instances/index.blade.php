@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPMN Engine - Instance Management</title>
+    <title>BPMN - Instance Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
@@ -15,7 +15,7 @@
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Active Instances</h1>
                 <p class="text-sm text-gray-500 mt-1">Monitor tokens and control live workflow executions.</p>
             </div>
-            <a href="{{ \Saccharine\BpmnEngine\Support\BpmnRouteHelper::dashboardUrl() }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-900">
+            <a href="{{ \Saccharine\Bpmn\Support\BpmnRouteHelper::dashboardUrl() }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-900">
                 &larr; Back to Designer
             </a>
         </div>

@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Http\Controllers;
+namespace Saccharine\Bpmn\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
@@ -8,10 +8,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
-use Saccharine\BpmnEngine\Support\BpmnRouteHelper;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Services\BpmnParserService;
-use Saccharine\BpmnEngine\Enums\WorkflowPermission;
+use Saccharine\Bpmn\Support\BpmnRouteHelper;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Services\BpmnParserService;
+use Saccharine\Bpmn\Enums\WorkflowPermission;
 use Exception;
 
 class WorkflowController extends Controller
@@ -33,9 +33,9 @@ class WorkflowController extends Controller
         // When a Filament panel has the BPMN resources registered, forward to it so
         // the package always exposes one canonical entry point (bpmn.index) that
         // resolves to whichever UI the host has installed. Set
-        // `bpmn-engine.filament_redirect` to false to pin this route to the
+        // `saccharine-bpmn.filament_redirect` to false to pin this route to the
         // standalone Blade dashboard.
-        if (config('bpmn-engine.filament_redirect', true)) {
+        if (config('saccharine-bpmn.filament_redirect', true)) {
             $filamentRoute = BpmnRouteHelper::filamentResourceRoute();
 
             if ($filamentRoute !== null) {
@@ -44,7 +44,7 @@ class WorkflowController extends Controller
         }
 
         $definitions = WorkflowDefinition::with('versions')->get();
-        return view('bpmn-engine::dashboard', compact('definitions'));
+        return view('saccharine-bpmn::dashboard', compact('definitions'));
     }
 
     /**
@@ -144,7 +144,7 @@ class WorkflowController extends Controller
             $elementTemplates = array_merge($elementTemplates, $this->loadTemplatesFromDirectory($hostTemplatesPath));
         }
 
-        return view('bpmn-engine::editor', [
+        return view('saccharine-bpmn::editor', [
             'definition'        => $definition,
             'xml'               => $xml,
             'elementTemplates'  => $elementTemplates,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Models;
+namespace Saccharine\Bpmn\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +11,7 @@ class WorkflowInstance extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'status' => \Saccharine\BpmnEngine\Enums\WorkflowInstanceStatus::class,
+        'status' => \Saccharine\Bpmn\Enums\WorkflowInstanceStatus::class,
     ];
 
     /**

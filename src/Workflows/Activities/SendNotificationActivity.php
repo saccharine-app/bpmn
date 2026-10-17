@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Workflows\Activities;
+namespace Saccharine\Bpmn\Workflows\Activities;
 
 use Workflow\Activity;
 use Illuminate\Support\Facades\Mail;

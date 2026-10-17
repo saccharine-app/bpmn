@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $definition->name }} - BPMN Workflow Designer</title>
     
-    <link rel="stylesheet" href="{{ asset('vendor/bpmn-engine/bpmn-engine.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/saccharine/bpmn/saccharine-bpmn.css') }}">
     <style>
         html, body {
             height: 100%;
@@ -39,7 +39,7 @@
 <body>
 
     <!-- INJECT THE WORKBENCH HEADER -->
-    @include('bpmn-engine::partials.workbench-header', [
+    @include('saccharine-bpmn::partials.workbench-header', [
         'definition'     => $definition,
         'currentVersion' => $currentVersion
     ])
@@ -51,7 +51,7 @@
     </div>
 
     <!-- BUNDLED JS & INITIALIZATION -->
-    <script src="{{ asset('vendor/bpmn-engine/bpmn-engine.js') }}"></script>
+    <script src="{{ asset('vendor/saccharine/bpmn/saccharine-bpmn.js') }}"></script>
     <script>
         // Use a safe JSON-decoding assignment to prevent raw quotes or newlines from breaking JS syntax
         const dbXml = {!! $xml ? json_encode($xml) : 'null' !!};
@@ -90,7 +90,7 @@
                 
                 // url() keeps this absolute (a bare relative path would resolve
                 // against the designer's own URL and 404).
-                const response = await fetch('{{ url(rtrim(config('bpmn-engine.api_prefix', 'api/bpmn'), '/')) }}/workflows/{{ $definition->id }}/versions', {
+                const response = await fetch('{{ url(rtrim(config('saccharine-bpmn.api_prefix', 'api/bpmn'), '/')) }}/workflows/{{ $definition->id }}/versions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -126,7 +126,7 @@
             });
 
             if (response.ok) {
-                window.location.href = '{{ \Saccharine\BpmnEngine\Support\BpmnRouteHelper::dashboardUrl() }}';
+                window.location.href = '{{ \Saccharine\Bpmn\Support\BpmnRouteHelper::dashboardUrl() }}';
             }
         });
 
@@ -137,7 +137,7 @@
                 // Handled via custom events above
             });
         } else {
-            console.error('bpmn-engine bundle failed to load: window.initBpmnDesigner is unavailable.');
+            console.error('saccharine-bpmn bundle failed to load: window.initBpmnDesigner is unavailable.');
         }
     </script>
 </body>

@@ -2,9 +2,9 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Contracts\BpmnTriggerableEvent;
-use Saccharine\BpmnEngine\Listeners\WorkflowTriggerListener;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Contracts\BpmnTriggerableEvent;
+use Saccharine\Bpmn\Listeners\WorkflowTriggerListener;
 
 // A dummy event for testing that implements your strict contract
 class DummyPaymentReceivedEvent implements BpmnTriggerableEvent {
@@ -18,7 +18,7 @@ class DummyPaymentReceivedEvent implements BpmnTriggerableEvent {
 
 it('launches a workflow instance and enforces strict idempotency', function () {
     // Mock the configuration alias
-    config(['bpmn-engine.triggers.payment_received' => DummyPaymentReceivedEvent::class]);
+    config(['saccharine-bpmn.triggers.payment_received' => DummyPaymentReceivedEvent::class]);
 
     // Scaffold a diagram with a StartEvent listening for this trigger
     $definition = WorkflowDefinition::create(['name' => 'Payment Process', 'key' => 'payment-proc']);

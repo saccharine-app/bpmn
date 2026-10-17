@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <title>Tracking Instance #{{ $instance->id }} - {{$instance->version->definition->name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{{ asset('vendor/bpmn-engine/bpmn-engine.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/saccharine/bpmn/saccharine-bpmn.css') }}">
 </head>
 <body class="bg-gray-100 flex flex-col h-screen overflow-hidden font-sans">
 
     <!-- Top Cockpit Header -->
     <header class="h-14 bg-slate-900 text-white px-6 flex items-center justify-between border-b border-slate-800 z-10">
         <div class="flex items-center gap-4">
-            <a href="{{ \Saccharine\BpmnEngine\Support\BpmnRouteHelper::dashboardUrl() }}" class="text-slate-400 hover:text-white text-sm font-semibold">
+            <a href="{{ \Saccharine\Bpmn\Support\BpmnRouteHelper::dashboardUrl() }}" class="text-slate-400 hover:text-white text-sm font-semibold">
                 &larr; Back
             </a>
             <div class="h-4 w-px bg-slate-700"></div>
@@ -112,7 +112,7 @@ Loading payload...
         </div>
     </div>
 
-    <script src="{{ asset('vendor/bpmn-engine/bpmn-engine.js') }}"></script>
+    <script src="{{ asset('vendor/saccharine/bpmn/saccharine-bpmn.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const tracker = window.initBpmnViewer(@json($instance->version->bpmn_xml), '#tracking-canvas');

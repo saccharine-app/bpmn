@@ -1,8 +1,8 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Traits;
+namespace Saccharine\Bpmn\Traits;
 
-use Saccharine\BpmnEngine\Events\ModelEventTrigger;
+use Saccharine\Bpmn\Events\ModelEventTrigger;
 
 trait TriggersBpmnWorkflows
 {

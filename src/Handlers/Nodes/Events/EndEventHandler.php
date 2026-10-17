@@ -1,11 +1,11 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Handlers\Nodes\Events;
+namespace Saccharine\Bpmn\Handlers\Nodes\Events;
 
-use Saccharine\BpmnEngine\Contracts\BpmnNodeHandlerInterface;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
+use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\WorkflowVersion;
 
 class EndEventHandler implements BpmnNodeHandlerInterface
 {

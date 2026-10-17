@@ -1,10 +1,10 @@
 <?php
 
-use Saccharine\BpmnEngine\Services\GatewayRouter;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
-use Saccharine\BpmnEngine\Models\WorkflowEdge;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
+use Saccharine\Bpmn\Services\GatewayRouter;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\WorkflowEdge;
+use Saccharine\Bpmn\Models\WorkflowNode;
 
 it('routes a token through an exclusive gateway based on user data', function () {
     // Scaffold the database state

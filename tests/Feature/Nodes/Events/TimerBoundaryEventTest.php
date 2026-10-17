@@ -1,8 +1,8 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Handlers\Nodes\Tasks\UserTaskHandler;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Handlers\Nodes\Tasks\UserTaskHandler;
 
 it('routes to the timer boundary event path when the timeout expires', function () {
     $definition = WorkflowDefinition::create(['name' => 'Timer Test', 'key' => 'timer-test']);

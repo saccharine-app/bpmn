@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Saccharine\BpmnEngine\BpmnEngineServiceProvider;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
+use Saccharine\Bpmn\BpmnServiceProvider;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
 use Workbench\App\Providers\WorkbenchServiceProvider;
 use Workbench\Database\Seeders\DatabaseSeeder;
 
@@ -19,7 +19,7 @@ use Workbench\Database\Seeders\DatabaseSeeder;
 */
 
 it('boots the package and workbench providers via testbench.yaml', function () {
-    expect($this->app->getProviders(BpmnEngineServiceProvider::class))->not->toBeEmpty()
+    expect($this->app->getProviders(BpmnServiceProvider::class))->not->toBeEmpty()
         ->and($this->app->getProviders(WorkbenchServiceProvider::class))->not->toBeEmpty();
 });
 

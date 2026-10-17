@@ -2,7 +2,7 @@
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 // use Tests\TestCase;
-use Saccharine\BpmnEngine\Tests\TestCase;
+use Saccharine\Bpmn\Tests\TestCase;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +15,7 @@ use Saccharine\BpmnEngine\Tests\TestCase;
 |
 */
 
-pest()->extend(Saccharine\BpmnEngine\Tests\TestCase::class)
+pest()->extend(Saccharine\Bpmn\Tests\TestCase::class)
  // ->use(RefreshDatabase::class)
     ->in('Feature', 'Unit');
 

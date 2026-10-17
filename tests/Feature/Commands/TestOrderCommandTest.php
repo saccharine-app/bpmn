@@ -1,8 +1,8 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\DemoOrder;
+use Saccharine\Bpmn\Models\DemoOrder;
 use Illuminate\Support\Facades\Event;
-use Saccharine\BpmnEngine\Events\ModelEventTrigger;
+use Saccharine\Bpmn\Events\ModelEventTrigger;
 
 it('creates a demo order via CLI and triggers the model event', function () {
     Event::fake([ModelEventTrigger::class]);

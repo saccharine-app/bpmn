@@ -3,8 +3,8 @@
 namespace Workbench\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Services\BpmnParserService;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Services\BpmnParserService;
 
 class DatabaseSeeder extends Seeder
 {

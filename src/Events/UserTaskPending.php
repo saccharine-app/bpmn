@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Events;
+namespace Saccharine\Bpmn\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;

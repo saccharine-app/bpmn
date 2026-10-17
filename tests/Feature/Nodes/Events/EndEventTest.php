@@ -1,8 +1,8 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Handlers\Nodes\Events\EndEventHandler;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Handlers\Nodes\Events\EndEventHandler;
 use Workflow\WorkflowStub;
 
 it('returns a null node ID to terminate the execution path', function () {

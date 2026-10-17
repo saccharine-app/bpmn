@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Saccharine\BpmnEngine\Http\Controllers\WorkflowController;
-use Saccharine\BpmnEngine\Http\Controllers\WorkflowInstanceController;
+use Saccharine\Bpmn\Http\Controllers\WorkflowController;
+use Saccharine\Bpmn\Http\Controllers\WorkflowInstanceController;
 
 // The prefix and middleware are handled by the Service Provider
 Route::post('/workflows/{definition}/versions', [WorkflowController::class, 'storeVersion']);

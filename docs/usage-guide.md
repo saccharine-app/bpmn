@@ -1,10 +1,10 @@
 # **Usage Guide**
 
-This guide covers how to implement the BPMN engine into your application, define your business logic, and utilize advanced orchestration features.
+This guide covers how to implement the Saccharine BPMN into your application, define your business logic, and utilize advanced orchestration features.
 
 ## **1. Configuration & Registration**
 
-After running the install command, your configuration lives at config/bpmn-engine.php. This file is the bridge between your generic BPMN diagrams and your actual Laravel code.
+After running the install command, your configuration lives at config/saccharine-bpmn.php. This file is the bridge between your generic BPMN diagrams and your actual Laravel code.
 
 It maps the string identifiers typed into the visual canvas to the fully qualified class names in your application.
 

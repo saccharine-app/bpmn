@@ -1,8 +1,8 @@
 {
-    "name": "saccharine/bpmn-engine",
-    "description": "Laravel BPMN Execution Engine",
+    "name": "saccharine/bpmn",
+    "description": "Saccharine BPMN Execution Engine for Laravel",
     "license": "MIT",
-    "keywords": ["laravel", "bpmn", "workflow", "camunda", "orchestration"],
+    "keywords": ["laravel", "bpmn", "workflow", "saccharine", "orchestration"],
     "type": "library",
     "require": {
         "php": "^8.3",
@@ -13,18 +13,18 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Saccharine\\BpmnEngine\\BpmnEngineServiceProvider"
+                "Saccharine\\Bpmn\\BpmnServiceProvider"
             ]
         }
     },
     "autoload": {
         "psr-4": {
-            "Saccharine\\BpmnEngine\\": "src/"
+            "Saccharine\\Bpmn\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Saccharine\\BpmnEngine\\Tests\\": "tests/",
+            "Saccharine\\Bpmn\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/",
             "Workbench\\Database\\Factories\\": "workbench/database/factories/",
             "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"

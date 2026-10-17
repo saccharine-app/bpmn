@@ -1,13 +1,13 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Handlers\Nodes\Tasks;
+namespace Saccharine\Bpmn\Handlers\Nodes\Tasks;
 
-use Saccharine\BpmnEngine\Contracts\BpmnNodeHandlerInterface;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Handlers\Traits\EvaluatesBoundaryEvents;
+use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Handlers\Traits\EvaluatesBoundaryEvents;
 use Throwable;
 use RuntimeException;
 
@@ -31,7 +31,7 @@ class CallActivityHandler implements BpmnNodeHandlerInterface
             $targetVersion = $targetDefinition ? $targetDefinition->versions()->where('is_active', true)->first() : null;
 
             if (!$targetDefinition || !$targetVersion) {
-                throw new RuntimeException("BPMN Engine Error: Target workflow [{$targetDefinitionKey}] not found or has no active version.");
+                throw new RuntimeException("BPMN Error: Target workflow [{$targetDefinitionKey}] not found or has no active version.");
             }
 
             // Yield the ChildWorkflowStub created by the interpreter

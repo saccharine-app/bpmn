@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Models;
+namespace Saccharine\Bpmn\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

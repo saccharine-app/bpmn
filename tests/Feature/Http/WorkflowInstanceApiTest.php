@@ -1,8 +1,8 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Models\WorkflowInstance;
-use Saccharine\BpmnEngine\Enums\WorkflowInstanceStatus;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowInstance;
+use Saccharine\Bpmn\Enums\WorkflowInstanceStatus;
 
 it('returns active node IDs and status for a workflow instance via API', function () {
     // Scaffold Definition and Version

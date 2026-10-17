@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Console\Commands;
+namespace Saccharine\Bpmn\Console\Commands;
 
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Facades\File;
@@ -37,10 +37,10 @@ class MakeTriggerCommand extends GeneratorCommand
 
     protected function registerTriggerInConfig(string $key)
     {
-        $configPath = config_path('bpmn-engine.php');
+        $configPath = config_path('saccharine-bpmn.php');
 
         if (!File::exists($configPath)) {
-            $this->warn("The config/bpmn-engine.php file was not found.");
+            $this->warn("The config/saccharine-bpmn.php file was not found.");
             return;
         }
 
@@ -61,6 +61,6 @@ class MakeTriggerCommand extends GeneratorCommand
         $newContents = preg_replace($pattern, $replacement, $configContents, 1);
         File::put($configPath, $newContents);
 
-        $this->info("Successfully registered '{$key}' to {$className} in config/bpmn-engine.php!");
+        $this->info("Successfully registered '{$key}' to {$className} in config/saccharine-bpmn.php!");
     }
 }

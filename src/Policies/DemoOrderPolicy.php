@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Saccharine\BpmnEngine\Policies;
+namespace Saccharine\Bpmn\Policies;
 
 use Illuminate\Foundation\Auth\User as AuthUser;
-use Saccharine\BpmnEngine\Models\DemoOrder;
+use Saccharine\Bpmn\Models\DemoOrder;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class DemoOrderPolicy

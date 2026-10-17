@@ -3,7 +3,7 @@
 namespace App\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
-use Saccharine\BpmnEngine\Contracts\BpmnTriggerableEvent;
+use Saccharine\Bpmn\Contracts\BpmnTriggerableEvent;
 
 class DemoOrderPlaced implements BpmnTriggerableEvent
 {

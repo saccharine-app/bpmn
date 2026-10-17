@@ -4,7 +4,7 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import '@bpmn-io/properties-panel/dist/assets/properties-panel.css';
 import '@bpmn-io/element-template-chooser/dist/element-template-chooser.css';
 import 'bpmn-js-token-simulation/assets/css/bpmn-js-token-simulation.css';
-import '../css/bpmn-engine.css';
+import '../css/saccharine-bpmn.css';
 
 // --- Module Imports ---
 import BpmnModeler from 'bpmn-js/lib/Modeler';

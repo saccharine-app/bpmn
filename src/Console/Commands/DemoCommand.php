@@ -1,11 +1,11 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Console\Commands;
+namespace Saccharine\Bpmn\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Services\BpmnParserService;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Services\BpmnParserService;
 
 class DemoCommand extends Command
 {
@@ -26,7 +26,7 @@ class DemoCommand extends Command
 
     protected function registerInConfig(string $arrayType, string $key, string $className)
     {
-        $configPath = config_path('bpmn-engine.php');
+        $configPath = config_path('saccharine-bpmn.php');
         if (!File::exists($configPath)) return;
 
         $configContents = File::get($configPath);

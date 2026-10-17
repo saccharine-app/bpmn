@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Saccharine\BpmnEngine\Policies;
+namespace Saccharine\Bpmn\Policies;
 
 use Illuminate\Foundation\Auth\User as AuthUser;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class WorkflowDefinitionPolicy

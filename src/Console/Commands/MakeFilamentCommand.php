@@ -1,5 +1,5 @@
 <?php
-namespace Saccharine\BpmnEngine\Console\Commands;
+namespace Saccharine\Bpmn\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -10,11 +10,11 @@ class MakeFilamentCommand extends Command
                             {--force : Overwrite Filament resources that already exist}
                             {--demo : Also scaffold the DemoOrder resource for testing}';
 
-    protected $description = 'Publish Filament resources for the BPMN Engine';
+    protected $description = 'Publish Filament resources for the Saccharine BPMN';
 
     public function handle()
     {
-        $this->info('Scaffolding Filament Resources for BPMN Engine...');
+        $this->info('Scaffolding Filament Resources for Saccharine BPMN...');
 
         $resourcesDir = app_path('Filament/Resources/Bpmn');
         File::ensureDirectoryExists($resourcesDir);
@@ -75,7 +75,7 @@ class MakeFilamentCommand extends Command
         $this->newLine();
         $this->info('Filament integration complete! You should now see the BPMN resources in your admin panel.');
         
-        $prefix = trim(config('bpmn-engine.prefix', 'bpmn/workflows'), '/');
+        $prefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
         $panelPath = trim(config('filament.path', 'admin'), '/');
         $panelId = 'admin';
 

@@ -1,4 +1,4 @@
-# **Laravel BPMN Engine**
+# **Saccharine BPMN Engine for Laravel**
 
 ![bpmn-js screenshot](assets/bpmn-js-screenshot.png)
 
@@ -49,7 +49,7 @@ For local development, link the package to a host application by adding a path r
 "repositories": [
     {
         "type": "path",
-        "url": "../bpmn-engine",
+        "url": "../bpmn",
         "options": {
             "symlink": true
         }
@@ -60,7 +60,7 @@ For local development, link the package to a host application by adding a path r
 Then require the package:
 
 ```bash
-composer require "saccharine-app/bpmn-engine" "@dev"
+composer require "saccharine-app/bpmn" "@dev"
 ```
 
 ### **2. Install and Initialize**
@@ -76,7 +76,7 @@ php artisan bpmn:install
 The package exposes a **single canonical URL surface**, driven by one config key:
 
 ```php
-// config/bpmn-engine.php
+// config/saccharine-bpmn.php
 'prefix' => 'bpmn/workflows',
 ```
 
@@ -99,9 +99,9 @@ view is duplicated, which keeps maintenance to a minimum.
 `bpmn.index` is the canonical entry point and resolves to whichever UI the host
 has installed:
 
-1. `config('bpmn-engine.dashboard_url')`, when explicitly set
+1. `config('saccharine-bpmn.dashboard_url')`, when explicitly set
 2. The Filament resource table, when a panel has the BPMN resources registered
-   (disable with `bpmn-engine.filament_redirect => false`)
+   (disable with `saccharine-bpmn.filament_redirect => false`)
 3. The package's own Blade dashboard
 
 Every "back to dashboard" link in the designer uses the same resolution, so
@@ -110,10 +110,10 @@ you to the standalone view.
 
 ### **Going headless or Filament-only**
 
-- `bpmn-engine.dashboard => false` — stops registering the standalone
+- `saccharine-bpmn.dashboard => false` — stops registering the standalone
   `bpmn.index`/`bpmn.store` routes. The designer, instance control, and
   version-save routes stay live.
-- `bpmn-engine.middleware` — defaults to `['web']` for local ergonomics. **In
+- `saccharine-bpmn.middleware` — defaults to `['web']` for local ergonomics. **In
   production set this to `['web', 'auth']`**, otherwise
   `/bpmn/workflows/definitions` is reachable by any guest. Filament panels are
   always behind their own guard regardless of this value.

@@ -1,6 +1,6 @@
 # **Architecture & Under the Hood**
 
-The Laravel BPMN Engine is designed to keep your host application's domain logic completely decoupled from the orchestration layer. It achieves this through a multi-layered architecture that translates visual diagrams into isolated background coroutines.
+Saccharine BPMN is designed to keep your host application's domain logic completely decoupled from the orchestration layer. It achieves this through a multi-layered architecture that translates visual diagrams into isolated background coroutines.
 
 ## **1. The Parser (BpmnParserService)**
 

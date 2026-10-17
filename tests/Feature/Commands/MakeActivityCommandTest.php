@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\File;
 beforeEach(function () {
     // Setup a dummy config file in the Testbench app 
     // so the command can find it and update it.
-    $this->configPath = config_path('bpmn-engine.php');
+    $this->configPath = config_path('saccharine-bpmn.php');
     
     $configContent = <<<PHP
 <?php
@@ -49,7 +49,7 @@ it('generates the class but warns if the config file is missing', function () {
 
     $this->artisan('bpmn:make-activity', ['name' => 'MissingConfigActivity'])
         ->expectsQuestion('What is the BPMN implementation key for this activity? (e.g., generate_contract)', 'missing_config')
-        ->expectsOutputToContain('The config/bpmn-engine.php file was not found.')
+        ->expectsOutputToContain('The config/saccharine-bpmn.php file was not found.')
         ->assertSuccessful();
 
     // The class should still generate, even if registration fails

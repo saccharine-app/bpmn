@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Services;
+namespace Saccharine\Bpmn\Services;
 
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Illuminate\Support\Facades\Log;

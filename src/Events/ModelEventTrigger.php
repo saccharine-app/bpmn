@@ -1,11 +1,11 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Events;
+namespace Saccharine\Bpmn\Events;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Saccharine\BpmnEngine\Contracts\BpmnTriggerableEvent;
+use Saccharine\Bpmn\Contracts\BpmnTriggerableEvent;
 
 class ModelEventTrigger implements BpmnTriggerableEvent
 {

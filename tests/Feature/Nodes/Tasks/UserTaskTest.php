@@ -1,8 +1,8 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Workflow\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
 

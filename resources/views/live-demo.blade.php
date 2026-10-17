@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Load unified local CSS bundle -->
-    <link rel="stylesheet" href="{{ asset('vendor/bpmn-engine/bpmn-engine.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/saccharine/bpmn/saccharine-bpmn.css') }}">
     
     <style>
         .bpmn-active-token:not(.djs-connection) .djs-visual > :nth-child(1) {
@@ -30,7 +30,7 @@
     <!-- LEFT SIDE: The Engine (70%) -->
     <div class="w-2/3 h-full flex flex-col border-r border-gray-300 bg-white">
         <div class="p-4 bg-slate-900 text-white flex justify-between items-center shadow-md z-10">
-            <h2 class="font-bold text-lg tracking-wide">BPMN Engine (Backend Perspective)</h2>
+            <h2 class="font-bold text-lg tracking-wide">BPMN (Backend Perspective)</h2>
             <span class="text-xs bg-slate-700 px-3 py-1 rounded-full text-slate-300">Live Polling: 1000ms</span>
         </div>
         <div id="canvas" class="flex-grow bg-slate-50 relative"></div>
@@ -86,7 +86,7 @@
         </div>
     </div>
 
-    <script src="{{ asset('vendor/bpmn-engine/bpmn-modeler.js') }}"></script>
+    <script src="{{ asset('vendor/saccharine/bpmn/bpmn-modeler.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // 1. Boot the Navigated Viewer

@@ -3,7 +3,7 @@
 namespace {{ namespace }};
 
 use Illuminate\Foundation\Events\Dispatchable;
-use Saccharine\BpmnEngine\Contracts\BpmnTriggerableEvent;
+use Saccharine\Bpmn\Contracts\BpmnTriggerableEvent;
 
 class {{ class }} implements BpmnTriggerableEvent
 {
@@ -26,7 +26,7 @@ class {{ class }} implements BpmnTriggerableEvent
     }
 
     /**
-     * Define the initial data injected into the BPMN engine payload.
+     * Define the initial data injected into the BPMN payload.
      */
     public function getWorkflowPayload(): array
     {

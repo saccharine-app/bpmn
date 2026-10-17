@@ -1,9 +1,9 @@
 <?php
 
-use Saccharine\BpmnEngine\Services\BpmnParserService;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
-use Saccharine\BpmnEngine\Models\WorkflowEdge;
+use Saccharine\Bpmn\Services\BpmnParserService;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\WorkflowEdge;
 
 it('parses a basic bpmn xml file into database nodes and edges', function () {
     // Scaffold a fake workflow definition and version in the database
@@ -149,7 +149,7 @@ it('throws an exception if the //bpmn:process block is not found', function () {
 })->throws(\Exception::class, 'Invalid BPMN file: <bpmn:process> element not found.');
 
 it('parses a call activity and extracts the calledElement attribute as its implementation', function () {
-    $definition = \Saccharine\BpmnEngine\Models\WorkflowDefinition::create([
+    $definition = \Saccharine\Bpmn\Models\WorkflowDefinition::create([
         'name' => 'Caller Process',
         'key'  => 'caller-process',
     ]);
@@ -170,10 +170,10 @@ it('parses a call activity and extracts the calledElement attribute as its imple
     </bpmn:definitions>
     XML;
 
-    $parser = new \Saccharine\BpmnEngine\Services\BpmnParserService();
+    $parser = new \Saccharine\Bpmn\Services\BpmnParserService();
     $parser->parseAndStore($version, $xmlString);
 
-    $callNode = \Saccharine\BpmnEngine\Models\WorkflowNode::where('type', 'callActivity')->first();
+    $callNode = \Saccharine\Bpmn\Models\WorkflowNode::where('type', 'callActivity')->first();
     
     expect($callNode)->not->toBeNull()
         ->and($callNode->bpmn_element_id)->toBe('CallActivity_1')
@@ -181,7 +181,7 @@ it('parses a call activity and extracts the calledElement attribute as its imple
 });
 
 it('parses an inline sub-process and assigns a parent_element_id to its internal children', function () {
-    $definition = \Saccharine\BpmnEngine\Models\WorkflowDefinition::create([
+    $definition = \Saccharine\Bpmn\Models\WorkflowDefinition::create([
         'name' => 'SubProcess Process',
         'key'  => 'subprocess-process',
     ]);
@@ -208,16 +208,16 @@ it('parses an inline sub-process and assigns a parent_element_id to its internal
     </bpmn:definitions>
     XML;
 
-    $parser = new \Saccharine\BpmnEngine\Services\BpmnParserService();
+    $parser = new \Saccharine\Bpmn\Services\BpmnParserService();
     $parser->parseAndStore($version, $xmlString);
 
     // Verify the subProcess node itself was created
-    $subProcessNode = \Saccharine\BpmnEngine\Models\WorkflowNode::where('type', 'subProcess')->first();
+    $subProcessNode = \Saccharine\Bpmn\Models\WorkflowNode::where('type', 'subProcess')->first();
     expect($subProcessNode)->not->toBeNull()
         ->and($subProcessNode->bpmn_element_id)->toBe('SubProcess_1');
 
     // Verify the internal tasks were created and scoped to the parent subProcess
-    $internalTask = \Saccharine\BpmnEngine\Models\WorkflowNode::where('bpmn_element_id', 'SubTask_1')->first();
+    $internalTask = \Saccharine\Bpmn\Models\WorkflowNode::where('bpmn_element_id', 'SubTask_1')->first();
     
     expect($internalTask)->not->toBeNull()
         ->and($internalTask->type)->toBe('serviceTask')

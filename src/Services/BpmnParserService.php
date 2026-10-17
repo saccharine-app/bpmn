@@ -1,8 +1,8 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Services;
+namespace Saccharine\Bpmn\Services;
 
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\WorkflowVersion;
 use Illuminate\Support\Facades\DB;
 use SimpleXMLElement;
 use Exception;

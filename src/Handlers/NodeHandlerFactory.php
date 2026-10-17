@@ -1,9 +1,9 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Handlers;
+namespace Saccharine\Bpmn\Handlers;
 
-use Saccharine\BpmnEngine\Contracts\BpmnNodeHandlerInterface;
-use Saccharine\BpmnEngine\Handlers\Nodes;
+use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
+use Saccharine\Bpmn\Handlers\Nodes;
 
 class NodeHandlerFactory
 {
@@ -23,7 +23,7 @@ class NodeHandlerFactory
         $handlerClass = self::$handlers[$type] ?? null;
 
         if (!$handlerClass) {
-            throw new \RuntimeException("BPMN Engine Error: No handler registered for node type [{$type}].");
+            throw new \RuntimeException("BPMN Error: No handler registered for node type [{$type}].");
         }
 
         return new $handlerClass();

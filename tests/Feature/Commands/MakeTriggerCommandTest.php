@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\File;
 
 beforeEach(function () {
-    $this->configPath = config_path('bpmn-engine.php');
+    $this->configPath = config_path('saccharine-bpmn.php');
     
     $configContent = <<<PHP
 <?php

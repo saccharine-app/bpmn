@@ -2,7 +2,7 @@ laravel: '@testbench'
 
 providers:
   - Workflow\Providers\WorkflowServiceProvider
-  - Saccharine\BpmnEngine\BpmnEngineServiceProvider
+  - Saccharine\Bpmn\BpmnServiceProvider
   - Workbench\App\Providers\WorkbenchServiceProvider
 
 migrations:

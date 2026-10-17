@@ -1,14 +1,14 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Listeners;
+namespace Saccharine\Bpmn\Listeners;
 
 use Illuminate\Support\Facades\DB;
-use Saccharine\BpmnEngine\Contracts\BpmnTriggerableEvent;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
+use Saccharine\Bpmn\Contracts\BpmnTriggerableEvent;
+use Saccharine\Bpmn\Models\WorkflowNode;
 use Workflow\WorkflowStub;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Models\WorkflowInstance;
-use Saccharine\BpmnEngine\Enums\WorkflowInstanceStatus;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowInstance;
+use Saccharine\Bpmn\Enums\WorkflowInstanceStatus;
 
 class WorkflowTriggerListener
 {
@@ -25,7 +25,7 @@ class WorkflowTriggerListener
         $triggerAliases = [];
 
         // CASE A: It's our built-in generic ModelEventTrigger
-        if ($eventInstance instanceof \Saccharine\BpmnEngine\Events\ModelEventTrigger) {
+        if ($eventInstance instanceof \Saccharine\Bpmn\Events\ModelEventTrigger) {
             $modelClass = class_basename($eventInstance->model); // e.g., 'Order'
             $modelSnake = strtolower(\Illuminate\Support\Str::snake($modelClass)); // 'order'
             $action = $eventInstance->action; // 'created'
@@ -33,8 +33,8 @@ class WorkflowTriggerListener
             // Looks for triggers matching 'order_created' or configured aliases
             $triggerAliases[] = "{$modelSnake}_{$action}";
 
-            // Also check if the host app mapped this model in bpmn-engine.php triggers
-            $triggersConfig = config('bpmn-engine.triggers', []);
+            // Also check if the host app mapped this model in saccharine-bpmn.php triggers
+            $triggersConfig = config('saccharine-bpmn.triggers', []);
             $configuredKey = array_search(get_class($eventInstance->model) . "@{$action}", $triggersConfig);
             if ($configuredKey) {
                 $triggerAliases[] = $configuredKey;
@@ -43,7 +43,7 @@ class WorkflowTriggerListener
         // CASE B: Standard custom events using the reverse lookup registry
         else {
             // REVERSE LOOKUP: Check if the fired event class is registered in our config
-            $triggers = config('bpmn-engine.triggers', []);
+            $triggers = config('saccharine-bpmn.triggers', []);
             $triggerAlias = array_search($eventName, $triggers);
             if ($triggerAlias) {
                 $triggerAliases[] = $triggerAlias;

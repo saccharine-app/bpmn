@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
-use Saccharine\BpmnEngine\Support\BpmnRouteHelper;
+use Saccharine\Bpmn\Support\BpmnRouteHelper;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,7 +16,7 @@ use Saccharine\BpmnEngine\Support\BpmnRouteHelper;
 |
 */
 
-const BPMN_ENGINE_PACKAGE_PATH = __DIR__ . '/../../..';
+const SACCHARINE_BPMN_PACKAGE_PATH = __DIR__ . '/../../..';
 
 it('resolves the canonical dashboard route from the prefix config key', function () {
     expect(route('bpmn.index'))->toBe('http://localhost/bpmn/workflows/definitions');
@@ -32,7 +32,7 @@ it('registers the designer and instance routes under the same prefix', function 
 
 it('leaves the standalone web routes unauthenticated by default', function () {
     // The `['web']` default is deliberate (local/demo ergonomics); hosts opt
-    // into auth via config('bpmn-engine.middleware'). See
+    // into auth via config('saccharine-bpmn.middleware'). See
     // MiddlewareConfigurationTest for the opt-in behaviour.
     $middleware = Route::getRoutes()->getByName('bpmn.design')->gatherMiddleware();
 
@@ -51,7 +51,7 @@ it('renders the standalone dashboard at the canonical URL', function () {
 });
 
 it('only references routes that actually exist from the published stubs', function () {
-    $routes = collect(File::files(BPMN_ENGINE_PACKAGE_PATH . '/stubs/filament'))
+    $routes = collect(File::files(SACCHARINE_BPMN_PACKAGE_PATH . '/stubs/filament'))
         ->map(fn ($file) => File::get($file->getPathname()))
         ->implode("\n");
 
@@ -68,10 +68,10 @@ it('only references routes that actually exist from the published stubs', functi
 
 it('derives the Filament slug from the shared prefix key rather than hardcoding it', function () {
     foreach (['WorkflowDefinitionResource', 'WorkflowInstanceResource'] as $stub) {
-        $contents = File::get(BPMN_ENGINE_PACKAGE_PATH . "/stubs/filament/{$stub}.stub");
+        $contents = File::get(SACCHARINE_BPMN_PACKAGE_PATH . "/stubs/filament/{$stub}.stub");
 
         expect($contents)
-            ->toContain("config('bpmn-engine.prefix'")
+            ->toContain("config('saccharine-bpmn.prefix'")
             ->not->toContain("'bpmn/workflows/definitions'")
             ->not->toContain("'bpmn/workflows/instances'");
     }
@@ -85,7 +85,7 @@ it('keeps the designer views bound to the canonical dashboard resolver', functio
     ];
 
     foreach ($views as $view) {
-        $contents = File::get(BPMN_ENGINE_PACKAGE_PATH . '/' . $view);
+        $contents = File::get(SACCHARINE_BPMN_PACKAGE_PATH . '/' . $view);
 
         expect($contents)
             ->toContain('BpmnRouteHelper::dashboardUrl()')
@@ -94,10 +94,10 @@ it('keeps the designer views bound to the canonical dashboard resolver', functio
 });
 
 it('builds the designer save URL from the api_prefix config key', function () {
-    $contents = File::get(BPMN_ENGINE_PACKAGE_PATH . '/resources/views/editor.blade.php');
+    $contents = File::get(SACCHARINE_BPMN_PACKAGE_PATH . '/resources/views/editor.blade.php');
 
     expect($contents)
-        ->toContain("config('bpmn-engine.api_prefix'")
+        ->toContain("config('saccharine-bpmn.api_prefix'")
         ->not->toContain("'/api/bpmn/workflows/");
 });
 
@@ -126,7 +126,7 @@ it('prefers an explicit dashboard_url override over every other resolution', fun
     Route::get('/admin/bpmn/workflows/definitions', fn () => 'ok')
         ->name('filament.admin.resources.bpmn.workflows.definitions.index');
 
-    config(['bpmn-engine.dashboard_url' => 'https://example.test/custom-dashboard']);
+    config(['saccharine-bpmn.dashboard_url' => 'https://example.test/custom-dashboard']);
 
     expect(BpmnRouteHelper::dashboardUrl())->toBe('https://example.test/custom-dashboard');
 });
@@ -151,7 +151,7 @@ it('pins the canonical entry point to the Blade dashboard when the redirect is d
     Route::get('/admin/bpmn/workflows/definitions', fn () => 'ok')
         ->name('filament.admin.resources.bpmn.workflows.definitions.index');
 
-    config(['bpmn-engine.filament_redirect' => false]);
+    config(['saccharine-bpmn.filament_redirect' => false]);
 
     $this->get('/bpmn/workflows/definitions')->assertOk();
 });

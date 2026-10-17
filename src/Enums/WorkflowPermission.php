@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Enums;
+namespace Saccharine\Bpmn\Enums;
 
 enum WorkflowPermission: string
 {

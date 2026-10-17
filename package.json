@@ -1,5 +1,5 @@
 {
-  "name": "bpmn-engine",
+  "name": "@saccharine/bpmn",
   "version": "1.0.0",
   "description": "A lightweight, native PHP workflow orchestrator and visual designer for Laravel. This package allows you to model business processes visually using BPMN 2.0 and execute them as durable, stateful background jobs—without any external Java dependencies (like Camunda or Zeebe).",
   "main": "index.js",
@@ -11,16 +11,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/saccharine-app/bpmn-engine.git"
+    "url": "git+https://github.com/saccharine-app/bpmn.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/saccharine-app/bpmn-engine/issues"
+    "url": "https://github.com/saccharine-app/bpmn/issues"
   },
-  "homepage": "https://github.com/saccharine-app/bpmn-engine#readme",
+  "homepage": "https://github.com/saccharine-app/bpmn#readme",
   "dependencies": {
     "@bpmn-io/element-template-chooser": "^3.0.0",
     "@bpmn-io/properties-panel": "^3.47.0",

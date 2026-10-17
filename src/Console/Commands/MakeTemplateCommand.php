@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Console\Commands;
+namespace Saccharine\Bpmn\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;

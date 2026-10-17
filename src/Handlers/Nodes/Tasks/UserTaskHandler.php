@@ -1,12 +1,12 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Handlers\Nodes\Tasks;
+namespace Saccharine\Bpmn\Handlers\Nodes\Tasks;
 
-use Saccharine\BpmnEngine\Contracts\BpmnNodeHandlerInterface;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
-use Saccharine\BpmnEngine\Handlers\Traits\EvaluatesBoundaryEvents;
+use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Handlers\Traits\EvaluatesBoundaryEvents;
 use function Workflow\await;
 use function Workflow\awaitWithTimeout;
 
@@ -23,7 +23,7 @@ class UserTaskHandler implements BpmnNodeHandlerInterface
     ): \Generator
     {
         // Announce to the host application that a human is needed
-        event(new \Saccharine\BpmnEngine\Events\UserTaskPending(
+        event(new \Saccharine\Bpmn\Events\UserTaskPending(
             $workflow->uniqueId(), 
             $node->name,
             $userData

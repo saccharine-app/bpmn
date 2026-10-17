@@ -1,8 +1,8 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Handlers\Nodes\Tasks\CallActivityHandler;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Handlers\Nodes\Tasks\CallActivityHandler;
 use Workflow\ChildWorkflowStub;
 
 it('yields a child workflow stub for the called element and merges the returned payload', function () {
@@ -69,4 +69,4 @@ it('throws an exception if the called element workflow does not exist or has no 
     // This should fail before it ever tries to yield a child workflow
     $handler->handle($workflow, $callNode, $parentVersion, [], null)->current();
 
-})->throws(\RuntimeException::class, 'BPMN Engine Error: Target workflow [non-existent-process] not found or has no active version.');
+})->throws(\RuntimeException::class, 'BPMN Error: Target workflow [non-existent-process] not found or has no active version.');

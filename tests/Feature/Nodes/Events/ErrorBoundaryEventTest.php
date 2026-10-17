@@ -1,7 +1,7 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Workflow\Activity;
 use Workflow\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
@@ -26,7 +26,7 @@ class FailingApiActivity extends Activity
 
 it('catches an exception using an error boundary event and routes to an alternate path', function () {
     // Bind the failing activity to the config
-    config(['bpmn-engine.activities.failing_task' => FailingApiActivity::class]);
+    config(['saccharine-bpmn.activities.failing_task' => FailingApiActivity::class]);
 
     // Scaffold Database
     $definition = WorkflowDefinition::create(['name' => 'Error Boundary', 'key' => 'error-boundary']);
@@ -75,7 +75,7 @@ it('catches an exception using an error boundary event and routes to an alternat
 });
 
 it('fails the workflow entirely if an exception occurs and no boundary event is attached', function () {
-    config(['bpmn-engine.activities.failing_task' => FailingApiActivity::class]);
+    config(['saccharine-bpmn.activities.failing_task' => FailingApiActivity::class]);
 
     $definition = WorkflowDefinition::create(['name' => 'No Boundary', 'key' => 'no-boundary']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);

@@ -1,15 +1,15 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Http\Controllers;
+namespace Saccharine\Bpmn\Http\Controllers;
 
 use Illuminate\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Saccharine\BpmnEngine\Models\WorkflowInstance;
-use Saccharine\BpmnEngine\Enums\WorkflowInstanceStatus;
-use Saccharine\BpmnEngine\Enums\WorkflowPermission;
+use Saccharine\Bpmn\Models\WorkflowInstance;
+use Saccharine\Bpmn\Enums\WorkflowInstanceStatus;
+use Saccharine\Bpmn\Enums\WorkflowPermission;
 use Workflow\WorkflowStub;
 
 class WorkflowInstanceController extends Controller
@@ -26,8 +26,8 @@ class WorkflowInstanceController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(20);
 
-        // We will build a 'bpmn-engine::instances.index' view to display this table
-        return view('bpmn-engine::instances.index', compact('instances'));
+        // We will build a 'saccharine-bpmn::instances.index' view to display this table
+        return view('saccharine-bpmn::instances.index', compact('instances'));
     }
     
     /**
@@ -40,8 +40,8 @@ class WorkflowInstanceController extends Controller
         // Eager load the version, definition, and active tokens
         $instance = WorkflowInstance::findOrFail($id);
 
-        // We will build a 'bpmn-engine::instances.index' view to display this table
-        return view('bpmn-engine::instances.track', compact('instance'));
+        // We will build a 'saccharine-bpmn::instances.index' view to display this table
+        return view('saccharine-bpmn::instances.track', compact('instance'));
     }
 
     /**

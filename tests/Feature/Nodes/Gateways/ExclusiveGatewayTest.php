@@ -1,8 +1,8 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Handlers\Nodes\Gateways\ExclusiveGatewayHandler;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Handlers\Nodes\Gateways\ExclusiveGatewayHandler;
 use Workflow\WorkflowStub;
 
 it('evaluates expression logic and routes the token to the correct path', function () {

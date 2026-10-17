@@ -11,7 +11,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Panel;
 use Illuminate\Support\Str;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
 use App\Filament\Resources\Bpmn\WorkflowDefinitionResource\Pages;
 
 class WorkflowDefinitionResource extends Resource
@@ -88,7 +88,7 @@ class WorkflowDefinitionResource extends Resource
         //
         // Do NOT hardcode a literal here: deriving from the config keeps the two
         // UIs from drifting apart when a host customises the prefix.
-        $prefix = trim(config('bpmn-engine.prefix', 'bpmn/workflows'), '/');
+        $prefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
         
         return $prefix . '/definitions';
     }

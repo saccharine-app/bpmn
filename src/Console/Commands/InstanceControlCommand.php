@@ -1,10 +1,10 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Console\Commands;
+namespace Saccharine\Bpmn\Console\Commands;
 
 use Illuminate\Console\Command;
-use Saccharine\BpmnEngine\Models\WorkflowInstance;
-use Saccharine\BpmnEngine\Enums\WorkflowInstanceStatus;
+use Saccharine\Bpmn\Models\WorkflowInstance;
+use Saccharine\Bpmn\Enums\WorkflowInstanceStatus;
 use Workflow\WorkflowStub;
 
 class InstanceControlCommand extends Command

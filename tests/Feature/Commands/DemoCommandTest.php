@@ -1,12 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\File;
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowNode;
 
 beforeEach(function () {
     // Setup a dummy config file for the demo to register its aliases
-    $this->configPath = config_path('bpmn-engine.php');
+    $this->configPath = config_path('saccharine-bpmn.php');
     
     $configContent = <<<PHP
 <?php

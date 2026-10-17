@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Console\Commands;
+namespace Saccharine\Bpmn\Console\Commands;
 
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Facades\File;
@@ -65,11 +65,11 @@ class MakeActivityCommand extends GeneratorCommand
      */
     protected function registerActivityInConfig(string $key)
     {
-        $configPath = config_path('bpmn-engine.php');
+        $configPath = config_path('saccharine-bpmn.php');
 
         // Ensure the host application has actually published the config file
         if (!File::exists($configPath)) {
-            $this->warn("The config/bpmn-engine.php file was not found. Please publish it first to auto-register activities.");
+            $this->warn("The config/saccharine-bpmn.php file was not found. Please publish it first to auto-register activities.");
             return;
         }
 
@@ -94,6 +94,6 @@ class MakeActivityCommand extends GeneratorCommand
 
         File::put($configPath, $newContents);
 
-        $this->info("Successfully registered '{$key}' to {$className} in config/bpmn-engine.php!");
+        $this->info("Successfully registered '{$key}' to {$className} in config/saccharine-bpmn.php!");
     }
 }

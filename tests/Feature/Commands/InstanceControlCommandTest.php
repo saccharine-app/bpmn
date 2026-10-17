@@ -1,9 +1,9 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Models\WorkflowInstance;
-use Saccharine\BpmnEngine\Enums\WorkflowInstanceStatus;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\WorkflowInstance;
+use Saccharine\Bpmn\Enums\WorkflowInstanceStatus;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Workflow\WorkflowStub;
 
 beforeEach(function () {

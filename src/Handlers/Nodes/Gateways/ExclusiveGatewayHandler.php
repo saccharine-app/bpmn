@@ -1,12 +1,12 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Handlers\Nodes\Gateways;
+namespace Saccharine\Bpmn\Handlers\Nodes\Gateways;
 
-use Saccharine\BpmnEngine\Contracts\BpmnNodeHandlerInterface;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
-use Saccharine\BpmnEngine\Services\GatewayRouter;
+use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Services\GatewayRouter;
 
 // Exclusive Gateways (Routing)
 class ExclusiveGatewayHandler implements BpmnNodeHandlerInterface

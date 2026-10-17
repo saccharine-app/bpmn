@@ -1,31 +1,31 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Console\Commands;
+namespace Saccharine\Bpmn\Console\Commands;
 
 use Illuminate\Console\Command;
-use Saccharine\BpmnEngine\Enums\WorkflowPermission;
+use Saccharine\Bpmn\Enums\WorkflowPermission;
 
 class InstallCommand extends Command
 {
     // protected $signature = 'bpmn:install';
     protected $signature = 'bpmn:install {--seed-permissions : Seed permissions for Spatie/Shield}';
-    protected $description = 'Install the BPMN Engine, publish assets, and prepare the database';
+    protected $description = 'Install Saccharine BPMN, publish assets, and prepare the database';
 
     public function handle()
     {
-        $this->info('Installing BPMN Engine...');
+        $this->info('Installing Saccharine BPMN...');
 
         // Publish the configuration file
         $this->info('Publishing configuration...');
         $this->call('vendor:publish', [
-            '--tag' => 'bpmn-engine-config',
+            '--tag' => 'saccharine-bpmn-config',
             '--force' => true,
         ]);
 
         // Publish the frontend assets (bpmn-js canvas)
         $this->info('Publishing frontend assets...');
         $this->call('vendor:publish', [
-            '--tag' => 'bpmn-engine-assets',
+            '--tag' => 'saccharine-bpmn-assets',
             '--force' => true,
         ]);
 
@@ -52,8 +52,8 @@ class InstallCommand extends Command
             }
         }
 
-        $this->info('BPMN Engine installed successfully!');
-        $prefix = trim(config('bpmn-engine.prefix', 'bpmn/workflows'), '/');
+        $this->info('Saccharine BPMN installed successfully!');
+        $prefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
         $this->line("You can now navigate to /{$prefix}/definitions to start designing.");
     }
 

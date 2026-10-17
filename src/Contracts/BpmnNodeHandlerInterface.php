@@ -1,10 +1,10 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Contracts;
+namespace Saccharine\Bpmn\Contracts;
 
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\BpmnEngine\Models\WorkflowNode;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\WorkflowVersion;
 
 interface BpmnNodeHandlerInterface
 {

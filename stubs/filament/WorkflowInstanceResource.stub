@@ -8,8 +8,8 @@ use Filament\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Panel;
 use Workflow\WorkflowStub;
-use Saccharine\BpmnEngine\Models\WorkflowInstance;
-use Saccharine\BpmnEngine\Enums\WorkflowInstanceStatus;
+use Saccharine\Bpmn\Models\WorkflowInstance;
+use Saccharine\Bpmn\Enums\WorkflowInstanceStatus;
 use App\Filament\Resources\Bpmn\WorkflowInstanceResource\Pages;
 
 class WorkflowInstanceResource extends Resource
@@ -18,7 +18,7 @@ class WorkflowInstanceResource extends Resource
     protected static \BackedEnum|string|null $navigationIcon = 'heroicon-o-cpu-chip';
     protected static \UnitEnum|string|null $navigationGroup = 'Process Orchestration';
 
-    // Instances are generally created by the Engine, so we disable manual creation
+    // Instances are generally created by the engine, so we disable manual creation
     public static function canCreate(): bool
     {
         return false;
@@ -114,7 +114,7 @@ class WorkflowInstanceResource extends Resource
 
     public static function getSlug(?Panel $panel = null): string
     {
-        $prefix = trim(config('bpmn-engine.prefix', 'bpmn/workflows'), '/');
+        $prefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
         
         return $prefix . '/instances';
     }

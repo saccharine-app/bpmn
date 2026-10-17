@@ -1,6 +1,6 @@
 <?php
 
-namespace Saccharine\BpmnEngine\Workflows;
+namespace Saccharine\Bpmn\Workflows;
 
 use Workflow\Workflow;
 use Workflow\WorkflowStub;
@@ -9,12 +9,12 @@ use Workflow\ChildWorkflowStub;
 use Workflow\SignalMethod;
 use function Workflow\await;
 use function Workflow\all;
-use Saccharine\BpmnEngine\Models\WorkflowVersion;
-use Saccharine\BpmnEngine\Models\WorkflowEdge;
-use Saccharine\BpmnEngine\Models\WorkflowToken;
-use Saccharine\BpmnEngine\Models\WorkflowHistory;
-use Saccharine\BpmnEngine\Services\GatewayRouter;
-use Saccharine\BpmnEngine\Handlers\NodeHandlerFactory;
+use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\WorkflowEdge;
+use Saccharine\Bpmn\Models\WorkflowToken;
+use Saccharine\Bpmn\Models\WorkflowHistory;
+use Saccharine\Bpmn\Services\GatewayRouter;
+use Saccharine\Bpmn\Handlers\NodeHandlerFactory;
 use RuntimeException;
 
 class BpmnInterpreterWorkflow extends Workflow
@@ -110,7 +110,7 @@ class BpmnInterpreterWorkflow extends Workflow
             ->first();
 
         if (!$startNode) {
-            throw new RuntimeException("BPMN Engine Error: No startEvent found inside Sub-Process [{$subProcessNodeId}].");
+            throw new RuntimeException("BPMN Error: No startEvent found inside Sub-Process [{$subProcessNodeId}].");
         }
 
         return \Workflow\ChildWorkflowStub::make(self::class, $versionId, $userData, $startNode->bpmn_element_id, $instanceId);

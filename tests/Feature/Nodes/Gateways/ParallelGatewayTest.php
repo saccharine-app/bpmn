@@ -1,7 +1,7 @@
 <?php
 
-use Saccharine\BpmnEngine\Models\WorkflowDefinition;
-use Saccharine\BpmnEngine\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Workflow\Activity;
 use Workflow\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
@@ -24,8 +24,8 @@ class GenerateInvoiceActivity extends Activity
 }
 
 it('executes multiple paths in parallel and merges the payload at the join', function () {
-    config(['bpmn-engine.activities.process_payment' => ProcessPaymentActivity::class]);
-    config(['bpmn-engine.activities.generate_invoice' => GenerateInvoiceActivity::class]);
+    config(['saccharine-bpmn.activities.process_payment' => ProcessPaymentActivity::class]);
+    config(['saccharine-bpmn.activities.generate_invoice' => GenerateInvoiceActivity::class]);
 
     // Scaffold Database
     $definition = WorkflowDefinition::create(['name' => 'Parallel Processing', 'key' => 'parallel-test']);
