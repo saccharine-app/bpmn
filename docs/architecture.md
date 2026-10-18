@@ -1,36 +1,97 @@
 # **Architecture & Under the Hood**
 
-Saccharine BPMN is designed to keep your host application's domain logic completely decoupled from the orchestration layer. It achieves this through a multi-layered architecture that translates visual diagrams into isolated background coroutines.
+Saccharine BPMN decouples visual workflow modeling from host domain logic by translating standard BPMN 2.0 XML diagrams into durable, stateful PHP coroutines.
 
-## **1. The Parser (BpmnParserService)**
+```
+┌──────────────────┐       ┌────────────────────────┐       ┌───────────────────────────┐
+│  Visual Modeler  │ ───>  │   BpmnParserService    │ ───>  │    Relational Schema      │
+│    (bpmn-js)     │ XML   │  (XPath Decomposition) │       │ (nodes, edges, templates) │
+└──────────────────┘       └────────────────────────┘       └─────────────┬─────────────┘
+                                                                          │
+                                                                          ▼
+┌──────────────────┐       ┌────────────────────────┐       ┌───────────────────────────┐
+│   Live Cockpit   │ <───  │    State Projection    │ <───  │  BpmnInterpreterWorkflow  │
+│  (Token Monitor) │ SQL   │ (workflow_tokens / log)│ side- │   (durable-workflow loop) │
+└──────────────────┘       └────────────────────────┘ effect└───────────────────────────┘
+```
 
-BPMN 2.0 files are complex, nested XML documents. Parsing raw XML during a background queue job is inefficient and difficult to query.
+---
 
-When a user clicks "Save" in the visual designer, the BpmnParserService intercepts the raw XML. It strictly validates the OMG namespaces and uses XPath to translate the visual diagram into highly queryable relational database tables (workflow_nodes and workflow_edges). The execution engine uses these tables to navigate the graph instantly via fast SQL queries.
+## 1. Relational Graph Decomposition (`BpmnParserService`)
 
-## **2. The Interpreter (BpmnInterpreterWorkflow)**
+Parsing raw BPMN XML during queue execution introduces serialization overhead and prevents indexing. 
 
-The brain of the engine is a single Durable Workflow class. Because it runs on Laravel's queue system via the durable-workflow package, it can run indefinitely. If a server crashes, the workflow automatically resumes from its last known state upon reboot.
+When a workflow is saved and compiled:
+1. `BpmnParserService` validates standard OMG BPMN 2.0 namespaces.
+2. It extracts `<bpmn:process>` nodes, sequence flows, extension elements, and boundary definitions.
+3. It stores the diagram in relational database tables (`workflow_nodes` and `workflow_edges`).
 
-The interpreter uses a deterministic while loop to navigate from node to node, resolving the next step until it hits a terminal event.
+During background execution, graph traversal occurs via indexed database queries rather than in-memory XML parsing.
 
-## **3. The Strategy Pattern (Node Handlers)**
+---
 
-To keep the engine infinitely scalable, the main interpreter loop knows nothing about *how* to execute a specific BPMN shape. Instead, it delegates execution to isolated Node Handlers using the Strategy Pattern.
+## 2. Coroutine State Machine (`BpmnInterpreterWorkflow`)
 
-When the interpreter lands on a node, it queries the NodeHandlerFactory (e.g., ServiceTaskHandler, UserTaskHandler, ExclusiveGatewayHandler). Each handler implements the BpmnNodeHandlerInterface and returns a PHP Generator, yielding control back to the engine. This allows developers to easily add new BPMN specifications in the future without modifying the core loop.
+The execution engine is implemented as a single coroutine workflow extending `Workflow\Workflow` from the `durable-workflow` package.
 
-## **4. Parallel Execution & Sync Barriers**
+* **Replay Determinism**: Workflow state is reconstructed from historical events on wake-up.
+* **Non-Blocking Sleep**: When hibernating at a User Task or boundary timer, no worker processes or active threads are held open.
+* **Infinite Execution**: Long-running processes spanning days or weeks survive server reboots and deployments.
 
-Standard PHP generators cannot be serialized if they are actively running, making parallel processes notoriously difficult to pause and resume.
+---
 
-When the engine hits a **Parallel Gateway (AND Split)**, the ParallelGatewayHandler bypasses this limitation by spawning autonomous **Child Workflows** for each divergent branch. These child stubs are dispatched concurrently to the background queue. The master workflow then halts at a Workflow::all() sync barrier, safely sleeping in the database until all child branches arrive at the converging join gateway.
+## 3. The Node Handler Strategy Pattern
 
-## **5. State Projection & Deterministic Tracking**
+The interpreter loop delegates execution to isolated handlers via `NodeHandlerFactory`:
 
-A serialized durable workflow is effectively a "black box" while at rest, making it impossible to build a live dashboard using raw SQL.
+```php
+interface BpmnNodeHandlerInterface
+{
+    public function handle(
+        BpmnInterpreterWorkflow $workflow,
+        WorkflowNode $node,
+        WorkflowVersion $version,
+        array $userData,
+        ?int $instanceId
+    ): \Generator;
+}
+```
 
-The engine solves this via **State Projection**. As the engine navigates nodes, it uses Workflow::sideEffect() to write atomic records to the workflow_tokens database table.
+Each handler yields generator promises (activities, child workflows, or inbox awaits) and returns a two-tuple containing the next node identifier and the updated state payload:
 
-> * **Determinism:** sideEffect ensures that even if the workflow wakes up and replays its execution history, the database update only happens once.
-> * **Concurrency Safety:** Because every parallel child workflow manages its own distinct token row mapped to its unique durable_workflow_id, multiple queue workers can update the dashboard simultaneously without encountering race conditions or lost updates.
+```php
+return [$nextNodeId, $updatedUserData];
+```
+
+| Node Type | Handler | Execution Mechanism |
+| :--- | :--- | :--- |
+| `startEvent` | `StartEventHandler` | Resolves outgoing sequence flows and advances. |
+| `serviceTask` | `ServiceTaskHandler` | Yields an `ActivityStub` to the background queue worker. |
+| `userTask` | `UserTaskHandler` | Awaits inbox signals with optional boundary timer timeouts. |
+| `exclusiveGateway` | `ExclusiveGatewayHandler` | Evaluates condition expressions via Symfony Expression Language. |
+| `parallelGateway` | `ParallelGatewayHandler` | Spawns child coroutines and establishes an `all()` sync barrier. |
+| `subProcess` | `SubProcessHandler` | Scopes tasks into a child workflow with boundary error containment. |
+| `callActivity` | `CallActivityHandler` | Invokes a separate published workflow definition by key. |
+| `endEvent` | `EndEventHandler` | Cleans up active tokens and terminates the branch. |
+
+---
+
+## 4. Parallel Splitting & Child Workflow Synchronization
+
+Standard PHP generators cannot be serialized across queue steps while actively running. To support parallel processing:
+
+1. When reaching a **Parallel Gateway Split**, the engine spawns independent instances of `BpmnInterpreterWorkflow` via `ChildWorkflowStub::make()`.
+2. Each child coroutine begins execution at the starting node of its branch.
+3. The parent workflow pauses at a `yield all($stubs)` barrier.
+4. When all branches arrive at the converging join node, the parent workflow resumes, merges the branch payload mutations, and advances to the post-join node.
+
+---
+
+## 5. State Projection & Live Cockpit Telemetry
+
+Durable workflows serialize execution state into internal logs, which cannot be directly queried with relational SQL.
+
+To support real-time dashboards and monitoring:
+* **Atomic Token Writes**: When entering a node, the engine executes `WorkflowStub::sideEffect()` to record the token's location in `workflow_tokens`. The `sideEffect` wrapper ensures the database write executes only once, preventing duplicates during coroutine replays.
+* **Audit History Trail**: Completed steps are recorded in `workflow_history` alongside payload snapshots.
+* **Cockpit Visualization**: The tracking cockpit at `/instances/{id}/track` pairs `bpmn-js/lib/NavigatedViewer` with polling endpoints to render traversed paths in blue and active waiting tokens in pulsing green.
