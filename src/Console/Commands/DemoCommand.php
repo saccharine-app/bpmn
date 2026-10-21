@@ -44,19 +44,13 @@ class DemoCommand extends Command
     {
         $this->info('Scaffolding BPMN Demo Environment...');
 
-        // Demo Invoice Workflow
-        // Scaffold the Demo Activity
-        $this->publishStub('demo-activity.stub', app_path('Workflows/Activities/DemoGenerateInvoiceActivity.php'));
-        $this->registerInConfig('activities', 'demo_generate_invoice', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
-
-        // Scaffold the Demo Trigger
-        $this->publishStub('demo-trigger.stub', app_path('Events/DemoOrderPlaced.php'));
-        $this->registerInConfig('triggers', 'demo_order_placed', 'App\Events\DemoOrderPlaced');
-
-        // Generate the Database Diagram
+        // Consolidated Order Processing Workflow
+        // Uses the built-in DemoOrder model trigger and SendNotificationActivity
         $this->seedDemoWorkflow($parser);
+        $this->line('Seeded: Demo: Order Processing (Model Trigger -> Review -> Notification)');
 
         // Parallel Demo
+        $this->publishStub('demo-activity.stub', app_path('Workflows/Activities/DemoGenerateInvoiceActivity.php'));
         $this->registerInConfig('activities', 'demo_capture_payment', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
         $this->registerInConfig('activities', 'demo_reserve_stock', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
         $this->registerInConfig('activities', 'demo_send_confirmation', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
@@ -75,17 +69,13 @@ class DemoCommand extends Command
         $this->seedCallActivityPipelineWorkflow($parser);
         $this->line('Seeded: Demo: Parent Pipeline with Call Activity');
 
-        // Model-triggered order creation workflow
-        $this->seedOrderNotificationWorkflow($parser);
-
         $this->info('All demo workflows seeded successfully!');
-
         $this->info('Demo successfully installed!');
-        $this->line('You can view the workflow at /bpmn/workflows');
-        $this->line('To run the demo, open a Tinker session and fire: \App\Events\DemoOrderPlaced::dispatch("ORD-100", 1500, "Jane Doe");');
+        $this->line('You can view the workflows at /bpmn/workflows');
+        $this->line('To trigger an order execution, run: php artisan bpmn:test-order --amount=1500');
     }
 
-    protected function seedDemoWorkflow(BpmnParserService $parser)
+    protected function seedDemoWorkflow(BpmnParserService $parser): void
     {
         $def = WorkflowDefinition::firstOrCreate(
             ['key' => 'demo-order-processing'],
@@ -101,108 +91,122 @@ class DemoCommand extends Command
         ]);
 
         $parser->parseAndStore($version, $xml);
-        $this->line("Seeded Workflow Diagram: Demo: Order Processing");
     }
 
     protected function getDemoXml(): string
     {
-        // A pre-built XML string featuring a Message Start, Exclusive Gateway, User Task, Service Task, and Parallel layout.
-        return '<?xml version="1.0" encoding="UTF-8"?>
-        <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
-                          xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
-                          xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
-                          xmlns:camunda="http://camunda.org/schema/1.0/bpmn" 
-                          xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
-                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                          id="Definitions_1" 
-                          targetNamespace="http://bpmn.io/schema/bpmn">
-          <bpmn:process id="Process_1" isExecutable="true">
-            <bpmn:startEvent id="StartEvent_1" name="Order Placed">
-              <bpmn:outgoing>Flow_1</bpmn:outgoing>
-              <bpmn:messageEventDefinition messageRef="Message_Demo" />
-            </bpmn:startEvent>
-            <bpmn:exclusiveGateway id="Gateway_VIP" name="Order &gt; $1000?">
-              <bpmn:incoming>Flow_1</bpmn:incoming>
-              <bpmn:outgoing>Flow_HighValue</bpmn:outgoing>
-              <bpmn:outgoing>Flow_Standard</bpmn:outgoing>
-            </bpmn:exclusiveGateway>
-            <bpmn:userTask id="Task_ManualReview" name="Manager Review">
-              <bpmn:incoming>Flow_HighValue</bpmn:incoming>
-              <bpmn:outgoing>Flow_2</bpmn:outgoing>
-            </bpmn:userTask>
-            <bpmn:exclusiveGateway id="Gateway_Merge">
-              <bpmn:incoming>Flow_2</bpmn:incoming>
-              <bpmn:incoming>Flow_Standard</bpmn:incoming>
-              <bpmn:outgoing>Flow_3</bpmn:outgoing>
-            </bpmn:exclusiveGateway>
-            <bpmn:serviceTask id="Task_Invoice" name="Generate Invoice" camunda:class="demo_generate_invoice">
-              <bpmn:incoming>Flow_3</bpmn:incoming>
-              <bpmn:outgoing>Flow_End</bpmn:outgoing>
-            </bpmn:serviceTask>
-            <bpmn:endEvent id="EndEvent_1">
-              <bpmn:incoming>Flow_End</bpmn:incoming>
-            </bpmn:endEvent>
-            <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Gateway_VIP" />
-            <bpmn:sequenceFlow id="Flow_HighValue" name="Yes" sourceRef="Gateway_VIP" targetRef="Task_ManualReview">
-              <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">amount &gt;= 1000</bpmn:conditionExpression>
-            </bpmn:sequenceFlow>
-            <bpmn:sequenceFlow id="Flow_Standard" name="No" sourceRef="Gateway_VIP" targetRef="Gateway_Merge">
-              <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">amount &lt; 1000</bpmn:conditionExpression>
-            </bpmn:sequenceFlow>
-            <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_ManualReview" targetRef="Gateway_Merge" />
-            <bpmn:sequenceFlow id="Flow_3" sourceRef="Gateway_Merge" targetRef="Task_Invoice" />
-            <bpmn:sequenceFlow id="Flow_End" sourceRef="Task_Invoice" targetRef="EndEvent_1" />
-          </bpmn:process>
-          <bpmn:message id="Message_Demo" name="demo_order_placed" />
-          <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-            <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
-              <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
-                <dc:Bounds x="152" y="102" width="36" height="36" />
-              </bpmndi:BPMNShape>
-              <bpmndi:BPMNShape id="Gateway_VIP_di" bpmnElement="Gateway_VIP" isMarkerVisible="true">
-                <dc:Bounds x="245" y="95" width="50" height="50" />
-              </bpmndi:BPMNShape>
-              <bpmndi:BPMNShape id="Task_ManualReview_di" bpmnElement="Task_ManualReview">
-                <dc:Bounds x="350" y="80" width="100" height="80" />
-              </bpmndi:BPMNShape>
-              <bpmndi:BPMNShape id="Gateway_Merge_di" bpmnElement="Gateway_Merge" isMarkerVisible="true">
-                <dc:Bounds x="505" y="95" width="50" height="50" />
-              </bpmndi:BPMNShape>
-              <bpmndi:BPMNShape id="Task_Invoice_di" bpmnElement="Task_Invoice">
-                <dc:Bounds x="610" y="80" width="100" height="80" />
-              </bpmndi:BPMNShape>
-              <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-                <dc:Bounds x="762" y="102" width="36" height="36" />
-              </bpmndi:BPMNShape>
-              <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
-                <di:waypoint x="188" y="120" />
-                <di:waypoint x="245" y="120" />
-              </bpmndi:BPMNEdge>
-              <bpmndi:BPMNEdge id="Flow_HighValue_di" bpmnElement="Flow_HighValue">
-                <di:waypoint x="295" y="120" />
-                <di:waypoint x="350" y="120" />
-              </bpmndi:BPMNEdge>
-              <bpmndi:BPMNEdge id="Flow_Standard_di" bpmnElement="Flow_Standard">
-                <di:waypoint x="270" y="145" />
-                <di:waypoint x="270" y="230" />
-                <di:waypoint x="530" y="230" />
-                <di:waypoint x="530" y="145" />
-              </bpmndi:BPMNEdge>
-              <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
-                <di:waypoint x="450" y="120" />
-                <di:waypoint x="505" y="120" />
-              </bpmndi:BPMNEdge>
-              <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
-                <di:waypoint x="555" y="120" />
-                <di:waypoint x="610" y="120" />
-              </bpmndi:BPMNEdge>
-              <bpmndi:BPMNEdge id="Flow_End_di" bpmnElement="Flow_End">
-                <di:waypoint x="710" y="120" />
-                <di:waypoint x="762" y="120" />
-              </bpmndi:BPMNEdge>
-            </bpmndi:BPMNPlane>
-          </bpmndi:BPMNDiagram>
-        </bpmn:definitions>';
+        return <<<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_OrderProcessing"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_OrderProcessing" isExecutable="true">
+    <!-- Message Start triggered by DemoOrder creation -->
+    <bpmn:startEvent id="Start_OrderPlaced" name="Order Created">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MsgDef_OrderPlaced" messageRef="Msg_DemoOrderCreated" />
+    </bpmn:startEvent>
+
+    <!-- Exclusive Gateway: Total >= $1000 requires review -->
+    <bpmn:exclusiveGateway id="Gateway_VIP" name="Total &gt;= $1000?">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_HighValue</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Standard</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- Human User Task for Manager Review -->
+    <bpmn:userTask id="Task_ManualReview" name="Manager Review">
+      <bpmn:incoming>Flow_HighValue</bpmn:incoming>
+      <bpmn:outgoing>Flow_Reviewed</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <!-- Converging Merge Gateway -->
+    <bpmn:exclusiveGateway id="Gateway_Merge">
+      <bpmn:incoming>Flow_Reviewed</bpmn:incoming>
+      <bpmn:incoming>Flow_Standard</bpmn:incoming>
+      <bpmn:outgoing>Flow_To_Notify</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <!-- Automated Notification via built-in Activity -->
+    <bpmn:serviceTask id="Task_NotifyCustomer" name="Send Order Confirmation" camunda:class="bpmn_send_notification">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="notification_channel">log</camunda:inputParameter>
+          <camunda:inputParameter name="notification_to">{{ customer_email }}</camunda:inputParameter>
+          <camunda:inputParameter name="notification_subject">Order #{{ order_number }} Confirmed</camunda:inputParameter>
+          <camunda:inputParameter name="notification_body">Hello {{ customer_name }}, your order #{{ order_number }} for ${{ total }} has been processed successfully.</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_To_Notify</bpmn:incoming>
+      <bpmn:outgoing>Flow_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_1" name="Order Complete">
+      <bpmn:incoming>Flow_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <!-- Sequence Flows & Conditions -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_OrderPlaced" targetRef="Gateway_VIP" />
+    <bpmn:sequenceFlow id="Flow_HighValue" name="Yes (&gt;= $1000)" sourceRef="Gateway_VIP" targetRef="Task_ManualReview">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">total &gt;= 1000</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Standard" name="No (&lt; $1000)" sourceRef="Gateway_VIP" targetRef="Gateway_Merge">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">total &lt; 1000</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_Reviewed" sourceRef="Task_ManualReview" targetRef="Gateway_Merge" />
+    <bpmn:sequenceFlow id="Flow_To_Notify" sourceRef="Gateway_Merge" targetRef="Task_NotifyCustomer" />
+    <bpmn:sequenceFlow id="Flow_To_End" sourceRef="Task_NotifyCustomer" targetRef="End_1" />
+  </bpmn:process>
+
+  <bpmn:message id="Msg_DemoOrderCreated" name="demo_order_created" />
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_OrderProcessing">
+    <bpmndi:BPMNPlane id="BPMNPlane_OrderProcessing" bpmnElement="Process_OrderProcessing">
+      <bpmndi:BPMNShape id="Start_OrderPlaced_di" bpmnElement="Start_OrderPlaced">
+        <dc:Bounds x="152" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_VIP_di" bpmnElement="Gateway_VIP" isMarkerVisible="true">
+        <dc:Bounds x="245" y="95" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ManualReview_di" bpmnElement="Task_ManualReview">
+        <dc:Bounds x="350" y="80" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Merge_di" bpmnElement="Gateway_Merge" isMarkerVisible="true">
+        <dc:Bounds x="515" y="95" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_NotifyCustomer_di" bpmnElement="Task_NotifyCustomer">
+        <dc:Bounds x="620" y="80" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_1_di" bpmnElement="End_1">
+        <dc:Bounds x="800" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="188" y="120" /><di:waypoint x="245" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_HighValue_di" bpmnElement="Flow_HighValue">
+        <di:waypoint x="295" y="120" /><di:waypoint x="350" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Standard_di" bpmnElement="Flow_Standard">
+        <di:waypoint x="270" y="145" /><di:waypoint x="270" y="220" /><di:waypoint x="540" y="220" /><di:waypoint x="540" y="145" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Reviewed_di" bpmnElement="Flow_Reviewed">
+        <di:waypoint x="460" y="120" /><di:waypoint x="515" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_To_Notify_di" bpmnElement="Flow_To_Notify">
+        <di:waypoint x="565" y="120" /><di:waypoint x="620" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_To_End_di" bpmnElement="Flow_To_End">
+        <di:waypoint x="750" y="120" /><di:waypoint x="800" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+XML;
     }
 
     protected function seedParallelFulfillmentWorkflow(BpmnParserService $parser): void
@@ -563,84 +567,6 @@ class DemoCommand extends Command
             'bpmn_xml'  => $xml,
             'is_active' => true,
         ]);
-        $parser->parseAndStore($version, $xml);
-    }
-
-    protected function seedOrderNotificationWorkflow(BpmnParserService $parser): void
-    {
-        $def = WorkflowDefinition::firstOrCreate(
-            ['key' => 'demo-order-notification'],
-            ['name' => 'Demo: Order Created -> Send Notification']
-        );
-
-        $xml = <<<'XML'
-    <?xml version="1.0" encoding="UTF-8"?>
-    <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-                      xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-                      xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
-                      xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
-                      xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-                      id="Definitions_OrderNotif"
-                      targetNamespace="http://bpmn.io/schema/bpmn">
-      <bpmn:process id="Process_OrderNotif" isExecutable="true">
-        <!-- Message Start listening for demo_order_created -->
-        <bpmn:startEvent id="Start_OrderCreated" name="Order Created">
-          <bpmn:outgoing>Flow_1</bpmn:outgoing>
-          <bpmn:messageEventDefinition id="MsgDef_1" messageRef="Msg_OrderCreated" />
-        </bpmn:startEvent>
-
-        <!-- Built-in notification activity with default template inputs -->
-        <bpmn:serviceTask id="Task_NotifyCustomer" name="Send Order Email" camunda:class="bpmn_send_notification">
-          <bpmn:extensionElements>
-            <camunda:inputOutput>
-              <camunda:inputParameter name="notification_channel">log</camunda:inputParameter>
-              <camunda:inputParameter name="notification_to">{{ customer_email }}</camunda:inputParameter>
-              <camunda:inputParameter name="notification_subject">Order {{ order_number }} Confirmation</camunda:inputParameter>
-              <camunda:inputParameter name="notification_body">Thank you {{ customer_name }}! Your order of ${{ total }} has been received.</camunda:inputParameter>
-            </camunda:inputOutput>
-          </bpmn:extensionElements>
-          <bpmn:incoming>Flow_1</bpmn:incoming>
-          <bpmn:outgoing>Flow_2</bpmn:outgoing>
-        </bpmn:serviceTask>
-
-        <bpmn:endEvent id="End_1" name="Notified">
-          <bpmn:incoming>Flow_2</bpmn:incoming>
-        </bpmn:endEvent>
-
-        <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_OrderCreated" targetRef="Task_NotifyCustomer" />
-        <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_NotifyCustomer" targetRef="End_1" />
-      </bpmn:process>
-
-      <bpmn:message id="Msg_OrderCreated" name="demo_order_created" />
-
-      <bpmndi:BPMNDiagram id="BPMNDiagram_OrderNotif">
-        <bpmndi:BPMNPlane id="BPMNPlane_OrderNotif" bpmnElement="Process_OrderNotif">
-          <bpmndi:BPMNShape id="Start_OrderCreated_di" bpmnElement="Start_OrderCreated">
-            <dc:Bounds x="160" y="102" width="36" height="36" />
-          </bpmndi:BPMNShape>
-          <bpmndi:BPMNShape id="Task_NotifyCustomer_di" bpmnElement="Task_NotifyCustomer">
-            <dc:Bounds x="260" y="80" width="140" height="80" />
-          </bpmndi:BPMNShape>
-          <bpmndi:BPMNShape id="End_1_di" bpmnElement="End_1">
-            <dc:Bounds x="460" y="102" width="36" height="36" />
-          </bpmndi:BPMNShape>
-          <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
-            <di:waypoint x="196" y="120" /><di:waypoint x="260" y="120" />
-          </bpmndi:BPMNEdge>
-          <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
-            <di:waypoint x="400" y="120" /><di:waypoint x="460" y="120" />
-          </bpmndi:BPMNEdge>
-        </bpmndi:BPMNPlane>
-      </bpmndi:BPMNDiagram>
-    </bpmn:definitions>
-    XML;
-
-        $version = $def->versions()->create([
-            'version'   => $def->versions()->max('version') + 1,
-            'bpmn_xml'  => $xml,
-            'is_active' => true,
-        ]);
-
         $parser->parseAndStore($version, $xml);
     }
 }

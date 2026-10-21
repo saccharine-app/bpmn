@@ -30,16 +30,7 @@ it('scaffolds the demo workflow, generates classes, and updates the config', fun
         ->expectsOutputToContain('Scaffolding BPMN Demo Environment...')
         ->expectsOutputToContain('Demo successfully installed!')
         ->assertSuccessful();
-
-    // Assert the stubs were published to the correct directories
-    expect(File::exists(app_path('Workflows/Activities/DemoGenerateInvoiceActivity.php')))->toBeTrue();
-    expect(File::exists(app_path('Events/DemoOrderPlaced.php')))->toBeTrue();
-
-    // Assert the config file was updated with both the activity and the trigger
-    $configContent = File::get($this->configPath);
-    expect($configContent)->toContain("'demo_generate_invoice' => \App\Workflows\Activities\DemoGenerateInvoiceActivity::class");
-    expect($configContent)->toContain("'demo_order_placed' => \App\Events\DemoOrderPlaced::class");
-
+        
     // Assert the database was seeded with the definition and version
     $definition = WorkflowDefinition::where('key', 'demo-order-processing')->first();
     expect($definition)->not->toBeNull();
@@ -58,5 +49,5 @@ it('scaffolds the demo workflow, generates classes, and updates the config', fun
         ->where('type', 'serviceTask')
         ->first();
         
-    expect($serviceTask->implementation)->toBe('demo_generate_invoice');
+    expect($serviceTask->implementation)->toBe('bpmn_send_notification');
 });
