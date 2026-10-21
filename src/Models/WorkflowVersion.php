@@ -4,6 +4,7 @@ namespace Saccharine\Bpmn\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WorkflowVersion extends Model
 {
@@ -15,17 +16,17 @@ class WorkflowVersion extends Model
         return $this->belongsTo(WorkflowDefinition::class, 'workflow_definition_id');
     }
 
-    public function nodes()
+    public function nodes(): HasMany
     {
         return $this->hasMany(WorkflowNode::class);
     }
 
-    public function edges()
+    public function edges(): HasMany
     {
         return $this->hasMany(WorkflowEdge::class);
     }
 
-    public function instances()
+    public function instances(): HasMany
     {
         return $this->hasMany(WorkflowInstance::class);
     }

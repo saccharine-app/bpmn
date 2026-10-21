@@ -81,6 +81,22 @@ class BpmnInterpreterWorkflow extends Workflow
     }
 
     /**
+     * Wrapper for durable-workflow's await() method.
+     */
+    public function awaitPromise(\Closure $condition)
+    {
+        return \Workflow\await($condition);
+    }
+
+    /**
+     * Wrapper for durable-workflow's awaitWithTimeout() method.
+     */
+    public function awaitWithTimeoutPromise(string $duration, \Closure $condition)
+    {
+        return \Workflow\awaitWithTimeout($duration, $condition);
+    }
+
+    /**
      * Wrapper for durable-workflow's static ActivityStub creation.
      * This decouples the handlers from the static context, allowing for isolated testing.
      */
@@ -246,7 +262,11 @@ class BpmnInterpreterWorkflow extends Workflow
      */
     public function getNextSequentialNode(WorkflowVersion $version, string $currentNodeId): ?string
     {
-        $edge = $version->edges->where('source_node_id', $currentNodeId)->first();
+        // If relation is loaded and not empty, use collection; otherwise query directly
+        $edge = $version->relationLoaded('edges') && $version->edges->isNotEmpty()
+            ? $version->edges->where('source_node_id', $currentNodeId)->first()
+            : $version->edges()->where('source_node_id', $currentNodeId)->first();
+            
         return $edge ? $edge->target_node_id : null;
     }
     

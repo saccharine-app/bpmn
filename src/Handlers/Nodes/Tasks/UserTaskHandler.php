@@ -50,7 +50,8 @@ class UserTaskHandler implements BpmnNodeHandlerInterface
             $timeoutDuration = $timerBoundary->implementation; 
             
             // Wait for the human OR the timer to expire
-            $completedInTime = yield awaitWithTimeout($timeoutDuration, $closure);
+            $completedInTime =
+                yield $workflow->awaitWithTimeoutPromise($timeoutDuration, $closure);
 
             if (!$completedInTime && !$workflow->isSuspended() && !$workflow->isHalted()) {
                 // The timer expired! The human was too slow.
@@ -60,7 +61,7 @@ class UserTaskHandler implements BpmnNodeHandlerInterface
             }
         } else {
             // Standard wait (sleep forever until human acts)
-            yield await($closure);
+            yield $workflow->awaitPromise($closure);
 
             yield $workflow->logTelemetry(
                 BpmnExecutionLogged::LEVEL_TASK,

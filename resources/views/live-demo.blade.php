@@ -89,7 +89,7 @@
     <script src="{{ asset('vendor/saccharine/bpmn/bpmn-modeler.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Boot the Navigated Viewer
+            // Boot the Navigated Viewer
             const tracker = window.initBpmnViewer(@json($xml), '#canvas');
             let previousTokens = [];
             
@@ -98,7 +98,7 @@
             const approvalWidget = document.getElementById('approval-widget');
             const successWidget = document.getElementById('success-widget');
 
-            // 2. Poll the API for token locations
+            // Poll the API for token locations
             const pollInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`/api/bpmn/instances/${instanceId}/tokens`);
@@ -107,7 +107,7 @@
                     tracker.updateTokens(data.active_node_ids, previousTokens);
                     previousTokens = data.active_node_ids;
 
-                    // 3. React to the engine state
+                    // React to the engine state
                     if (data.status === 'completed') {
                         clearInterval(pollInterval);
                         statusText.innerText = "Order Complete.";
@@ -138,7 +138,7 @@
                 }
             }, 1000); // Check every second for dramatic effect
 
-            // 4. Handle Human Input Action
+            // Handle Human Input Action
             document.getElementById('approve-btn').addEventListener('click', async (e) => {
                 const btn = e.target;
                 btn.innerText = "Approving...";

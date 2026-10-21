@@ -20,14 +20,14 @@ class BpmnConsoleLogListener
 
     public function handle(BpmnExecutionLogged $event): void
     {
-        // 1. Always record structured log to Laravel logger for audit trail
+        // Always record structured log to Laravel logger for audit trail
         Log::debug("[BPMN:{$event->type}] {$event->message}", [
             'instance_id' => $event->instanceId,
             'node_id'     => $event->nodeId,
             'context'     => $event->context,
         ]);
 
-        // 2. Format for terminal if running via Artisan (e.g. queue:work)
+        // Format for terminal if running via Artisan (e.g. queue:work)
         if (! $this->output) {
             return;
         }

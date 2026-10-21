@@ -35,18 +35,38 @@ it('routes to the timer boundary event path when the timeout expires', function 
     $workflow->shouldReceive('hasUnreadInbox')->andReturn(false);
     $workflow->shouldReceive('readNextInboxMessage')->andReturn(null);
 
+    // Mock logTelemetry so it doesn't try to touch database/side-effects in unit tests
+    $workflow->shouldReceive('logTelemetry')->andReturn(null);
+
+    // Mock awaitWithTimeoutPromise so it doesn't touch durable-workflow internals
+    $workflow->shouldReceive('awaitWithTimeoutPromise')
+        ->once()
+        ->andReturn('mocked_await_timeout');
+
     $handler = new UserTaskHandler();
     $userData = ['initial' => 'data'];
     
     $generator = $handler->handle($workflow, $userTask, $version, $userData, null);
 
-    // The first yield should be the awaitWithTimeout function
-    $yielded = $generator->current();
-    expect($yielded)->not->toBeNull();
+    // Step through yields until we hit the awaitWithTimeout promise (or an awaitable)
+    while ($generator->valid()) {
+        $current = $generator->current();
 
-    // We simulate the timer expiring before the condition is met.
-    // awaitWithTimeout yields 'false' if the timer ran out.
-    $generator->send(false);
+        // If this yield is mocked_await_timeout,
+        // send 'false' (simulating timer timeout) and break.
+        if ($current === "mocked_await_timeout") {
+            $generator->send(false);
+            break;
+        }
+
+        // Otherwise it's a telemetry or sideEffect yield; step forward
+        $generator->next();
+    }
+
+    // Exhaust any remaining telemetry yields after resumption
+    while ($generator->valid()) {
+        $generator->next();
+    }
 
     // The generator finishes, returning the alternate node ID and payload
     $result = $generator->getReturn();
@@ -82,15 +102,37 @@ it('routes to the normal path if the human completes the task before the timer e
     // Mock the wrapper methods to simulate a human responding
     $workflow->shouldReceive('hasUnreadInbox')->andReturn(true);
     $workflow->shouldReceive('readNextInboxMessage')->andReturn(['human_action' => 'approved']);
+    
+    // Mock logTelemetry so it doesn't try to touch database/side-effects in unit tests
+    $workflow->shouldReceive('logTelemetry')->andReturn(null);
+    
+    // Mock awaitWithTimeoutPromise so it doesn't touch durable-workflow internals
+    $workflow->shouldReceive('awaitWithTimeoutPromise')
+        ->once()
+        ->andReturn('mocked_await_timeout');
 
     $handler = new UserTaskHandler();
     $generator = $handler->handle($workflow, $userTask, $version, [], null);
 
-    $generator->current(); // Yield awaitWithTimeout
+    // Step through yields until we hit the awaitWithTimeout promise (or an awaitable)
+    while ($generator->valid()) {
+        $current = $generator->current();
 
-    // Simulate the human acting in time. 
-    // awaitWithTimeout yields 'true' if the closure condition was met before the timer ran out.
-    $generator->send(true);
+        // Simulate the human acting in time. mocked_await_timeout yields 'true'
+        // if the closure condition was met before the timer ran out.
+        if ($current === "mocked_await_timeout") {
+            $generator->send(true);
+            break;
+        }
+
+        // Otherwise it's a telemetry or sideEffect yield; step forward
+        $generator->next();
+    }
+
+    // Exhaust any remaining telemetry yields after resumption
+    while ($generator->valid()) {
+        $generator->next();
+    }
 
     $result = $generator->getReturn();
 

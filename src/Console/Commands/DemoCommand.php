@@ -44,7 +44,7 @@ class DemoCommand extends Command
     {
         $this->info('Scaffolding BPMN Demo Environment...');
 
-        // 1. Demo Invoice Workflow
+        // Demo Invoice Workflow
         // Scaffold the Demo Activity
         $this->publishStub('demo-activity.stub', app_path('Workflows/Activities/DemoGenerateInvoiceActivity.php'));
         $this->registerInConfig('activities', 'demo_generate_invoice', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
@@ -56,26 +56,26 @@ class DemoCommand extends Command
         // Generate the Database Diagram
         $this->seedDemoWorkflow($parser);
 
-        // 2. Parallel Demo
+        // Parallel Demo
         $this->registerInConfig('activities', 'demo_capture_payment', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
         $this->registerInConfig('activities', 'demo_reserve_stock', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
         $this->registerInConfig('activities', 'demo_send_confirmation', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
         $this->seedParallelFulfillmentWorkflow($parser);
         $this->line('Seeded: Demo: Parallel Fulfillment (AND Split/Join)');
 
-        // 3. Boundary SLA Demo
+        // Boundary SLA Demo
         $this->registerInConfig('activities', 'demo_dispatch_pager', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
         $this->registerInConfig('activities', 'demo_log_system_alert', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
         $this->seedBoundaryEventWorkflow($parser);
         $this->line('Seeded: Demo: SLA Escalation & Error Boundaries');
 
-        // 4. SubProcess & Call Activity Demo
+        // SubProcess & Call Activity Demo
         $this->registerInConfig('activities', 'demo_sanitize_data', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
         $this->registerInConfig('activities', 'demo_archive_context', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
         $this->seedCallActivityPipelineWorkflow($parser);
         $this->line('Seeded: Demo: Parent Pipeline with Call Activity');
 
-        // 5. Model-triggered order creation workflow
+        // Model-triggered order creation workflow
         $this->seedOrderNotificationWorkflow($parser);
 
         $this->info('All demo workflows seeded successfully!');
