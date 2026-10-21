@@ -6,6 +6,7 @@ use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Models\WorkflowNode;
 use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Events\BpmnExecutionLogged;
 use Saccharine\Bpmn\Handlers\Traits\EvaluatesBoundaryEvents;
 use function Workflow\await;
 use function Workflow\awaitWithTimeout;
@@ -28,6 +29,12 @@ class UserTaskHandler implements BpmnNodeHandlerInterface
             $node->name,
             $userData
         ));
+
+        yield $workflow->logTelemetry(
+            BpmnExecutionLogged::LEVEL_WAIT,
+            "User Task [{$node->name}] reached. Workflow hibernating in database awaiting signal.",
+            $node->bpmn_element_id
+        );
 
         // Look for attached boundary timers
         $boundaries = $this->getAttachedBoundaries($version, $node->bpmn_element_id);
@@ -54,6 +61,12 @@ class UserTaskHandler implements BpmnNodeHandlerInterface
         } else {
             // Standard wait (sleep forever until human acts)
             yield await($closure);
+
+            yield $workflow->logTelemetry(
+                BpmnExecutionLogged::LEVEL_TASK,
+                "Signal received for [{$node->name}]. Resuming process.",
+                $node->bpmn_element_id
+            );
         }
         
         // If woken by a manual intervention, bypass reading the inbox and return immediately

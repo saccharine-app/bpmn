@@ -6,6 +6,7 @@ use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Models\WorkflowNode;
 use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Events\BpmnExecutionLogged;
 use Workflow\ChildWorkflowStub;
 use function Workflow\all;
 
@@ -24,6 +25,12 @@ class ParallelGatewayHandler implements BpmnNodeHandlerInterface
 
         // CASE A: It is a SPLIT (Multiple outgoing paths)
         if ($outgoingEdges->count() > 1) {
+            yield $workflow->logTelemetry(
+                BpmnExecutionLogged::LEVEL_GATEWAY,
+                "Parallel Split: Spawning " . $outgoingEdges->count() . " child workflow branches.",
+                $node->bpmn_element_id
+            );
+
             $parallelStubs = [];
 
             foreach ($outgoingEdges as $edge) {
@@ -41,6 +48,12 @@ class ParallelGatewayHandler implements BpmnNodeHandlerInterface
             // The Master Workflow sleeps safely here without generating a serialization error.
             // CRITICAL FIX: all() converts the array of stubs into a single PromiseInterface
             $branchResults = yield all($parallelStubs);
+
+            yield $workflow->logTelemetry(
+                BpmnExecutionLogged::LEVEL_GATEWAY,
+                "Parallel Join: All concurrent branches resolved. Synchronizing payload.",
+                $node->bpmn_element_id
+            );
 
             // Merge variable mutations from all concurrent paths back into the main payload
             foreach ($branchResults as $result) {

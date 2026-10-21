@@ -15,10 +15,13 @@ use Saccharine\Bpmn\Models\WorkflowToken;
 use Saccharine\Bpmn\Models\WorkflowHistory;
 use Saccharine\Bpmn\Services\GatewayRouter;
 use Saccharine\Bpmn\Handlers\NodeHandlerFactory;
+use Saccharine\Bpmn\Events\BpmnExecutionLogged;
 use RuntimeException;
 
 class BpmnInterpreterWorkflow extends Workflow
 {
+    // Public property for the associated instance ID
+    public ?int $instanceId = null;
     // Internal state trackers for manual interventions
     private bool $isSuspended = false;
     private bool $isHalted = false;
@@ -128,6 +131,8 @@ class BpmnInterpreterWorkflow extends Workflow
         // this is fully deterministic.
         $version = WorkflowVersion::with(['nodes', 'edges'])->findOrFail($versionId);
 
+        $this->instanceId = $instanceId;
+
         // If no start node is provided, this is the Master Workflow starting from the beginning
         if ($startNodeId === null) {
             // Find the global start event (it must NOT belong to a sub-process)
@@ -145,9 +150,21 @@ class BpmnInterpreterWorkflow extends Workflow
             $currentNodeId = $startNodeId;
         }
 
+        // When the workflow initiates:
+        yield $this->logTelemetry(
+            BpmnExecutionLogged::LEVEL_INFO, 
+            "Process started from node [{$currentNodeId}].", 
+            $currentNodeId
+        );
+
         while ($currentNodeId !== null) {
             // HALT CHECK: Immediately break the loop and terminate the process
             if ($this->isHalted) {
+                yield $this->logTelemetry(
+                    BpmnExecutionLogged::LEVEL_ERROR, 
+                    "Workflow halted by operator intervention. Terminating execution.", 
+                    $currentNodeId
+                );
                 // You can optionally inject a 'halted_at' flag into the payload
                 $userData['_system_status'] = 'halted';
                 break; 
@@ -155,6 +172,11 @@ class BpmnInterpreterWorkflow extends Workflow
 
             // SUSPENSION CHECK: Hibernate safely until resumed (or halted while sleeping)
             if ($this->isSuspended) {
+                yield $this->logTelemetry(
+                    BpmnExecutionLogged::LEVEL_WAIT, 
+                    "Workflow suspended via operator signal. Hibernating...", 
+                    $currentNodeId
+                );
                 yield await(fn () => !$this->isSuspended || $this->isHalted);
                 
                 // Continue forces the loop to re-evaluate the Halt check immediately upon waking up
@@ -238,5 +260,18 @@ class BpmnInterpreterWorkflow extends Workflow
             // we can trigger this directly in a blocking manner since it's the final action of the thread.
             WorkflowToken::where('durable_workflow_id', $this->uniqueId())->delete();
         }
+    }
+
+    /**
+     * Deterministically dispatches a telemetry log event that only fires once,
+     * safely ignored during replay cycles.
+     */
+    public function logTelemetry(string $type, string $message, ?string $nodeId = null, array $context = [])
+    {
+        $instanceId = $this->instanceId;
+
+        return WorkflowStub::sideEffect(function () use ($type, $message, $instanceId, $nodeId, $context) {
+            event(new BpmnExecutionLogged($type, $message, $instanceId, $nodeId, $context));
+        });
     }
 }

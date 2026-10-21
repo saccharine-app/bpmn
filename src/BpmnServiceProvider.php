@@ -6,7 +6,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use Saccharine\Bpmn\Events\BpmnExecutionLogged;
 use Saccharine\Bpmn\Listeners\WorkflowTriggerListener;
+use Saccharine\Bpmn\Listeners\BpmnConsoleLogListener;
 use Saccharine\Bpmn\Enums\WorkflowPermission;
 use Saccharine\Bpmn\Support\PermissionManifest;
 
@@ -52,6 +54,8 @@ class BpmnServiceProvider extends ServiceProvider
 
         // Listen to all events to check for start event triggers
         Event::listen('*', [WorkflowTriggerListener::class, 'handle']);
+        // Listen to BpmnExecutionLogged events to write log output for each BPMN step
+        Event::listen(BpmnExecutionLogged::class, BpmnConsoleLogListener::class);
 
         if ($this->app->runningInConsole()) {
             // Register custom artisan commands

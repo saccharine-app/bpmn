@@ -7,6 +7,7 @@ use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Models\WorkflowNode;
 use Saccharine\Bpmn\Models\WorkflowVersion;
 use Saccharine\Bpmn\Services\GatewayRouter;
+use Saccharine\Bpmn\Events\BpmnExecutionLogged;
 
 // Exclusive Gateways (Routing)
 class ExclusiveGatewayHandler implements BpmnNodeHandlerInterface
@@ -21,6 +22,12 @@ class ExclusiveGatewayHandler implements BpmnNodeHandlerInterface
     {
         $router = new GatewayRouter();
         $nextNodeId = $router->getNextNodeId($version, $node->bpmn_element_id, $userData);
+        
+        yield $workflow->logTelemetry(
+            BpmnExecutionLogged::LEVEL_GATEWAY,
+            "Evaluated conditions. Routing token -> [{$nextNodeId}].",
+            $node->bpmn_element_id
+        );
 
         yield from []; // Satisfies the Generator return type
         return [$nextNodeId, $userData];
