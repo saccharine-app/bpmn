@@ -21,8 +21,30 @@ import camundaModdleDescriptor from 'camunda-bpmn-moddle/resources/camunda.json'
 
 import TokenSimulationModule from 'bpmn-js-token-simulation';
 
+// Custom palette & context-pad providers (restricted, modular palette)
+import { CustomPaletteModule } from './CustomPaletteProvider.js';
+import { setPaletteConfig } from './CustomPaletteProvider.js';
+import CustomContextPadProvider from './CustomContextPadProvider.js';
+
+// Custom replace-menu (gear) provider (modular, independent config)
+import { setReplaceMenuConfig, defaultReplaceMenuConfig } from './CustomReplaceMenuProvider.js';
+import CustomReplaceMenuProvider from './CustomReplaceMenuProvider.js';
+
 // Expose a globally accessible initialization function
-window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback) {
+window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback, paletteConfig, replaceMenuConfig) {
+    // Apply optional per-node palette overrides before the modeler boots so the
+    // custom providers read them on their first getPaletteEntries() call.
+    if (paletteConfig) {
+        setPaletteConfig(paletteConfig);
+    }
+
+    // Apply optional replace-menu (gear) overrides independently of palette config.
+    // If no override was passed, fall back to the engine's default replace-menu
+    // configuration (replace-with-<node> actions the BPMN engine can execute).
+    setReplaceMenuConfig(
+        replaceMenuConfig || defaultReplaceMenuConfig
+    );
+
     const modeler = new BpmnModeler({
         container: '#canvas',
         propertiesPanel: {
@@ -34,7 +56,8 @@ window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback) {
             CamundaPlatformPropertiesProviderModule,
             ElementTemplatesPropertiesProviderModule,
             ElementTemplateChooserModule,
-            TokenSimulationModule // Inject the simulator into the toolkit
+            TokenSimulationModule, // Inject the simulator into the toolkit
+            CustomPaletteModule   // Restricted, modular palette (replaces defaults)
         ],
         moddleExtensions: {
             camunda: camundaModdleDescriptor
@@ -46,6 +69,49 @@ window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback) {
     // Expose the modeler so host pages can extract XML (e.g. the editor's
     // `bpmn:save-requested` bridge reads window.__bpmnModelerInstance).
     window.__bpmnModelerInstance = modeler;
+
+    // Suppress the default bpmn-js PaletteProvider so CustomPaletteProvider is
+    // the sole source of palette entries. bpmn-js merges entries from all
+    // registered providers; without this step the default (full) palette would
+    // be layered on top of our restricted one.
+    try {
+        const palette = modeler.get('palette');
+        const providers = palette._providers;
+        if (Array.isArray(providers)) {
+            palette._providers = providers.filter(
+                provider => provider.constructor.name !== 'PaletteProvider'
+            );
+        }
+    } catch (err) {
+        console.warn('Could not suppress default bpmn-js palette provider:', err);
+    }
+
+    // Manually register custom context-pad and replace-menu providers AFTER
+    // the default bpmn-js providers have been instantiated by the modeler.
+    // This ensures default providers populate their entries first (e.g. the
+    // 'replace' context-pad entry that renders the wrench icon, and the
+    // replace-with-* entries in the gear popup), and our providers can filter
+    // without removing them. DI '['type', ...]' registration would overwrite
+    // the defaults instead of composing with them.
+    try {
+        const contextPad = modeler.get('contextPad');
+        const popupMenu = modeler.get('popupMenu');
+
+        new CustomContextPadProvider(
+            contextPad,
+            modeler.get('modeling'),
+            modeler.get('autoPlace'),
+            modeler.get('connect'),
+            modeler.get('create'),
+            modeler.get('elementFactory'),
+            modeler.get('translate'),
+            modeler.get('appendPreview')
+        );
+
+        new CustomReplaceMenuProvider(popupMenu);
+    } catch (err) {
+        console.warn('Could not register custom context-pad / replace-menu providers:', err);
+    }
 
     function showTemplateErrors(errors) {
         console.error('Failed to parse element templates', errors);

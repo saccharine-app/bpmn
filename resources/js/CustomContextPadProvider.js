@@ -1,3 +1,31 @@
+// ---------------------------------------------------------------------------
+// Modular context-pad configuration
+// ---------------------------------------------------------------------------
+// Specific context-pad (append) actions can be enabled/disabled without
+// removing the context pad UI itself. Defaults cover every node type the
+// Saccharine BPMN engine can execute.
+// ---------------------------------------------------------------------------
+export const defaultContextPadConfig = {
+    serviceTask: true,
+    userTask: true,
+    exclusiveGateway: true,
+    parallelGateway: true,
+    endEvent: true,
+    delete: true,
+    connect: true
+};
+
+// Mutable runtime config. Read on every getContextPadEntries() call.
+export let contextPadConfig = { ...defaultContextPadConfig };
+
+export function setContextPadConfig(next) {
+    contextPadConfig = { ...defaultContextPadConfig, ...next };
+}
+
+export function resetContextPadConfig() {
+    contextPadConfig = { ...defaultContextPadConfig };
+}
+
 export default class CustomContextPadProvider {
     constructor(contextPad, modeling, autoPlace, connect, create, elementFactory, translate, appendPreview) {
         this._modeling = modeling;
@@ -23,13 +51,17 @@ export default class CustomContextPadProvider {
         } = this;
 
         return function(entries) {
+            const cfg = contextPadConfig;
+
             // Strip out the default options we don't want
-            delete entries['replace'];
-            delete entries['append.append-task']; // Removes the generic task
+            // NOTE: 'replace' (the wrench/gear menu) is intentionally kept so
+            // users can transform existing elements. Its replace-with-* targets
+            // are filtered by CustomReplaceMenuProvider instead.
+            /* delete entries['append.append-task']; // Removes the generic task
             delete entries['append.intermediate-event'];
             delete entries['append.text-annotation'];
             delete entries['append.gateway'];
-            delete entries['append.end-event'];
+            delete entries['append.end-event']; */
 
             // Helper function to create an "Append" action
             function appendAction(type, className, title, options) {
@@ -78,33 +110,45 @@ export default class CustomContextPadProvider {
             // Hoist our custom elements into the menu!
             // We ensure these options don't appear if the user clicks an End Event (which can't have outgoing arrows)
             if (element.type !== 'bpmn:EndEvent') {
-                entries['append.service-task'] = appendAction(
-                    'bpmn:ServiceTask', 'bpmn-icon-service-task', 'Append Service Task'
-                );
-                entries['append.user-task'] = appendAction(
-                    'bpmn:UserTask', 'bpmn-icon-user-task', 'Append User Task'
-                );
-                entries['append.exclusive-gateway'] = appendAction(
-                    'bpmn:ExclusiveGateway', 'bpmn-icon-gateway-xor', 'Append Exclusive Gateway'
-                );
-                entries['append.parallel-gateway'] = appendAction(
-                    'bpmn:ParallelGateway', 'bpmn-icon-gateway-parallel', 'Append Parallel Gateway'
-                );
-                entries['append.end-event'] = appendAction(
-                    'bpmn:EndEvent', 'bpmn-icon-end-event-none', 'Append End Event'
-                );
+                if (cfg.serviceTask) {
+                    entries['append.service-task'] = appendAction(
+                        'bpmn:ServiceTask', 'bpmn-icon-service-task', 'Append Service Task'
+                    );
+                }
+                if (cfg.userTask) {
+                    entries['append.user-task'] = appendAction(
+                        'bpmn:UserTask', 'bpmn-icon-user-task', 'Append User Task'
+                    );
+                }
+                if (cfg.exclusiveGateway) {
+                    entries['append.exclusive-gateway'] = appendAction(
+                        'bpmn:ExclusiveGateway', 'bpmn-icon-gateway-xor', 'Append Exclusive Gateway'
+                    );
+                }
+                if (cfg.parallelGateway) {
+                    entries['append.parallel-gateway'] = appendAction(
+                        'bpmn:ParallelGateway', 'bpmn-icon-gateway-parallel', 'Append Parallel Gateway'
+                    );
+                }
+                if (cfg.endEvent) {
+                    entries['append.end-event'] = appendAction(
+                        'bpmn:EndEvent', 'bpmn-icon-end-event-none', 'Append End Event'
+                    );
+                }
             }
 
-            entries['delete'] = {
-                group: 'edit',
-                className: 'bpmn-icon-trash',
-                title: translate('Delete'),
-                action: {
-                    click: removeElement
-                }
-            };
-            
-            if (element.type !== 'bpmn:EndEvent') {
+            if (cfg.delete) {
+                entries['delete'] = {
+                    group: 'edit',
+                    className: 'bpmn-icon-trash',
+                    title: translate('Delete'),
+                    action: {
+                        click: removeElement
+                    }
+                };
+            }
+
+            if (element.type !== 'bpmn:EndEvent' && cfg.connect) {
                 entries['connect'] = {
                     group: 'connect',
                     className: 'bpmn-icon-connection-multi',
