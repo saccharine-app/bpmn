@@ -21,8 +21,18 @@ import camundaModdleDescriptor from 'camunda-bpmn-moddle/resources/camunda.json'
 
 import TokenSimulationModule from 'bpmn-js-token-simulation';
 
-// Expose a globally accessible initialization function
-window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback) {
+// --- Engine-Driven Modules ---
+import { setSupportedElements } from './engineCapabilities.js';
+import { FilteredPaletteModule } from './FilteredPaletteProvider.js';
+import { FilteredContextPadModule } from './FilteredContextPadProvider.js';
+import { FilteredReplaceMenuModule } from './FilteredReplaceMenuProvider.js';
+
+window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback, supportedElementsOverride) {
+    // Configure supported engine capabilities once; all UI providers consume this
+    if (supportedElementsOverride) {
+        setSupportedElements(supportedElementsOverride);
+    }
+
     const modeler = new BpmnModeler({
         container: '#canvas',
         propertiesPanel: {
@@ -34,37 +44,30 @@ window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback) {
             CamundaPlatformPropertiesProviderModule,
             ElementTemplatesPropertiesProviderModule,
             ElementTemplateChooserModule,
-            TokenSimulationModule // Inject the simulator into the toolkit
+            TokenSimulationModule,
+            // Filter modules register as non-destructive middleware
+            FilteredPaletteModule,
+            FilteredContextPadModule,
+            FilteredReplaceMenuModule
         ],
         moddleExtensions: {
             camunda: camundaModdleDescriptor
         },
-        // Provide the templates data to the modeler
         elementTemplates: elementTemplates
     });
 
-    // Expose the modeler so host pages can extract XML (e.g. the editor's
-    // `bpmn:save-requested` bridge reads window.__bpmnModelerInstance).
     window.__bpmnModelerInstance = modeler;
 
     function showTemplateErrors(errors) {
         console.error('Failed to parse element templates', errors);
-
-        const errorMessage = `Failed to parse element templates:
-
-            ${ errors.map(error => error.message).join('\n    ') }
-
-        Check the developer tools for details.`;
-
-        document.querySelector('.error-panel pre').textContent = errorMessage;
-        document.querySelector('.error-panel').classList.toggle('hidden');
+        const errorMessage = `Failed to parse element templates:\n\n${errors.map(e => e.message).join('\n    ')}\n\nCheck developer tools for details.`;
+        const pre = document.querySelector('.error-panel pre');
+        if (pre) pre.textContent = errorMessage;
+        document.querySelector('.error-panel')?.classList.toggle('hidden');
     }
 
-    // Load element templates
     modeler.on('elementTemplates.errors', event => {
-        const { errors } = event;
-
-        showTemplateErrors(errors);
+        showTemplateErrors(event.errors);
     });
 
     modeler.get('elementTemplatesLoader').setTemplates(elementTemplates);
@@ -81,15 +84,14 @@ window.initBpmnDesigner = function(initialXml, elementTemplates, saveCallback) {
 
     render();
 
-    // Attach the save event to the legacy standalone button (optional: the
-    // workbench header dispatches `bpmn:save-requested` custom events instead).
     document.getElementById('save-button')?.addEventListener('click', async () => {
         try {
             const { xml } = await modeler.saveXML({ format: true });
-            saveCallback(xml);
+            if (saveCallback) {
+                saveCallback(xml);
+            }
         } catch (err) {
             console.error('Error saving diagram:', err);
-            // alert('An error occurred while exporting the XML.');
         }
     });
 };
@@ -99,44 +101,22 @@ window.initBpmnViewer = function(initialXml, containerSelector) {
     const viewer = new BpmnNavigatedViewer({
         container: containerSelector
     });
-    
+
     let currentActive = [];
     let currentHistory = [];
     const eventBus = viewer.get('eventBus');
 
     eventBus.on('element.click', function(event) {
         const element = event.element;
-        
-        // Only intercept if this node is currently an active token
+
         if (!currentActive.includes(element.id)) {
             return;
         }
 
-        // Check if it's a User Task
-        if (element.type === 'bpmn:UserTask') {
+        if (element.type === 'bpmn:UserTask' && typeof openTaskModal === 'function') {
             openTaskModal(element.id, element.businessObject.name || 'User Task Approval');
         }
     });
-    
-    async function completeTask(elementId, payload) {
-        const res = await fetch(`/api/bpmn/instances/${instanceId}/tasks/${elementId}/submit`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ payload: payload })
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-            closeTaskModal();
-            // The polling loop will naturally clear the green marker on the next beat!
-        } else {
-            alert(data.message);
-        }
-    }
 
     async function render() {
         try {
@@ -148,13 +128,11 @@ window.initBpmnViewer = function(initialXml, containerSelector) {
     }
     render();
 
-    // Return a control object so the host app can easily update markers
     return {
         viewer,
         syncState: function(activeNodeIds = [], historyNodeIds = [], isFailed = false) {
             const canvas = viewer.get('canvas');
 
-            // Remove obsolete active markers
             currentActive.forEach(id => {
                 if (!activeNodeIds.includes(id)) {
                     canvas.removeMarker(id, 'bpmn-active-token');
@@ -162,14 +140,12 @@ window.initBpmnViewer = function(initialXml, containerSelector) {
                 }
             });
 
-            // Mark completed trail nodes
             historyNodeIds.forEach(id => {
                 if (!activeNodeIds.includes(id)) {
                     canvas.addMarker(id, 'bpmn-history-completed');
                 }
             });
 
-            // Mark active / pulsing tokens
             activeNodeIds.forEach(id => {
                 canvas.removeMarker(id, 'bpmn-history-completed');
                 canvas.addMarker(id, isFailed ? 'bpmn-failed-token' : 'bpmn-active-token');
