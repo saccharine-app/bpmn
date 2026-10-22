@@ -82,7 +82,7 @@ Navigate to `/bpmn/workflows/definitions` (or your Filament admin panel) to insp
 ## Technical Requirements
 
 * **PHP 8.3+**
-* **Laravel Framework (^11.0 || ^12.0)**
+* **Laravel Framework (^12.0 || ^13.0)**
 * **Symfony Expression Language (^7.0)**: Sandboxed evaluation of gateway condition expressions.
 * **Durable Workflow (^1.0)**: Event-sourced coroutine engine for durable background execution.
 * **bpmn-js**: Interactive client-side modeling and diagram visualization.

@@ -206,7 +206,26 @@ This creates a JSON template in `resources/bpmn/templates/`:
 
 ---
 
-## 5. Advanced BPMN Node Patterns
+## 5. Supported Node Types & Handler Matrix
+
+The execution engine delegates each BPMN node type to an isolated handler via `NodeHandlerFactory`. Boundary events (error and timer) are not standalone node types; they are evaluated through the `EvaluatesBoundaryEvents` trait mixed into `ServiceTaskHandler`, `UserTaskHandler`, `SubProcessHandler`, and `CallActivityHandler`.
+
+| Node Type | Handler Class | Boundary Event Support | Execution Mechanism |
+| :--- | :--- | :--- | :--- |
+| `startEvent` | `StartEventHandler` | No | Resolves outgoing sequence flows and advances. |
+| `endEvent` | `EndEventHandler` | No | Cleans up active tokens and terminates the branch. |
+| `serviceTask` | `ServiceTaskHandler` | Yes | Yields an `ActivityStub` to the background queue worker. |
+| `userTask` | `UserTaskHandler` | Yes | Awaits inbox signals with optional boundary timer timeouts. |
+| `exclusiveGateway` | `ExclusiveGatewayHandler` | No | Evaluates condition expressions via Symfony Expression Language. |
+| `parallelGateway` | `ParallelGatewayHandler` | No | Spawns child coroutines and establishes an `all()` sync barrier. |
+| `callActivity` | `CallActivityHandler` | Yes | Invokes a separate published workflow definition by key. |
+| `subProcess` | `SubProcessHandler` | Yes | Scopes tasks into a child workflow with boundary error containment. |
+
+Boundary events (error or timer) attached to any of the above handlers are evaluated by the `EvaluatesBoundaryEvents` trait. When an activity throws an exception, an attached Error Boundary Event catches it, injects `_error_caught` into the payload, and routes down the boundary sequence flow. When a User Task has an attached Timer Boundary Event, the engine waits for either a human signal or timer expiry via `awaitWithTimeoutPromise()`.
+
+---
+
+## 6. Advanced BPMN Node Patterns
 
 ### Exclusive Gateways (XOR)
 Define conditional branches using Symfony Expression Language inside the Sequence Flow's condition expression:
@@ -240,7 +259,7 @@ When a workflow reaches a User Task, execution suspends indefinitely without con
 
 ---
 
-## 6. Filament Integration
+## 7. Filament Integration
 
 Scaffold the optional Filament resources:
 

@@ -63,16 +63,16 @@ Each handler yields generator promises (activities, child workflows, or inbox aw
 return [$nextNodeId, $updatedUserData];
 ```
 
-| Node Type | Handler | Execution Mechanism |
-| :--- | :--- | :--- |
-| `startEvent` | `StartEventHandler` | Resolves outgoing sequence flows and advances. |
-| `serviceTask` | `ServiceTaskHandler` | Yields an `ActivityStub` to the background queue worker. |
-| `userTask` | `UserTaskHandler` | Awaits inbox signals with optional boundary timer timeouts. |
-| `exclusiveGateway` | `ExclusiveGatewayHandler` | Evaluates condition expressions via Symfony Expression Language. |
-| `parallelGateway` | `ParallelGatewayHandler` | Spawns child coroutines and establishes an `all()` sync barrier. |
-| `subProcess` | `SubProcessHandler` | Scopes tasks into a child workflow with boundary error containment. |
-| `callActivity` | `CallActivityHandler` | Invokes a separate published workflow definition by key. |
-| `endEvent` | `EndEventHandler` | Cleans up active tokens and terminates the branch. |
+| Node Type | Handler | Boundary Events | Execution Mechanism |
+| :--- | :--- | :--- | :--- |
+| `startEvent` | `StartEventHandler` | No | Resolves outgoing sequence flows and advances. |
+| `endEvent` | `EndEventHandler` | No | Cleans up active tokens and terminates the branch. |
+| `serviceTask` | `ServiceTaskHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Yields an `ActivityStub` to the background queue worker. |
+| `userTask` | `UserTaskHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Awaits inbox signals with optional boundary timer timeouts. |
+| `exclusiveGateway` | `ExclusiveGatewayHandler` | No | Evaluates condition expressions via Symfony Expression Language. |
+| `parallelGateway` | `ParallelGatewayHandler` | No | Spawns child coroutines and establishes an `all()` sync barrier. |
+| `callActivity` | `CallActivityHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Invokes a separate published workflow definition by key. |
+| `subProcess` | `SubProcessHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Scopes tasks into a child workflow with boundary error containment. |
 
 ---
 
@@ -87,7 +87,35 @@ Standard PHP generators cannot be serialized across queue steps while actively r
 
 ---
 
-## 5. State Projection & Live Cockpit Telemetry
+## 5. Sandboxed Expression Evaluation (`WorkflowExpressionEvaluator`)
+
+Gateway condition expressions are evaluated through `WorkflowExpressionEvaluator`, which wraps Symfony's `ExpressionLanguage` in a sandboxed, isolated interpreter:
+
+```php
+class WorkflowExpressionEvaluator
+{
+    public function evaluate(string $expression, array $userData): bool
+    {
+        try {
+            return (bool) $this->expressionEngine->evaluate($expression, $userData);
+        } catch (Throwable $e) {
+            Log::error("BPMN Expression Evaluation Failed: '{$expression}'", [
+                'error' => $e->getMessage(),
+                'payload' => $userData,
+            ]);
+            return false;
+        }
+    }
+}
+```
+
+* **No raw `eval()`**: Conditions are parsed safely through Symfony ExpressionLanguage.
+* **Payload-scoped variables**: The `$userData` array is injected into the expression scope, allowing conditions like `order_total >= 1000` or `status == "approved"`.
+* **Graceful failure**: A malformed expression is caught, logged, and returns `false` rather than crashing the workflow.
+
+---
+
+## 6. State Projection & Live Cockpit Telemetry
 
 Durable workflows serialize execution state into internal logs, which cannot be directly queried with relational SQL.
 
