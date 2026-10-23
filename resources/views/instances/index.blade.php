@@ -8,7 +8,6 @@
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans min-h-screen">
     <div class="max-w-7xl mx-auto py-10 px-4">
-        
         <!-- Header -->
         <div class="mb-8 flex items-center justify-between border-b pb-6">
             <div>
@@ -16,11 +15,10 @@
                 <p class="text-sm text-gray-500 mt-1">Monitor tokens and control live workflow executions.</p>
             </div>
             <a href="{{ \Saccharine\Bpmn\Support\BpmnRouteHelper::dashboardUrl() }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-900">
-                &larr; Back to Designer
+                &larr; Back to Workflow Definitions
             </a>
         </div>
 
-        <!-- Flash Messages -->
         @if(session('success'))
             <div class="mb-4 p-4 bg-green-100 text-green-800 rounded-md text-sm font-medium">
                 {{ session('success') }}
@@ -32,7 +30,6 @@
             </div>
         @endif
 
-        <!-- Instances Table -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <table class="w-full text-left text-sm text-gray-600">
                 <thead class="bg-gray-50 text-gray-700 uppercase text-xs font-semibold border-b">
@@ -40,7 +37,7 @@
                         <th class="py-3 px-4">ID</th>
                         <th class="py-3 px-4">Process</th>
                         <th class="py-3 px-4">Status</th>
-                        <th class="py-3 px-4">Active Tokens (Node IDs)</th>
+                        <th class="py-3 px-4">Active Tokens</th>
                         <th class="py-3 px-4">Started</th>
                         <th class="py-3 px-4 text-right">Actions</th>
                     </tr>
@@ -54,21 +51,22 @@
                                     {{ $instance->version->definition->name ?? 'Unknown' }}
                                 </div>
                                 <div class="text-xs text-gray-400 mt-0.5">
-                                    v{{ $instance->version->version ?? '?' }} | {{ $instance->durable_workflow_id }}
+                                    v{{ $instance->version->version ?? '?' }} &bull; <span class="font-mono text-[11px]">{{ $instance->durable_workflow_id }}</span>
                                 </div>
                             </td>
                             <td class="py-4 px-4">
                                 @php
-                                    $color = match($instance->status->value) {
-                                        'running' => 'bg-green-100 text-green-800',
+                                    $statusValue = is_object($instance->status) ? $instance->status->value : $instance->status;
+                                    $color = match($statusValue) {
+                                        'running'   => 'bg-green-100 text-green-800',
                                         'suspended' => 'bg-yellow-100 text-yellow-800',
                                         'halted', 'failed' => 'bg-red-100 text-red-800',
                                         'completed' => 'bg-blue-100 text-blue-800',
-                                        default => 'bg-gray-100 text-gray-800',
+                                        default     => 'bg-gray-100 text-gray-800',
                                     };
                                 @endphp
                                 <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase {{ $color }}">
-                                    {{ $instance->status->value }}
+                                    {{ $statusValue }}
                                 </span>
                             </td>
                             <td class="py-4 px-4">
@@ -77,43 +75,47 @@
                                 @else
                                     <div class="flex flex-wrap gap-1">
                                         @foreach($instance->tokens as $token)
-                                            <span class="px-2 py-1 bg-gray-100 border border-gray-200 text-gray-700 font-mono text-[10px] rounded">
+                                            <span class="px-2 py-0.5 bg-gray-100 border border-gray-200 text-gray-700 font-mono text-[10px] rounded">
                                                 {{ $token->bpmn_element_id }}
                                             </span>
                                         @endforeach
                                     </div>
                                 @endif
                             </td>
-                            <td class="py-4 px-4 text-xs">
+                            <td class="py-4 px-4 text-xs text-gray-500">
                                 {{ $instance->created_at->diffForHumans() }}
                             </td>
                             <td class="py-4 px-4 text-right space-x-2">
-                                <!-- Suspend/Resume Buttons -->
-                                @if($instance->status->value === 'running')
-                                    @can('bpmn:suspend-instance')
-                                    <form action="{{ route('bpmn.instances.suspend', $instance->id) }}" method="POST" class="inline-block">
-                                        @csrf
-                                        <button type="submit" class="text-yellow-600 hover:text-yellow-900 font-semibold text-xs">Suspend</button>
-                                    </form>
-                                    @endcan
-                                @elseif($instance->status->value === 'suspended')
-                                    @can('bpmn:resume-instance')
-                                    <form action="{{ route('bpmn.instances.resume', $instance->id) }}" method="POST" class="inline-block">
-                                        @csrf
-                                        <button type="submit" class="text-green-600 hover:text-green-900 font-semibold text-xs">Resume</button>
-                                    </form>
-                                    @endcan
-                                @endif
+                                <a href="{{ route('bpmn.instances.track', $instance->id) }}" class="text-indigo-600 hover:text-indigo-900 font-semibold text-xs inline-block">
+                                    Live Cockpit
+                                </a>
 
-                                <!-- Halt Button -->
-                                @if(in_array($instance->status->value, ['running', 'suspended']))
-                                    @can('bpmn:halt-instance')
-                                    <form action="{{ route('bpmn.instances.halt', $instance->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to permanently halt this workflow?');">
-                                        @csrf
-                                        <button type="submit" class="text-red-600 hover:text-red-900 font-semibold text-xs ml-2">Halt</button>
-                                    </form>
-                                    @endcan
-                                @endif
+                                @can(\Saccharine\Bpmn\Enums\WorkflowPermission::SUSPEND_INSTANCE->value)
+                                    @if($statusValue === 'running')
+                                        <form action="{{ route('bpmn.instances.suspend', $instance->id) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            <button type="submit" class="text-yellow-600 hover:text-yellow-900 font-semibold text-xs">Suspend</button>
+                                        </form>
+                                    @endif
+                                @endcan
+
+                                @can(\Saccharine\Bpmn\Enums\WorkflowPermission::RESUME_INSTANCE->value)
+                                    @if($statusValue === 'suspended')
+                                        <form action="{{ route('bpmn.instances.resume', $instance->id) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            <button type="submit" class="text-green-600 hover:text-green-900 font-semibold text-xs">Resume</button>
+                                        </form>
+                                    @endif
+                                @endcan
+
+                                @can(\Saccharine\Bpmn\Enums\WorkflowPermission::HALT_INSTANCE->value)
+                                    @if(in_array($statusValue, ['running', 'suspended']))
+                                        <form action="{{ route('bpmn.instances.halt', $instance->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Permanently halt this workflow?');">
+                                            @csrf
+                                            <button type="submit" class="text-red-600 hover:text-red-900 font-semibold text-xs">Halt</button>
+                                        </form>
+                                    @endif
+                                @endcan
                             </td>
                         </tr>
                     @empty
@@ -126,7 +128,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <div class="mt-4">
             {{ $instances->links() }}
         </div>

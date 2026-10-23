@@ -15,12 +15,11 @@
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">BPMN Workflow Orchestrator</h1>
                 <p class="text-sm text-gray-500 mt-1">Manage, model, and deploy durable background workflows inside Laravel.</p>
             </div>
-            <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs font-semibold rounded-full uppercase">Local Linked Dev</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- Left Panel: Form to Create Workflows -->
-             @can('bpmn:edit')
+             @can(\Saccharine\Bpmn\Enums\WorkflowPermission::EDIT->value)
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">Create New Workflow</h2>
                 
@@ -28,13 +27,13 @@
                     @csrf
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Friendly Name</label>
-                        <input type="text" name="name" placeholder="e.g., Arrange Funeral Service" required
+                        <input type="text" name="name" placeholder="e.g., Send Invoice" required
                                class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Unique Key (Identifier)</label>
-                        <input type="text" name="key" placeholder="e.g., arrange-funeral-service" required
+                        <input type="text" name="key" placeholder="e.g., send-invoice" required
                                class="w-full px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
 
@@ -80,7 +79,7 @@
                                             </span>
                                         </td>
                                         <td class="py-4 px-4 text-right">
-                                            @can('bpmn:edit')
+                                            @can(\Saccharine\Bpmn\Enums\WorkflowPermission::EDIT->value)
                                             <a href="{{ route('bpmn.design', $def->id) }}" class="inline-flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-900">
                                                 Design & Model
                                                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
