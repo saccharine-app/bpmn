@@ -19,7 +19,9 @@
     },
     "autoload": {
         "psr-4": {
-            "Saccharine\\Bpmn\\": "src/"
+            "Saccharine\\Bpmn\\": "src/",
+            "Saccharine\\Bpmn\\Database\\Seeders\\": "database/seeders/",
+            "Saccharine\\Bpmn\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
