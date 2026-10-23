@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Bpmn;
+namespace Saccharine\Bpmn\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
@@ -10,7 +10,7 @@ use Filament\Panel;
 use Workflow\WorkflowStub;
 use Saccharine\Bpmn\Models\WorkflowInstance;
 use Saccharine\Bpmn\Enums\WorkflowInstanceStatus;
-use App\Filament\Resources\Bpmn\WorkflowInstanceResource\Pages;
+use Saccharine\Bpmn\Filament\Resources\WorkflowInstanceResource\Pages;
 
 class WorkflowInstanceResource extends Resource
 {
@@ -18,7 +18,6 @@ class WorkflowInstanceResource extends Resource
     protected static \BackedEnum|string|null $navigationIcon = 'heroicon-o-cpu-chip';
     protected static \UnitEnum|string|null $navigationGroup = 'Process Orchestration';
 
-    // Instances are generally created by the engine, so we disable manual creation
     public static function canCreate(): bool
     {
         return false;
@@ -46,7 +45,6 @@ class WorkflowInstanceResource extends Resource
                         WorkflowInstanceStatus::COMPLETED => 'info',
                     }),
 
-                // Show active tokens (comma separated or as tags)
                 Tables\Columns\TextColumn::make('tokens.bpmn_element_id')
                     ->label('Active Tokens')
                     ->badge()
@@ -58,11 +56,6 @@ class WorkflowInstanceResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                // Bridge to the package's instance tracking. NOTE: the engine does not
-                // ship a per-instance tracker view yet, so this points at the shared
-                // instances index (bpmn.instances.index) rather than a route that
-                // does not exist. Add a `track` route + view to the package before
-                // referencing one here.
                 Action::make('track')
                     ->label('Live Cockpit')
                     ->icon('heroicon-o-eye')
@@ -70,7 +63,6 @@ class WorkflowInstanceResource extends Resource
                     ->url(fn (WorkflowInstance $record): string => route('bpmn.instances.track', $record->id))
                     ->openUrlInNewTab(),
 
-                // Intervention: Suspend
                 Action::make('suspend')
                     ->icon('heroicon-o-pause')
                     ->color('warning')
@@ -81,7 +73,6 @@ class WorkflowInstanceResource extends Resource
                         WorkflowStub::load($record->durable_workflow_id)->suspendWorkflow();
                     }),
 
-                // Intervention: Resume
                 Action::make('resume')
                     ->icon('heroicon-o-play')
                     ->color('success')
@@ -91,7 +82,6 @@ class WorkflowInstanceResource extends Resource
                         WorkflowStub::load($record->durable_workflow_id)->resumeWorkflow();
                     }),
 
-                // Intervention: Halt
                 Action::make('halt')
                     ->icon('heroicon-o-stop')
                     ->color('danger')
@@ -109,6 +99,7 @@ class WorkflowInstanceResource extends Resource
     {
         return [
             'index' => Pages\ListWorkflowInstances::route('/'),
+            'view' => Pages\ViewWorkflowInstance::route('/{record}'),
         ];
     }
 

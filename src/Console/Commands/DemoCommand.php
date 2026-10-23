@@ -70,6 +70,16 @@ class DemoCommand extends Command
         $this->line('Seeded: Demo: Parent Pipeline with Call Activity');
 
         $this->info('All demo workflows seeded successfully!');
+
+        // Publish Demo Order Filament Resources
+        $resourcesDir = app_path('Filament/Resources/Demo');
+        File::ensureDirectoryExists($resourcesDir);
+
+        $this->publishStub('filament/DemoOrderResource.stub', "{$resourcesDir}/DemoOrderResource.php");
+        $this->publishStub('filament/ListDemoOrders.stub', "{$resourcesDir}/DemoOrderResource/Pages/ListDemoOrders.php");
+        $this->publishStub('filament/CreateDemoOrder.stub', "{$resourcesDir}/DemoOrderResource/Pages/CreateDemoOrder.php");
+        $this->publishStub('filament/EditDemoOrder.stub', "{$resourcesDir}/DemoOrderResource/Pages/EditDemoOrder.php");
+
         $this->info('Demo successfully installed!');
         $this->line('You can view the workflows at /bpmn/workflows');
         $this->line('To trigger an order execution, run: php artisan bpmn:test-order --amount=1500');

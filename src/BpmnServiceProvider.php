@@ -16,6 +16,7 @@ use Saccharine\Bpmn\Models\WorkflowDefinition;
 use Saccharine\Bpmn\Models\WorkflowInstance;
 use Saccharine\Bpmn\Policies\WorkflowDefinitionPolicy;
 use Saccharine\Bpmn\Policies\WorkflowInstancePolicy;
+use Saccharine\Bpmn\Filament\BpmnFilamentPlugin;
 
 class BpmnServiceProvider extends ServiceProvider
 {
@@ -52,6 +53,11 @@ class BpmnServiceProvider extends ServiceProvider
         // `saccharine-bpmn.dashboard` to false and rely on the panel resource instead;
         // the designer and instance routes registered above remain available so the
         // engine still works headlessly.
+
+        // Register Filament resources if the host app uses Filament
+        if (class_exists('Filament\FilamentServiceProvider')) {
+            BpmnFilamentPlugin::make()->boot();
+        }
         if (config('saccharine-bpmn.dashboard', true)) {
             Route::prefix($webPrefix)
                 ->middleware($webMiddleware)
@@ -72,7 +78,6 @@ class BpmnServiceProvider extends ServiceProvider
                 \Saccharine\Bpmn\Console\Commands\InstallCommand::class,
                 \Saccharine\Bpmn\Console\Commands\DemoCommand::class,
                 \Saccharine\Bpmn\Console\Commands\InstanceControlCommand::class,
-                \Saccharine\Bpmn\Console\Commands\MakeFilamentCommand::class,
                 \Saccharine\Bpmn\Console\Commands\TestOrderCommand::class,
             ]);
 

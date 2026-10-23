@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Bpmn;
+namespace Saccharine\Bpmn\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Schemas;
@@ -12,7 +12,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Panel;
 use Illuminate\Support\Str;
 use Saccharine\Bpmn\Models\WorkflowDefinition;
-use App\Filament\Resources\Bpmn\WorkflowDefinitionResource\Pages;
+use Saccharine\Bpmn\Filament\Resources\WorkflowDefinitionResource\Pages;
 
 class WorkflowDefinitionResource extends Resource
 {
@@ -27,9 +27,8 @@ class WorkflowDefinitionResource extends Resource
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255)
-                    ->live(onBlur: true) // Triggers a re-render when the user clicks out
+                    ->live(onBlur: true)
                     ->afterStateUpdated(function (string $operation, $state, Forms\Set $set) {
-                        // Auto-generate the unique key based on the name during creation
                         if ($operation === 'create') {
                             $set('key', Str::slug($state));
                         }
@@ -59,7 +58,6 @@ class WorkflowDefinitionResource extends Resource
             ->actions([
                 EditAction::make(),
                 
-                // The bridge to your standalone BPMN Modeler
                 Action::make('design')
                     ->label('Open Designer')
                     ->icon('heroicon-o-paint-brush')
@@ -73,21 +71,13 @@ class WorkflowDefinitionResource extends Resource
     {
         return [
             'index' => Pages\ListWorkflowDefinitions::route('/'),
+            'create' => Pages\CreateWorkflowDefinition::route('/create'),
+            'edit' => Pages\EditWorkflowDefinition::route('/{record}/edit'),
         ];
     }
 
     public static function getSlug(?Panel $panel = null): string
     {
-        // The Filament slug is derived from the same config key that drives the
-        // package's standalone web prefix, so a single key relocates both UIs in
-        // step. Filament prepends the panel path itself (host-controlled, e.g.
-        // /admin), so the default prefix "bpmn/workflows" resolves to:
-        //
-        //   /admin/bpmn/workflows/definitions   (in the panel)
-        //   /bpmn/workflows/definitions         (standalone Blade dashboard)
-        //
-        // Do NOT hardcode a literal here: deriving from the config keeps the two
-        // UIs from drifting apart when a host customises the prefix.
         $prefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
         
         return $prefix . '/definitions';

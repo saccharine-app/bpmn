@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Bpmn\WorkflowDefinitionResource\Pages;
+namespace Saccharine\Bpmn\Filament\Resources\WorkflowDefinitionResource\Pages;
 
-use App\Filament\Resources\Bpmn\WorkflowDefinitionResource;
+use Saccharine\Bpmn\Filament\Resources\WorkflowDefinitionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -13,8 +13,6 @@ class ListWorkflowDefinitions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            // This adds the "New Workflow Definition" button to the top right
-            // and opens the resource's form in a modal popup.
             Actions\CreateAction::make(),
         ];
     }

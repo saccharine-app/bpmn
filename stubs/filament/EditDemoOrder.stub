@@ -1,0 +1,12 @@
+<?php
+
+namespace Saccharine\Bpmn\Filament\Resources\DemoOrderResource\Pages;
+
+use Saccharine\Bpmn\Filament\Resources\DemoOrderResource;
+use Filament\Actions;
+use Filament\Resources\Pages\EditRecord;
+
+class EditDemoOrder extends EditRecord
+{
+    protected static string $resource = DemoOrderResource::class;
+}
