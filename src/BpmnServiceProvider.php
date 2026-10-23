@@ -76,7 +76,7 @@ class BpmnServiceProvider extends ServiceProvider
                 \Saccharine\Bpmn\Console\Commands\MakeTriggerCommand::class,
                 \Saccharine\Bpmn\Console\Commands\MakeTemplateCommand::class,
                 \Saccharine\Bpmn\Console\Commands\InstallCommand::class,
-                \Saccharine\Bpmn\Console\Commands\DemoCommand::class,
+                \Saccharine\Bpmn\Console\Commands\BpmnPublishFilamentStubsCommand::class,
                 \Saccharine\Bpmn\Console\Commands\InstanceControlCommand::class,
                 \Saccharine\Bpmn\Console\Commands\TestOrderCommand::class,
             ]);

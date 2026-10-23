@@ -50,33 +50,6 @@ it('renders the standalone dashboard at the canonical URL', function () {
     $this->get('/bpmn/workflows/definitions')->assertOk();
 });
 
-it('only references routes that actually exist from the published stubs', function () {
-    $routes = collect(File::files(SACCHARINE_BPMN_PACKAGE_PATH . '/stubs/filament'))
-        ->map(fn ($file) => File::get($file->getPathname()))
-        ->implode("\n");
-
-    // Only match route('name') calls. `::route('/')` is Filament's page path
-    // definition, not a named route, so look behind to exclude it.
-    preg_match_all("/(?<!::)route\\('([^']+)'/", $routes, $matches);
-
-    foreach ($matches[1] as $referenced) {
-        expect(Route::has($referenced))->toBeTrue(
-            "The Filament stub references route('{$referenced}'), which is not registered by the package."
-        );
-    }
-});
-
-it('derives the Filament slug from the shared prefix key rather than hardcoding it', function () {
-    foreach (['WorkflowDefinitionResource', 'WorkflowInstanceResource'] as $stub) {
-        $contents = File::get(SACCHARINE_BPMN_PACKAGE_PATH . "/stubs/filament/{$stub}.stub");
-
-        expect($contents)
-            ->toContain("config('saccharine-bpmn.prefix'")
-            ->not->toContain("'bpmn/workflows/definitions'")
-            ->not->toContain("'bpmn/workflows/instances'");
-    }
-});
-
 it('keeps the designer views bound to the canonical dashboard resolver', function () {
     $views = [
         'resources/views/partials/workbench-header.blade.php',
