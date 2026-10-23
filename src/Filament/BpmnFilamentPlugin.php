@@ -3,6 +3,7 @@
 namespace Saccharine\Bpmn\Filament;
 
 use Filament\Contracts\Plugin;
+use Filament\Panel;
 use Saccharine\Bpmn\Filament\Resources\WorkflowDefinitionResource;
 use Saccharine\Bpmn\Filament\Resources\WorkflowInstanceResource;
 
@@ -18,12 +19,12 @@ class BpmnFilamentPlugin implements Plugin
         return app(static::class);
     }
 
-    public function register(): void
+    public function register(Panel $panel): void
     {
         //
     }
 
-    public function boot(): void
+    public function boot(Panel $panel): void
     {
         $this->registerResources();
     }
