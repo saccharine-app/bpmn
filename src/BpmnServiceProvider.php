@@ -24,6 +24,12 @@ class BpmnServiceProvider extends ServiceProvider
         // Load the database migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
+        // Load migrations from the durable-workflow package. v1 does not call
+        // loadMigrationsFrom() itself, so we register its migration directory here.
+        // This avoids publishing migrations to the host app. When upgrading to
+        // durable-workflow v2 (which loads its own migrations), this line can be removed.
+        $this->loadMigrationsFrom(__DIR__ . '/../vendor/durable-workflow/workflow/src/migrations');
+
         // Tell the host app where to find Blade templates
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'saccharine-bpmn');
 
