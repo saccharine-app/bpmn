@@ -14,26 +14,34 @@ class BpmnFilamentPlugin implements Plugin
         return 'saccharine-bpmn';
     }
 
-    public static function make(): static
+    public function getPluginName(): string
     {
-        return app(static::class);
+        return 'BPMN Process Orchestration';
+    }
+
+    public function getNavigationIcon(): string
+    {
+        return 'heroicon-o-rectangle-group';
     }
 
     public function register(Panel $panel): void
     {
-        //
+        $panel
+            ->resources([
+                WorkflowDefinitionResource::class,
+                WorkflowInstanceResource::class,
+            ])
+            ->pages([])
+            ->middleware([]);
     }
 
     public function boot(Panel $panel): void
     {
-        $this->registerResources();
+        //
     }
 
-    protected function registerResources(): void
+    public static function make(): static
     {
-        \Filament\Facades\Filament::registerResources([
-            WorkflowDefinitionResource::class,
-            WorkflowInstanceResource::class,
-        ]);
+        return app(static::class);
     }
 }

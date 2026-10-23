@@ -54,10 +54,6 @@ class BpmnServiceProvider extends ServiceProvider
         // the designer and instance routes registered above remain available so the
         // engine still works headlessly.
 
-        // Register Filament resources if the host app uses Filament
-        if (class_exists('Filament\FilamentServiceProvider')) {
-            BpmnFilamentPlugin::make()->boot();
-        }
         if (config('saccharine-bpmn.dashboard', true)) {
             Route::prefix($webPrefix)
                 ->middleware($webMiddleware)
@@ -144,7 +140,7 @@ class BpmnServiceProvider extends ServiceProvider
         
         // Create workflows and save diagram changes
         Gate::define(WorkflowPermission::EDIT->value, fn ($user = null) => app()->environment('local'));
-
+        
         // Delete workflows and their versions
         Gate::define(WorkflowPermission::DELETE->value, fn ($user = null) => app()->environment('local'));
         
