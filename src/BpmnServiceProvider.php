@@ -142,17 +142,53 @@ class BpmnServiceProvider extends ServiceProvider
     protected function registerGates()
     {
         // View the dashboards and editor
-        Gate::define(WorkflowPermission::VIEW->value, fn ($user = null) => app()->environment('local'));
+        Gate::define(WorkflowPermission::VIEW->value, function ($user = null) {
+            if (app()->environment('local')) {
+                return true;
+            }
+
+            return $user && $user->can(WorkflowPermission::VIEW->value);
+        });
         
         // Create workflows and save diagram changes
-        Gate::define(WorkflowPermission::EDIT->value, fn ($user = null) => app()->environment('local'));
+        Gate::define(WorkflowPermission::EDIT->value, function ($user = null) {
+            if (app()->environment('local')) {
+                return true;
+            }
+
+            return $user && $user->can(WorkflowPermission::EDIT->value);
+        });
         
         // Delete workflows and their versions
-        Gate::define(WorkflowPermission::DELETE->value, fn ($user = null) => app()->environment('local'));
+        Gate::define(WorkflowPermission::DELETE->value, function ($user = null) {
+            if (app()->environment('local')) {
+                return true;
+            }
+
+            return $user && $user->can(WorkflowPermission::DELETE->value);
+        });
         
         // Control running workflow instances
-        Gate::define(WorkflowPermission::SUSPEND_INSTANCE->value, fn ($user = null) => app()->environment('local'));
-        Gate::define(WorkflowPermission::RESUME_INSTANCE->value, fn ($user = null) => app()->environment('local'));
-        Gate::define(WorkflowPermission::HALT_INSTANCE->value, fn ($user = null) => app()->environment('local'));
+        Gate::define(WorkflowPermission::SUSPEND_INSTANCE->value, function ($user = null) {
+            if (app()->environment('local')) {
+                return true;
+            }
+
+            return $user && $user->can(WorkflowPermission::SUSPEND_INSTANCE->value);
+        });
+        Gate::define(WorkflowPermission::RESUME_INSTANCE->value, function ($user = null) {
+            if (app()->environment('local')) {
+                return true;
+            }
+
+            return $user && $user->can(WorkflowPermission::RESUME_INSTANCE->value);
+        });
+        Gate::define(WorkflowPermission::HALT_INSTANCE->value, function ($user = null) {
+            if (app()->environment('local')) {
+                return true;
+            }
+
+            return $user && $user->can(WorkflowPermission::HALT_INSTANCE->value);
+        });
     }
 }
