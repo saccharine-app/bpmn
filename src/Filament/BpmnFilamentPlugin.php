@@ -2,8 +2,9 @@
 
 namespace Saccharine\Bpmn\Filament;
 
-use Filament\Plugin;
+use Filament\Contracts\Plugin;
 use Saccharine\Bpmn\Filament\Resources\WorkflowDefinitionResource;
+use Saccharine\Bpmn\Filament\Resources\WorkflowInstanceResource;
 
 class BpmnFilamentPlugin implements Plugin
 {
