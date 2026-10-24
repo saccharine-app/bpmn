@@ -8,21 +8,34 @@ This guide covers configuring the engine, authoring triggers and activities, des
 
 The published configuration file lives at `config/saccharine-bpmn.php`.
 
-### Unified URL Prefix
-The package uses a single source of truth for routing. The `prefix` key controls both the standalone Blade endpoints and the Filament resource slugs:
+### Granular URL Routing & Middleware
+
+The package provides fine-grained control over web and API routes through the `config/saccharine-bpmn.php` file, allowing you to define separate prefixes and middleware stacks.
 
 ```php
 // config/saccharine-bpmn.php
-'prefix' => 'bpmn/workflows',
+'prefix' => [
+    'web' => 'bpmn/workflows', // Default web route prefix
+    'api' => 'api/bpmn',       // Default API route prefix (optional)
+],
+
+'middleware' => [
+    'web' => ['web', 'auth'], // Default web middleware stack
+    'api' => ['api'],        // Default API middleware stack
+],
 ```
 
-| Surface | URL | Route Name |
-| :--- | :--- | :--- |
-| **Standalone Dashboard** | `/bpmn/workflows/definitions` | `bpmn.index` |
-| **Filament Panel Table** | `/admin/bpmn/workflows/definitions` | `filament.admin.resources.bpmn.workflows.definitions.index` |
-| **Visual Designer** | `/bpmn/workflows/definitions/{id}/design` | `bpmn.design` |
-| **Instance Cockpit** | `/bpmn/workflows/instances/{id}/track` | `bpmn.instances.track` |
-| **Instance Registry** | `/bpmn/workflows/instances` | `bpmn.instances.index` |
+The `prefix.web` configuration controls the standalone Blade dashboard and associated web routes. The `prefix.api` routes are optional and only registered if the `routes/api.php` file exists and contains content.
+
+| Surface | Default URL (Web Prefix) | Default URL (API Prefix) | Route Name |
+| :--- | :--- | :--- | :--- |
+| **Standalone Dashboard** | `/bpmn/workflows/definitions` | N/A | `bpmn.index` |
+| **Filament Panel Table** | `/admin/bpmn/workflows/definitions` | N/A | `filament.admin.resources.bpmn.workflows.definitions.index` |
+| **Visual Designer** | `/bpmn/workflows/definitions/{id}/design` | N/A | `bpmn.design` |
+| **Instance Cockpit** | `/bpmn/workflows/instances/{id}/track` | N/A | `bpmn.instances.track` |
+| **Instance Registry** | `/bpmn/workflows/instances` | N/A | `bpmn.instances.index` |
+| **External API (if enabled)** | N/A | `/api/bpmn/external` | `bpmn.api.external` |
+
 
 ### Standalone vs. Filament Auto-Resolution
 The route `bpmn.index` dynamically forwards users to the appropriate interface:

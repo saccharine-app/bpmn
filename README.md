@@ -63,7 +63,7 @@ In another terminal, trigger a test order:
 php artisan bpmn:test-order --amount=250 --email=user@example.com
 ```
 
-Navigate to `/bpmn/workflows/definitions` (or your Filament admin panel) to inspect the diagram and trace live execution tokens.
+Navigate to the configurable web prefix (default: `/bpmn/workflows/definitions`) or your Filament admin panel to inspect the diagram and trace live execution tokens.
 
 ---
 
@@ -86,6 +86,37 @@ Navigate to `/bpmn/workflows/definitions` (or your Filament admin panel) to insp
 * **Symfony Expression Language (^7.0)**: Sandboxed evaluation of gateway condition expressions.
 * **Durable Workflow (^1.0)**: Event-sourced coroutine engine for durable background execution.
 * **bpmn-js**: Interactive client-side modeling and diagram visualization.
+
+
+---
+
+## Route Configuration
+
+The package provides granular control over web and API routes through the `config/saccharine-bpmn.php` file.
+
+*   **Web Prefix and Middleware:**
+    ```php
+    'prefix' => [
+        'web' => 'bpmn/workflows', // Default web route prefix
+    ],
+    'middleware' => [
+        'web' => ['web', 'auth'], // Default web middleware
+    ],
+    ```
+    The web routes (including the standalone Blade dashboard) are accessible via the `prefix.web` configuration.
+
+*   **API Prefix and Middleware:**
+    ```php
+    'prefix' => [
+        'api' => 'api/bpmn', // Default API route prefix
+    ],
+    'middleware' => [
+        'api' => ['api'], // Default API middleware
+    ],
+    ```
+    API routes are optional and only registered if the `routes/api.php` file exists and contains content.
+
+---
 
 ---
 
