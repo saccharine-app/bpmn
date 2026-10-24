@@ -105,7 +105,7 @@ class WorkflowInstanceResource extends Resource
 
     public static function getSlug(?Panel $panel = null): string
     {
-        $prefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
+        $prefix = trim(config('saccharine-bpmn.prefix.web', 'bpmn/workflows'), '/');
         
         return $prefix . '/instances';
     }

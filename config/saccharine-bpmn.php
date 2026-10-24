@@ -31,36 +31,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Routing
-    |--------------------------------------------------------------------------
-    |
-    | `prefix` is the single source of truth for the package's URL surface. It
-    | drives BOTH:
-    |
-    |   * the standalone web routes  -> /bpmn/workflows/definitions
-    |   * the Filament resource slug -> /admin/bpmn/workflows/definitions
-    |
-    | Filament prepends its own panel path (host-controlled, e.g. `admin`) to
-    | the resource slug, so this single key relocates both UIs in step.
-    |
-    */
-    'prefix' => 'bpmn/workflows',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Standalone Blade Dashboard
-    |--------------------------------------------------------------------------
-    |
-    | The package ships a lightweight Blade dashboard for hosts that do not use
-    | Filament. Set this to `false` in a Filament-only app to stop registering
-    | the index/store routes; the designer, instance tracking, and version-save
-    | routes stay live so the engine remains usable headlessly.
-    |
-    */
-    'dashboard' => true,
-
-    /*
-    |--------------------------------------------------------------------------
     | Canonical Dashboard URL
     |--------------------------------------------------------------------------
     |
@@ -82,13 +52,27 @@ return [
     |
     */
     'filament_redirect' => true,
-
+    
     /*
     |--------------------------------------------------------------------------
-    | Package API Prefix
+    | Routing
     |--------------------------------------------------------------------------
+    |
+    | `prefix` is the single source of truth for the package's URL surface. It
+    | drives BOTH:
+    |
+    |   * the standalone web routes  -> /bpmn/workflows/definitions
+    |   * the Filament resource slug -> /admin/bpmn/workflows/definitions
+    |
+    | Filament prepends its own panel path (host-controlled, e.g. `admin`) to
+    | the resource slug, so this single key relocates both UIs in step.
+    |
     */
-    'api_prefix' => 'api/bpmn',
+    'prefix' => [
+        'web' => 'bpmn/workflows',
+        // Reserved for future headless/external token-based workers
+        'api' => 'api/bpmn',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -99,11 +83,6 @@ return [
     | add your own middleware here to protect the designer and dashboard
     | behind a login, such as the 'auth' middleware.
     |
-    | NOTE: the default is intentionally `['web']` for local/demo ergonomics.
-    | In production you should set this to `['web', 'auth']`, otherwise
-    | /bpmn/workflows/definitions is reachable by any guest. Filament panels
-    | are always behind their own guard regardless of this value.
-    |
     | Filament hosts: the `auth` middleware redirects guests to a route named
     | `login`, but Filament registers `filament.admin.auth.login` instead — add
     | `$middleware->redirectGuestsTo('/admin/login');` to the withMiddleware()
@@ -111,6 +90,22 @@ return [
     | "Route [login] not defined" 500 instead of a login redirect.
     |
     */
-    'middleware' => ['web'],
-    'api_middleware' => ['api'],
+    'middleware' => [
+        // Standard session auth protects web UI and its JSON telemetry endpoints
+        'web' => ['web'],
+        'api' => ['api'],
+    ],
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Standalone Blade Dashboard
+    |--------------------------------------------------------------------------
+    |
+    | The package ships a lightweight Blade dashboard for hosts that do not use
+    | Filament. Set this to `false` in a Filament-only app to stop registering
+    | the index/store routes; the designer, instance tracking, and version-save
+    | routes stay live so the engine remains usable headlessly.
+    |
+    */
+    'dashboard' => true,
 ];

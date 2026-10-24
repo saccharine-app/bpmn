@@ -23,7 +23,7 @@ it('returns active node IDs and status for a workflow instance via API', functio
     ]);
 
     // Hit the Endpoint
-    $response = $this->getJson("/api/bpmn/instances/{$instance->id}/tokens");
+    $response = $this->getJson(route('bpmn.instances.tokens', $instance->id));
 
     // Assertions
     $response->assertStatus(200)

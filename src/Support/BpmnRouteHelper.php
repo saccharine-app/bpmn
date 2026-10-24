@@ -29,7 +29,7 @@ class BpmnRouteHelper
      */
     public static function filamentResourceRoute(): ?string
     {
-        $prefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
+        $prefix = trim(config('saccharine-bpmn.prefix.web', 'bpmn/workflows'), '/');
 
         // Filament turns slashes in the slug into dots in the route name, so the
         // default slug "bpmn/workflows/definitions" becomes

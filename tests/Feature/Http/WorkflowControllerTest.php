@@ -1,10 +1,17 @@
 <?php
 
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Saccharine\Bpmn\Models\WorkflowDefinition;
 use Saccharine\Bpmn\Models\WorkflowVersion;
 use Saccharine\Bpmn\Models\WorkflowNode;
 
 it('accepts an xml payload and compiles a new workflow version', function () {
+    // Create a user (or super admin)
+    $user = new class extends Authenticatable {
+        protected $guarded = [];
+    };
+    $user->id = 1;
+
     // Setup an existing definition to attach the version to
     $definition = WorkflowDefinition::create([
         'name' => 'Client Onboarding',
@@ -22,9 +29,10 @@ it('accepts an xml payload and compiles a new workflow version', function () {
     XML;
 
     // Simulate an external POST request from the host app's frontend
-    $response = $this->postJson("/api/bpmn/workflows/{$definition->id}/versions", [
-        'xml' => $xmlString
-    ]);
+    $response = $this->actingAs($user)
+        ->postJson(route('bpmn.definitions.versions.store', $definition), [
+            'xml' => $xmlString
+        ]);
 
     // Assert the API responded correctly
     $response->assertStatus(201)

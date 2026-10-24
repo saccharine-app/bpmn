@@ -29,7 +29,7 @@ class InstallCommand extends Command
 
         $this->info('Saccharine BPMN installed successfully!');
         $this->warn('Next, run `php artisan migrate` to apply the package database migrations.');
-        $prefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
+        $prefix = trim(config('saccharine-bpmn.prefix.web', 'bpmn/workflows'), '/');
         $this->line("You can now navigate to /{$prefix}/definitions to start designing.");
     }
 }

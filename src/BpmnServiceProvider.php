@@ -37,34 +37,10 @@ class BpmnServiceProvider extends ServiceProvider
             $this->loadMigrationsFrom($durablePath);
         }
 
+        $this->registerRoutes();
+
         // Tell the host app where to find Blade templates
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'saccharine-bpmn');
-
-        // Load the package's internal API routes
-        Route::prefix(config('saccharine-bpmn.api_prefix', 'api/bpmn'))
-            ->middleware(config('saccharine-bpmn.api_middleware', ['api']))
-            ->group(__DIR__ . '/../routes/api.php');
-
-        // Tell the host app where to find web routes.
-        // `prefix` is the canonical path segment for the whole package: it drives
-        // these standalone routes AND the Filament resource slug (see the stubs).
-        $webPrefix = trim(config('saccharine-bpmn.prefix', 'bpmn/workflows'), '/');
-        $webMiddleware = config('saccharine-bpmn.middleware', ['web']);
-
-        Route::prefix($webPrefix)
-            ->middleware($webMiddleware)
-            ->group(__DIR__ . '/../routes/web.php');
-
-        // The standalone Blade dashboard is optional. A Filament-only host can set
-        // `saccharine-bpmn.dashboard` to false and rely on the panel resource instead;
-        // the designer and instance routes registered above remain available so the
-        // engine still works headlessly.
-
-        if (config('saccharine-bpmn.dashboard', true)) {
-            Route::prefix($webPrefix)
-                ->middleware($webMiddleware)
-                ->group(__DIR__ . '/../routes/dashboard.php');
-        }
 
         // Listen to all events to check for start event triggers
         Event::listen('*', [WorkflowTriggerListener::class, 'handle']);
@@ -134,6 +110,39 @@ class BpmnServiceProvider extends ServiceProvider
             'saccharine-bpmn.triggers.demo_order_created' => \Saccharine\Bpmn\Models\DemoOrder::class . '@created',
             'saccharine-bpmn.activities.bpmn_send_notification' => \Saccharine\Bpmn\Workflows\Activities\SendNotificationActivity::class,
         ]);
+    }
+
+    protected function registerRoutes(): void
+    {
+        // Don't re-register if routes are compiled in production cache
+        if ($this->app->routesAreCached()) {
+            return;
+        }
+
+        $webPrefix = trim(config('saccharine-bpmn.prefix.web', 'bpmn/workflows'), '/');
+        $webMiddleware = config('saccharine-bpmn.middleware.web', ['web', 'auth']);
+
+        // Core Workflow Web & Telemetry Routes
+        Route::prefix($webPrefix)
+            ->middleware($webMiddleware)
+            ->group(__DIR__ . '/../routes/web.php');
+
+        // Optional Standalone Blade Dashboard
+        if (config('saccharine-bpmn.dashboard', true)) {
+            Route::prefix($webPrefix)
+                ->middleware($webMiddleware)
+                ->group(__DIR__ . '/../routes/dashboard.php');
+        }
+
+        // Optional Headless External API (disabled or empty until needed)
+        if (file_exists(__DIR__ . '/../routes/api.php') && filesize(__DIR__ . '/../routes/api.php') > 30) {
+            $apiPrefix = trim(config('saccharine-bpmn.prefix.api', 'api/bpmn'), '/');
+            $apiMiddleware = config('saccharine-bpmn.middleware.api', ['api']);
+
+            Route::prefix($apiPrefix)
+                ->middleware($apiMiddleware)
+                ->group(__DIR__ . '/../routes/api.php');
+        }
     }
 
     /**

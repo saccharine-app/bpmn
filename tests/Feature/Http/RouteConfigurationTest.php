@@ -47,7 +47,7 @@ it('redirects the documented short URL to the dashboard instead of 404ing', func
 });
 
 it('renders the standalone dashboard at the canonical URL', function () {
-    $this->get('/bpmn/workflows/definitions')->assertOk();
+    $this->get(route('bpmn.index'))->assertOk();
 });
 
 it('keeps the designer views bound to the canonical dashboard resolver', function () {
