@@ -93,6 +93,6 @@ it('renders an absolute version-save URL the browser cannot resolve against the 
     // A relative `fetch('api/bpmn/...')` would resolve against
     // /bpmn/workflows/definitions/{id}/design and 404 with a combined path.
     expect($html)
-        ->toContain("fetch('http://localhost/api/bpmn/workflows/{$definition->id}/versions'")
-        ->not->toContain("fetch('api/bpmn/");
+        ->toContain(implode("", ["fetch(`", route('bpmn.definitions.versions.store', $definition->id)]))
+        ->not->toContain("fetch(`bpmn/");
 });

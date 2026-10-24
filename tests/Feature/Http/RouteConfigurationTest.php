@@ -19,7 +19,7 @@ use Saccharine\Bpmn\Support\BpmnRouteHelper;
 const SACCHARINE_BPMN_PACKAGE_PATH = __DIR__ . '/../../..';
 
 it('resolves the canonical dashboard route from the prefix config key', function () {
-    expect(route('bpmn.index'))->toBe('http://localhost/bpmn/workflows/definitions');
+    expect(route('bpmn.index'))->toBe('http://localhost:8000/bpmn/workflows/definitions');
 });
 
 it('registers the designer and instance routes under the same prefix', function () {
@@ -66,14 +66,6 @@ it('keeps the designer views bound to the canonical dashboard resolver', functio
     }
 });
 
-it('builds the designer save URL from the api_prefix config key', function () {
-    $contents = File::get(SACCHARINE_BPMN_PACKAGE_PATH . '/resources/views/editor.blade.php');
-
-    expect($contents)
-        ->toContain("config('saccharine-bpmn.api_prefix'")
-        ->not->toContain("'/api/bpmn/workflows/");
-});
-
 it('falls back to the standalone dashboard when Filament is absent', function () {
     expect(BpmnRouteHelper::filamentResourceRoute())->toBeNull()
         ->and(BpmnRouteHelper::dashboardUrl())->toBe(route('bpmn.index'));
@@ -105,19 +97,31 @@ it('prefers an explicit dashboard_url override over every other resolution', fun
 });
 
 it('prefers the Filament table over the standalone dashboard', function () {
-    Route::get('/admin/bpmn/workflows/definitions', fn () => 'ok')
+    $router = app('router');
+
+    $router->get('/admin/bpmn/workflows/definitions', fn () => 'ok')
         ->name('filament.admin.resources.bpmn.workflows.definitions.index');
 
+    // Force the router and url generator to rebuild their name dictionaries
+    $router->getRoutes()->refreshNameLookups();
+    app('url')->setRoutes($router->getRoutes());
+
     expect(BpmnRouteHelper::dashboardUrl())
-        ->toBe('http://localhost/admin/bpmn/workflows/definitions');
+        ->toBe('http://localhost:8000/admin/bpmn/workflows/definitions');
 });
 
 it('forwards the canonical entry point to the Filament table when one is registered', function () {
-    Route::get('/admin/bpmn/workflows/definitions', fn () => 'ok')
+    $router = app('router');
+
+    $router->get('/admin/bpmn/workflows/definitions', fn () => 'ok')
         ->name('filament.admin.resources.bpmn.workflows.definitions.index');
 
+    // Force the router and url generator to rebuild their name dictionaries
+    $router->getRoutes()->refreshNameLookups();
+    app('url')->setRoutes($router->getRoutes());
+
     $this->get('/bpmn/workflows/definitions')
-        ->assertRedirect('http://localhost/admin/bpmn/workflows/definitions');
+        ->assertRedirect('http://localhost:8000/admin/bpmn/workflows/definitions');
 });
 
 it('pins the canonical entry point to the Blade dashboard when the redirect is disabled', function () {

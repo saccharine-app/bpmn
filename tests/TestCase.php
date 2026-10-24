@@ -17,6 +17,9 @@ class TestCase extends Orchestra
 
         // This ensures Laravel's core schema migrations (like users) are run if needed
         $this->loadLaravelMigrations();
+        
+        // Force the URL generator to use port 8000 during tests
+        $this->app['url']->forceRootUrl('http://localhost:8000');
     }
 
     /**

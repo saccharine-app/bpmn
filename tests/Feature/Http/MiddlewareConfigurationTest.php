@@ -37,5 +37,5 @@ it('redirects guests to the login route instead of failing on the request', func
     ]);
 
     $this->get(route('bpmn.design', $definition->id))
-        ->assertRedirect('http://localhost/login');
+        ->assertRedirect('http://localhost:8000/login');
 });
