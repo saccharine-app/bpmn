@@ -213,7 +213,9 @@ Loading payload...
 
             try {
                 
-                const response = await fetch(route('bpmn.instances.task.submit', instanceId, elementId), {
+                const response = await fetch(route('bpmn.instances.task.submit', [
+                    instanceId, elementId
+                ]), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
