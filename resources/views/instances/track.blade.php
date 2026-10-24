@@ -5,6 +5,7 @@
     <title>Tracking Instance #{{ $instance->id }} - {{$instance->version->definition->name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ asset('vendor/saccharine/bpmn/saccharine-bpmn.css') }}">
+    @routes
 </head>
 <body class="bg-gray-100 flex flex-col h-screen overflow-hidden font-sans">
 
@@ -121,7 +122,7 @@ Loading payload...
 
             const poll = setInterval(async () => {
                 try {
-                    const res = await fetch(`/api/bpmn/instances/${instanceId}/telemetry`);
+                    const res = await fetch(route('bpmn.instances.telemetry', instanceId));
                     const data = await res.json();
 
                     tracker.syncState(
@@ -197,6 +198,7 @@ Loading payload...
         modalForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const instanceId = {{ $instance->id }};
             const elementId = modalElementId.value;
             const payload = {
                 decision: document.getElementById('task-input-decision').value,
@@ -210,7 +212,8 @@ Loading payload...
             submitBtn.innerHTML = `<span>Resuming...</span>`;
 
             try {
-                const response = await fetch(`/api/bpmn/instances/{{ $instance->id }}/tasks/${elementId}/submit`, {
+                
+                const response = await fetch(route('bpmn.instances.task.submit', instanceId, elementId), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

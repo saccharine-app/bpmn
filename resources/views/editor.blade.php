@@ -90,7 +90,9 @@
                 
                 // url() keeps this absolute (a bare relative path would resolve
                 // against the designer's own URL and 404).
-                const response = await fetch('{{ url(rtrim(config('saccharine-bpmn.api_prefix', 'api/bpmn'), '/')) }}/workflows/{{ $definition->id }}/versions', {
+                
+                const response = await fetch(
+                    `{{ route('bpmn.definitions.versions.store', $definition->id) }}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

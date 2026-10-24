@@ -24,6 +24,7 @@
             100% { transform: scale(1); opacity: 0.9; }
         }
     </style>
+    @routes
 </head>
 <body class="bg-gray-100 overflow-hidden flex h-screen">
 
@@ -101,7 +102,7 @@
             // Poll the API for token locations
             const pollInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/api/bpmn/instances/${instanceId}/tokens`);
+                    const response = await fetch(route('bpmn.instances.tokens', instanceId));
                     const data = await response.json();
                     
                     tracker.updateTokens(data.active_node_ids, previousTokens);
