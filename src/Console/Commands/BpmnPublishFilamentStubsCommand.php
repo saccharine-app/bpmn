@@ -61,10 +61,10 @@ class BpmnPublishFilamentStubsCommand extends Command
         File::ensureDirectoryExists($resourcesDir);
 
         $this->publishStub('Filament/Resources/DemoOrderResource.php.stub', "{$resourcesDir}/DemoOrderResource.php");
-        $this->publishStub('Filament/Resources/DemoOrderResource/Pages/CreateDemoOrder.php.stub', "{$resourcesDir}/Pages/CreateDemoOrder.php");
-        $this->publishStub('Filament/Resources/DemoOrderResource/Pages/EditDemoOrder.php.stub', "{$resourcesDir}/Pages/EditDemoOrder.php");
-        $this->publishStub('Filament/Resources/DemoOrderResource/Pages/ListDemoOrders.php.stub', "{$resourcesDir}/Pages/ListDemoOrders.php");
-        // $this->publishStub('Filament/Resources/DemoOrderResource/Widgets/DemoOrderStatsWidget.php.stub', "{$resourcesDir}/Widgets/DemoOrderStatsWidget.php");
+        $this->publishStub('Filament/Resources/DemoOrderResource/Pages/CreateDemoOrder.php.stub', "{$resourcesDir}/DemoOrderResource/Pages/CreateDemoOrder.php");
+        $this->publishStub('Filament/Resources/DemoOrderResource/Pages/EditDemoOrder.php.stub', "{$resourcesDir}/DemoOrderResource/Pages/EditDemoOrder.php");
+        $this->publishStub('Filament/Resources/DemoOrderResource/Pages/ListDemoOrders.php.stub', "{$resourcesDir}/DemoOrderResource/Pages/ListDemoOrders.php");
+        // $this->publishStub('Filament/Resources/DemoOrderResource/Widgets/DemoOrderStatsWidget.php.stub', "{$resourcesDir}/DemoOrderResource/Widgets/DemoOrderStatsWidget.php");
 
         $this->info('Filament demo stubs published successfully!');
     }
