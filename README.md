@@ -8,7 +8,7 @@ Saccharine BPMN bridges the gap between executable process diagrams and Laravel 
 
 ---
 
-> **Status: v0.5.0-alpha**  
+> **Status: v0.5.3-alpha**  
 > Actively developed. The execution engine, state projection, live token tracking, and manual intervention layers are operational. Best suited for testing, evaluation, and community feedback.
 
 * **Supported Elements**: Exclusive Gateways (condition expressions), Parallel Gateways (AND splits/joins via child coroutines), User Tasks (signals/wait states), Service Tasks (activity classes), Message Start Events (Eloquent model triggers), and Boundary Error/Timer events.
@@ -48,7 +48,11 @@ php artisan bpmn:install
 Scaffold the demo order workflow, sample activities, and trigger events:
 
 ```bash
-php artisan bpmn:demo
+php artisan db:seed --class='Saccharine\Bpmn\Database\Seeders\BpmnDemoSeeder'
+```
+
+```bash
+php artisan bpmn:publish-filament-stubs
 ```
 
 Start your queue worker to process workflow steps:
@@ -81,8 +85,8 @@ Navigate to the configurable web prefix (default: `/bpmn/workflows/definitions`)
 
 ## Technical Requirements
 
-* **PHP 8.3+**
-* **Laravel Framework (^12.0 || ^13.0)**
+* **PHP 8.4**
+* **Laravel Framework (^13.0)**
 * **Symfony Expression Language (^7.0)**: Sandboxed evaluation of gateway condition expressions.
 * **Durable Workflow (^1.0)**: Event-sourced coroutine engine for durable background execution.
 * **bpmn-js**: Interactive client-side modeling and diagram visualization.
