@@ -57,7 +57,7 @@ class BpmnPublishFilamentStubsCommand extends Command
         $this->registerInConfig('activities', 'demo_archive_context', 'App\Workflows\Activities\DemoGenerateInvoiceActivity');
 
         // Publish Demo Order Filament Resources
-        $resourcesDir = app_path('Filament/Resources/Demo');
+        $resourcesDir = app_path('Filament/Resources');
         File::ensureDirectoryExists($resourcesDir);
 
         $this->publishStub('Filament/Resources/DemoOrderResource.php.stub', "{$resourcesDir}/DemoOrderResource.php");
