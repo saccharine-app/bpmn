@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Bpmn;
+namespace Saccharine\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Schemas;
@@ -10,7 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Panel;
 use Saccharine\Bpmn\Models\DemoOrder;
-use App\Filament\Resources\Bpmn\DemoOrderResource\Pages;
+use Saccharine\Filament\Resources\DemoOrderResource\Pages;
 
 class DemoOrderResource extends Resource
 {
