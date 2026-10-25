@@ -1,0 +1,57 @@
+name: 💡 BPMN Node or Feature Proposal
+description: Propose a new BPMN 2.0 node handler, gateway type, or engine capability.
+title: "[Proposal]: "
+labels: ["enhancement", "rfc"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to propose new BPMN 2.0 elements (e.g., Message Catch Events, Inclusive Gateways) or enhancements to the orchestration engine.
+
+  - type: dropdown
+    id: element_category
+    attributes:
+      label: Element Category
+      options:
+        - "Task / Activity (e.g., Script Task, Business Rule Task)"
+        - "Gateway (e.g., Inclusive OR, Complex)"
+        - "Event (e.g., Intermediate Timer, Message Catch/Throw, Signal)"
+        - "Sub-Process / Call Activity"
+        - "Developer Tooling / Scaffolding"
+        - "Other Engine Feature"
+    validations:
+      required: true
+
+  - type: input
+    id: bpmn_standard_type
+    attributes:
+      label: BPMN 2.0 XML Tag
+      description: The standard BPMN XML element tag (if applicable).
+      placeholder: e.g., bpmn:intermediateCatchEvent, bpmn:inclusiveGateway
+
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: Use Case & Motivation
+      description: What business process or workflow scenario requires this element?
+      placeholder: "In our workflow, we need to wait 48 hours for a customer response before falling back to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: execution_semantics
+    attributes:
+      label: Proposed Queue & Engine Execution
+      description: How should this behave in terms of queue workers, database state, or coroutines?
+      placeholder: |
+        - Should this pause and hibernate via await()?
+        - Does it require a custom SignalMethod?
+        - How should token state be written to workflow_tokens?
+    validations:
+      required: true
+
+  - type: textarea
+    id: modeler_considerations
+    attributes:
+      label: Modeler / Canvas Details
+      description: Does this need custom bpmn-js palette support, context pad actions, or Element Template inputs?

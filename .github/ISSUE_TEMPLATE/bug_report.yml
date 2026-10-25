@@ -1,0 +1,113 @@
+name: 🐛 Bug Report
+description: Report an unexpected error, crash, or token execution failure.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting an issue! Please provide as much environmental context as possible so the behavior can be reproduced deterministically.
+
+  - type: input
+    id: package_version
+    attributes:
+      label: Package Version
+      description: What version of `saccharine/bpmn` are you running?
+      placeholder: e.g., v0.5.3-alpha
+    validations:
+      required: true
+
+  - type: dropdown
+    id: php_version
+    attributes:
+      label: PHP Version
+      options:
+        - "8.4"
+        - "8.3"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: laravel_version
+    attributes:
+      label: Laravel Version
+      options:
+        - "13.x"
+        - "12.x"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: queue_driver
+    attributes:
+      label: Queue Driver
+      description: The underlying queue connection running `php artisan queue:work`.
+      options:
+        - "database"
+        - "redis"
+        - "sqs"
+        - "sync"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database_driver
+    attributes:
+      label: Database Driver
+      options:
+        - "SQLite"
+        - "MySQL / MariaDB"
+        - "PostgreSQL"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ui_surface
+    attributes:
+      label: Admin Surface
+      description: Where did this occur?
+      options:
+        - "Standalone Blade Views"
+        - "Filament Plugin"
+        - "CLI / Headless Queue Worker"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what went wrong.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps or commands to trigger the behavior.
+      placeholder: |
+        1. Define workflow with Exclusive Gateway...
+        2. Dispatch event with payload...
+        3. Run queue:work...
+        4. Token halts unexpectedly at node...
+    validations:
+      required: true
+
+  - type: textarea
+    id: bpmn_xml
+    attributes:
+      label: BPMN XML / Diagram Snippet
+      description: Paste the exported BPMN 2.0 XML or relevant element definition if applicable.
+      render: xml
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Stack Trace / Worker Logs
+      description: Relevant logs from `storage/logs/laravel.log` or the console output.
+      render: shell

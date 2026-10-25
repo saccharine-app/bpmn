@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a Question or Discuss Architecture
+    url: https://github.com/saccharine-app/bpmn/discussions
+    about: Ask implementation questions, discuss architecture, or share your workflow use cases.
