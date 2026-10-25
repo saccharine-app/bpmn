@@ -10,6 +10,7 @@ export const DEFAULT_SUPPORTED_ELEMENTS = [
     // Events
     'bpmn:StartEvent',
     'bpmn:EndEvent',
+    'bpmn:BoundaryEvent',
 
     // Activities / Tasks
     'bpmn:ServiceTask',
@@ -36,6 +37,11 @@ export const ELEMENT_UI_MAPPING = {
         palette: ['create.end-event'],
         contextPad: ['append.end-event'],
         replace: ['replace-with-none-end']
+    },
+    'bpmn:BoundaryEvent': {
+        palette: ['create.intermediate-event'],
+        contextPad: ['append.intermediate-event'],
+        replace: ['replace-with-error-boundary']
     },
     'bpmn:ServiceTask': {
         palette: ['create.service-task'],
