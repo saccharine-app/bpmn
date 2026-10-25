@@ -1,8 +1,8 @@
 <?php
 
-namespace Saccharine\Bpmn\Filament\Resources\DemoOrderResource\Pages;
+namespace App\Filament\Resources\DemoOrderResource\Pages;
 
-use Saccharine\Bpmn\Filament\Resources\DemoOrderResource;
+use App\Filament\Resources\DemoOrderResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
