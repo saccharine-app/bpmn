@@ -6,6 +6,8 @@ A lightweight, PHP-native BPMN 2.0 workflow orchestrator and visual designer for
 
 Saccharine BPMN bridges the gap between executable process diagrams and Laravel applications by pairing **bpmn-js** for interactive modeling with **durable-workflow** for stateful, queue-backed coroutines.
 
+[**Live Sandbox**](demo.saccharine.app)
+
 ---
 
 > **Status: v0.5.3-alpha**  
