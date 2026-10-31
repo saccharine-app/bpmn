@@ -80,7 +80,7 @@
                         <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     </div>
                     <h3 class="font-bold text-green-900 text-lg">Process Complete</h3>
-                    <p class="text-sm text-green-700 mt-2">The workflow engine has automatically generated the invoice and terminated the process.</p>
+                    <p class="text-sm text-green-700 mt-2">The process engine has automatically generated the invoice and terminated the process.</p>
                 </div>
             </div>
 

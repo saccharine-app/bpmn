@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +31,7 @@ it('redirects guests to the login route instead of failing on the request', func
     // $middleware->redirectGuestsTo('/admin/login') or a route named `login`).
     Route::get('/login', fn () => 'login form')->name('login');
 
-    $definition = WorkflowDefinition::create([
+    $definition = ProcessDefinition::create([
         'name' => 'Order Fulfilment',
         'key'  => 'order-fulfilment',
     ]);

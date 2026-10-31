@@ -1,13 +1,13 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Workflow\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
 
-it('can permanently halt a running workflow', function () {
+it('can permanently halt a running process', function () {
     // Scaffold Database with a User Task so it pauses
-    $definition = WorkflowDefinition::create(['name' => 'Halt Test', 'key' => 'halt-test']);
+    $definition = ProcessDefinition::create(['name' => 'Halt Test', 'key' => 'halt-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
     
     $version->nodes()->createMany([
@@ -43,8 +43,8 @@ it('can permanently halt a running workflow', function () {
         ->and($output['_system_status'])->toBe('halted');
 });
 
-it('can suspend a workflow and safely resume it later', function () {
-    $definition = WorkflowDefinition::create(['name' => 'Suspend Test', 'key' => 'suspend-test']);
+it('can suspend a process and safely resume it later', function () {
+    $definition = ProcessDefinition::create(['name' => 'Suspend Test', 'key' => 'suspend-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
     
     $version->nodes()->createMany([

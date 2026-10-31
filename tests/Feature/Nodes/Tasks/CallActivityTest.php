@@ -1,17 +1,17 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Tasks\CallActivityHandler;
 use Workflow\ChildWorkflowStub;
 
 it('yields a child workflow stub for the called element and merges the returned payload', function () {
     // Scaffold the Target (Called) Process
-    $targetDefinition = WorkflowDefinition::create(['name' => 'Billing', 'key' => 'billing-process']);
+    $targetDefinition = ProcessDefinition::create(['name' => 'Billing', 'key' => 'billing-process']);
     $targetDefinition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>', 'is_active' => true]);
 
     // Scaffold the Parent (Calling) Process
-    $parentDefinition = WorkflowDefinition::create(['name' => 'Checkout', 'key' => 'checkout-process']);
+    $parentDefinition = ProcessDefinition::create(['name' => 'Checkout', 'key' => 'checkout-process']);
     $parentVersion = $parentDefinition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>', 'is_active' => true]);
     
     $callNode = $parentVersion->nodes()->create([
@@ -54,7 +54,7 @@ it('yields a child workflow stub for the called element and merges the returned 
 });
 
 it('throws an exception if the called element workflow does not exist or has no active version', function () {
-    $parentDefinition = WorkflowDefinition::create(['name' => 'Checkout', 'key' => 'checkout']);
+    $parentDefinition = ProcessDefinition::create(['name' => 'Checkout', 'key' => 'checkout']);
     $parentVersion = $parentDefinition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
     
     $callNode = $parentVersion->nodes()->create([

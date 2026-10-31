@@ -1,12 +1,12 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Events\EndEventHandler;
 use Workflow\WorkflowStub;
 
 it('returns a null node ID to terminate the execution path', function () {
-    $definition = WorkflowDefinition::create(['name' => 'End Test', 'key' => 'end-test']);
+    $definition = ProcessDefinition::create(['name' => 'End Test', 'key' => 'end-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
     
     $endNode = $version->nodes()->create(['bpmn_element_id' => 'End_1', 'type' => 'endEvent']);

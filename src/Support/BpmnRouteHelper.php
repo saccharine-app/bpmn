@@ -21,19 +21,19 @@ use Illuminate\Support\Facades\Route;
 class BpmnRouteHelper
 {
     /**
-     * The Filament resource route name for workflow definitions, if registered.
+     * The Filament resource route name for process definitions, if registered.
      *
      * Filament names resource routes after the resource slug, e.g.
      * filament.{panel}.resources.{slug}.index, where slashes in the slug become
-     * dots (bpmn/workflows/definitions -> bpmn.workflows.definitions).
+     * dots (bpmn/processes/definitions -> bpmn.processes.definitions).
      */
     public static function filamentResourceRoute(): ?string
     {
-        $prefix = trim(config('saccharine-bpmn.prefix.web', 'bpmn/workflows'), '/');
+        $prefix = trim(config('saccharine-bpmn.prefix.web', 'bpmn/processes'), '/');
 
         // Filament turns slashes in the slug into dots in the route name, so the
-        // default slug "bpmn/workflows/definitions" becomes
-        // "filament.{panel}.resources.bpmn.workflows.definitions.index".
+        // default slug "bpmn/processes/definitions" becomes
+        // "filament.{panel}.resources.bpmn.processes.definitions.index".
         $slug = str_replace('/', '.', $prefix) . '.definitions';
 
         $patterns = [
@@ -41,7 +41,7 @@ class BpmnRouteHelper
             '/^filament\..+\.resources\.' . preg_quote($slug, '/') . '\.index$/',
             // Fallback for hosts whose resource predates the getSlug() override,
             // where Filament derives the slug from the class namespace.
-            '/^filament\..+\.resources\..*workflow-definitions\.index$/',
+            '/^filament\..+\.resources\..*process-definitions\.index$/',
         ];
 
         foreach (Route::getRoutes() as $route) {

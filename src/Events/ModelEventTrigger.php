@@ -36,9 +36,9 @@ class ModelEventTrigger implements BpmnTriggerableEvent
     }
 
     /**
-     * Normalizes the model's attributes into the workflow's initial $userData payload.
+     * Normalizes the model's attributes into the process's initial $userData payload.
      */
-    public function getWorkflowPayload(): array
+    public function getProcessPayload(): array
     {
         $modelData = $this->model->toArray();
 

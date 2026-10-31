@@ -1,12 +1,12 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Gateways\ExclusiveGatewayHandler;
 use Workflow\WorkflowStub;
 
 it('evaluates expression logic and routes the token to the correct path', function () {
-    $definition = WorkflowDefinition::create(['name' => 'Gateway Test', 'key' => 'gateway-test']);
+    $definition = ProcessDefinition::create(['name' => 'Gateway Test', 'key' => 'gateway-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
     
     $gatewayNode = $version->nodes()->create(['bpmn_element_id' => 'Gateway_1', 'type' => 'exclusiveGateway']);

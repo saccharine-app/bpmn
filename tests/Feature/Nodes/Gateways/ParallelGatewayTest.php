@@ -1,6 +1,6 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Workflow\Activity;
 use Workflow\WorkflowStub;
@@ -28,7 +28,7 @@ it('executes multiple paths in parallel and merges the payload at the join', fun
     config(['saccharine-bpmn.activities.generate_invoice' => GenerateInvoiceActivity::class]);
 
     // Scaffold Database
-    $definition = WorkflowDefinition::create(['name' => 'Parallel Processing', 'key' => 'parallel-test']);
+    $definition = ProcessDefinition::create(['name' => 'Parallel Processing', 'key' => 'parallel-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     // Nodes

@@ -34,7 +34,7 @@ body:
     attributes:
       label: Use Case & Motivation
       description: What business process or workflow scenario requires this element?
-      placeholder: "In our workflow, we need to wait 48 hours for a customer response before falling back to..."
+      placeholder: "In our process, we need to wait 48 hours for a customer response before falling back to..."
     validations:
       required: true
 
@@ -46,7 +46,7 @@ body:
       placeholder: |
         - Should this pause and hibernate via await()?
         - Does it require a custom SignalMethod?
-        - How should token state be written to workflow_tokens?
+        - How should token state be written to process_tokens?
     validations:
       required: true
 

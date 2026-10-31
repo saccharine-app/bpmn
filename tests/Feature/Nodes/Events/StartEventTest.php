@@ -1,12 +1,12 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Events\StartEventHandler;
 use Workflow\WorkflowStub;
 
 it('advances the token to the next sequential node', function () {
-    $definition = WorkflowDefinition::create(['name' => 'Start Test', 'key' => 'start-test']);
+    $definition = ProcessDefinition::create(['name' => 'Start Test', 'key' => 'start-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
     
     $startNode = $version->nodes()->create(['bpmn_element_id' => 'Start_1', 'type' => 'startEvent']);

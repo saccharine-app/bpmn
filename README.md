@@ -2,7 +2,7 @@
 
 ![bpmn-js screenshot](assets/bpmn-js-screenshot.png)
 
-A lightweight, PHP-native BPMN 2.0 workflow orchestrator and visual designer for Laravel. Design long-running business processes visually and execute them as resilient, durable background jobs—**without external Java dependencies or enterprise runtime servers** (such as Camunda or Zeebe).
+A lightweight, PHP-native BPMN 2.0 process orchestrator and visual designer for Laravel. Design long-running business processes visually and execute them as resilient, durable background jobs—**without external Java dependencies or enterprise runtime servers** (such as Camunda or Zeebe).
 
 Saccharine BPMN bridges the gap between executable process diagrams and Laravel applications by pairing **bpmn-js** for interactive modeling with **durable-workflow** for stateful, queue-backed coroutines.
 
@@ -24,7 +24,7 @@ https://github.com/user-attachments/assets/4b4f7225-0dec-4d8d-819e-0c8678654207
 
 1. **Model**: Configure dynamic parameters inside the visual designer and activate the version.
 2. **Trigger**: An Eloquent `DemoOrder` event fires, matching the process start event.
-3. **Hibernate**: The workflow evaluates an Exclusive Gateway and pauses at a User Task wait state.
+3. **Hibernate**: The process evaluates an Exclusive Gateway and pauses at a User Task wait state.
 4. **Resume & Deliver**: An operator submits the task from the Live Cockpit, resuming the coroutine and delivering a real notification to Mailpit.
 
 ---
@@ -47,7 +47,7 @@ php artisan bpmn:install
 
 ### 2. Scaffold and Run the Demo
 
-Scaffold the demo order workflow, sample activities, and trigger events:
+Scaffold the demo order process, sample activities, and trigger events:
 
 ```bash
 php artisan db:seed --class='Saccharine\Bpmn\Database\Seeders\BpmnDemoSeeder'
@@ -76,11 +76,11 @@ Navigate to the configurable web prefix (default: `/bpmn/workflows/definitions`)
 ## Key Features
 
 * **Zero External Services:** Runs on your existing Laravel queue infrastructure (database, Redis, SQS) using pure PHP coroutines.
-* **Resilient & Crash-Proof:** Workflows persist state deterministically. If a queue worker crashes or restarts mid-task, execution resumes from the exact boundary node.
+* **Resilient & Crash-Proof:** Processes persist state deterministically. If a queue worker crashes or restarts mid-task, execution resumes from the exact boundary node.
 * **Integrated Visual Modeler:** Embedded, responsive drag-and-drop designer powered by `bpmn-js` with custom properties and element templates.
-* **Event-Driven Triggers:** Automatically launch workflows from Eloquent model lifecycle hooks (`created`, `updated`, `deleted`) or custom domain events.
+* **Event-Driven Triggers:** Automatically launch processes from Eloquent model lifecycle hooks (`created`, `updated`, `deleted`) or custom domain events.
 * **Parallel Splits & Synchronization:** Spawns concurrent child workflows at Parallel Gateways and joins execution paths cleanly without serialization errors.
-* **Human-in-the-Loop Interventions:** Pause workflows indefinitely awaiting user forms or external webhooks, then resume execution seamlessly.
+* **Human-in-the-Loop Interventions:** Pause processes indefinitely awaiting user forms or external webhooks, then resume execution seamlessly.
 * **Filament & Standalone Ready:** Works out of the box with a built-in Blade dashboard or embeds cleanly into Filament admin panels.
 
 ---

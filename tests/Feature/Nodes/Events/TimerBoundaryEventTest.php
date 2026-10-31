@@ -1,11 +1,11 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Tasks\UserTaskHandler;
 
 it('routes to the timer boundary event path when the timeout expires', function () {
-    $definition = WorkflowDefinition::create(['name' => 'Timer Test', 'key' => 'timer-test']);
+    $definition = ProcessDefinition::create(['name' => 'Timer Test', 'key' => 'timer-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>', 'is_active' => true]);
     
     $userTask = $version->nodes()->create(['bpmn_element_id' => 'Task_User', 'type' => 'userTask']);
@@ -79,7 +79,7 @@ it('routes to the timer boundary event path when the timeout expires', function 
 });
 
 it('routes to the normal path if the human completes the task before the timer expires', function () {
-    $definition = WorkflowDefinition::create(['name' => 'Timer Test 2', 'key' => 'timer-test-2']);
+    $definition = ProcessDefinition::create(['name' => 'Timer Test 2', 'key' => 'timer-test-2']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>', 'is_active' => true]);
     
     $userTask = $version->nodes()->create(['bpmn_element_id' => 'Task_User', 'type' => 'userTask']);

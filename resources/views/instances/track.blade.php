@@ -91,12 +91,12 @@ Loading payload...
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Review Notes</label>
-                    <textarea id="task-input-notes" rows="3" placeholder="Optional comments to pass into workflow payload..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                    <textarea id="task-input-notes" rows="3" placeholder="Optional comments to pass into process payload..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
                 </div>
 
                 <!-- Context Hint -->
                 <p class="text-[11px] text-slate-500 italic">
-                    Submitting this form injects the payload into the workflow's inbox and signals the queue worker to advance past this step.
+                    Submitting this form injects the payload into the process's inbox and signals the queue worker to advance past this step.
                 </p>
 
                 <!-- Actions -->

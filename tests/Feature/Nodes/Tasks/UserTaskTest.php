@@ -1,14 +1,14 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessDefinition;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Workflow\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
 
 it('pauses execution at a userTask and resumes when a signal is received', function () {
     // Scaffold database state
-    $definition = WorkflowDefinition::create(['name' => 'Human Verification', 'key' => 'human-verify']);
+    $definition = ProcessDefinition::create(['name' => 'Human Verification', 'key' => 'human-verify']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     // Nodes

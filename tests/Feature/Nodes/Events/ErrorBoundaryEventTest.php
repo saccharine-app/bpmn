@@ -1,6 +1,6 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Workflow\Activity;
 use Workflow\WorkflowStub;
@@ -29,7 +29,7 @@ it('catches an exception using an error boundary event and routes to an alternat
     config(['saccharine-bpmn.activities.failing_task' => FailingApiActivity::class]);
 
     // Scaffold Database
-    $definition = WorkflowDefinition::create(['name' => 'Error Boundary', 'key' => 'error-boundary']);
+    $definition = ProcessDefinition::create(['name' => 'Error Boundary', 'key' => 'error-boundary']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     // Nodes
@@ -77,7 +77,7 @@ it('catches an exception using an error boundary event and routes to an alternat
 it('fails the workflow entirely if an exception occurs and no boundary event is attached', function () {
     config(['saccharine-bpmn.activities.failing_task' => FailingApiActivity::class]);
 
-    $definition = WorkflowDefinition::create(['name' => 'No Boundary', 'key' => 'no-boundary']);
+    $definition = ProcessDefinition::create(['name' => 'No Boundary', 'key' => 'no-boundary']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     $version->nodes()->createMany([

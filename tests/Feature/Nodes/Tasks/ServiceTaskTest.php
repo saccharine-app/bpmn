@@ -1,6 +1,6 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Tasks\ServiceTaskHandler;
 use Workflow\WorkflowStub;
@@ -16,7 +16,7 @@ class DummyIsolatedActivity extends Activity {
 it('yields an ActivityStub and successfully merges the returned payload', function () {
     config(['saccharine-bpmn.activities.isolated_task' => DummyIsolatedActivity::class]);
 
-    $definition = WorkflowDefinition::create(['name' => 'Service Task Test', 'key' => 'service-task-test']);
+    $definition = ProcessDefinition::create(['name' => 'Service Task Test', 'key' => 'service-task-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
     
     $taskNode = $version->nodes()->create([

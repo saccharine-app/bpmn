@@ -1,6 +1,6 @@
 <header id="bpmn-workbench-header" class="bpmn-workbench">
     <div class="workbench-left">
-        <a href="{{ \Saccharine\Bpmn\Support\BpmnRouteHelper::dashboardUrl() }}" class="workbench-back-link" title="Back to Workflow Definitions">
+        <a href="{{ \Saccharine\Bpmn\Support\BpmnRouteHelper::dashboardUrl() }}" class="workbench-back-link" title="Back to Process Definitions">
             <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
             </svg>
@@ -13,7 +13,7 @@
                     id="workbench-definition-name" 
                     value="{{ $definition->name }}" 
                     class="workbench-input-name"
-                    title="Click to edit workflow name"
+                    title="Click to edit process name"
                 />
             </div>
             
@@ -57,7 +57,7 @@
             </button>
             <div id="workbench-menu-dropdown" class="dropdown-menu hidden">
                 <button type="button" id="workbench-action-archive" class="dropdown-item text-danger">
-                    Archive Workflow
+                    Archive Process
                 </button>
             </div>
         </div>
@@ -237,7 +237,7 @@
                         body: JSON.stringify({ name: newName })
                     });
                 } catch (e) {
-                    console.error('Failed to auto-save workflow name', e);
+                    console.error('Failed to auto-save process name', e);
                 }
             });
         }
@@ -252,7 +252,7 @@
         });
 
         document.getElementById('workbench-action-archive')?.addEventListener('click', () => {
-            if (confirm('Are you sure you want to archive this workflow definition? Running instances will complete, but no new executions will start.')) {
+            if (confirm('Are you sure you want to archive this process definition? Running instances will complete, but no new executions will start.')) {
                 window.dispatchEvent(new CustomEvent('bpmn:archive-requested'));
             }
         });

@@ -4,8 +4,8 @@ namespace Saccharine\Bpmn\Handlers\Nodes\Gateways;
 
 use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\Bpmn\Models\WorkflowNode;
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessNode;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Events\BpmnExecutionLogged;
 use Workflow\ChildWorkflowStub;
 use function Workflow\all;
@@ -15,8 +15,8 @@ class ParallelGatewayHandler implements BpmnNodeHandlerInterface
 {
     public function handle(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowNode $node,
-        WorkflowVersion $version,
+        ProcessNode $node,
+        ProcessVersion $version,
         array $userData,
         ?int $instanceId
     ): \Generator
@@ -74,7 +74,7 @@ class ParallelGatewayHandler implements BpmnNodeHandlerInterface
      */
     private function findPostJoinNode(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowVersion $version,
+        ProcessVersion $version,
         string $splitGatewayId
     ): ?string
     {

@@ -9,10 +9,10 @@ use Workflow\ChildWorkflowStub;
 use Workflow\SignalMethod;
 use function Workflow\await;
 use function Workflow\all;
-use Saccharine\Bpmn\Models\WorkflowVersion;
-use Saccharine\Bpmn\Models\WorkflowEdge;
-use Saccharine\Bpmn\Models\WorkflowToken;
-use Saccharine\Bpmn\Models\WorkflowHistory;
+use Saccharine\Bpmn\Models\ProcessVersion;
+use Saccharine\Bpmn\Models\ProcessEdge;
+use Saccharine\Bpmn\Models\ProcessToken;
+use Saccharine\Bpmn\Models\ProcessHistory;
 use Saccharine\Bpmn\Services\GatewayRouter;
 use Saccharine\Bpmn\Handlers\NodeHandlerFactory;
 use Saccharine\Bpmn\Events\BpmnExecutionLogged;
@@ -120,7 +120,7 @@ class BpmnInterpreterWorkflow extends Workflow
      */
     public function makeScopedChildWorkflow(int $versionId, string $subProcessNodeId, array $userData, ?int $instanceId = null)
     {
-        $version = WorkflowVersion::with('nodes')->find($versionId);
+        $version = ProcessVersion::with('nodes')->find($versionId);
         
         // Find the start event strictly scoped inside this sub-process
         $startNode = $version->nodes
@@ -143,13 +143,13 @@ class BpmnInterpreterWorkflow extends Workflow
         ?int $instanceId = null
     ) {
         // Note: Querying the DB inside a workflow is safe ONLY IF the data is immutable.
-        // Since WorkflowVersions and their nodes never change once published,
+        // Since ProcessVersions and their nodes never change once published,
         // this is fully deterministic.
-        $version = WorkflowVersion::with(['nodes', 'edges'])->findOrFail($versionId);
+        $version = ProcessVersion::with(['nodes', 'edges'])->findOrFail($versionId);
 
         $this->instanceId = $instanceId;
 
-        // If no start node is provided, this is the Master Workflow starting from the beginning
+        // If no start node is provided, this is the Master Process starting from the beginning
         if ($startNodeId === null) {
             // Find the global start event (it must NOT belong to a sub-process)
             $startNode = $version->nodes
@@ -178,7 +178,7 @@ class BpmnInterpreterWorkflow extends Workflow
             if ($this->isHalted) {
                 yield $this->logTelemetry(
                     BpmnExecutionLogged::LEVEL_ERROR, 
-                    "Workflow halted by operator intervention. Terminating execution.", 
+                    "Process halted by operator intervention. Terminating execution.", 
                     $currentNodeId
                 );
                 // You can optionally inject a 'halted_at' flag into the payload
@@ -190,7 +190,7 @@ class BpmnInterpreterWorkflow extends Workflow
             if ($this->isSuspended) {
                 yield $this->logTelemetry(
                     BpmnExecutionLogged::LEVEL_WAIT, 
-                    "Workflow suspended via operator signal. Hibernating...", 
+                    "Process suspended via operator signal. Hibernating...", 
                     $currentNodeId
                 );
                 yield await(fn () => !$this->isSuspended || $this->isHalted);
@@ -202,9 +202,9 @@ class BpmnInterpreterWorkflow extends Workflow
             // Token tracker: SideEffect ensures this database query only runs exactly once per step, never on replay
             if ($instanceId !== null) {
                 yield WorkflowStub::sideEffect(function () use ($instanceId, $currentNodeId) {
-                    WorkflowToken::updateOrCreate(
+                    ProcessToken::updateOrCreate(
                         [
-                            'workflow_instance_id' => $instanceId,
+                            'process_instance_id' => $instanceId,
                             'durable_workflow_id'  => $this->uniqueId(),
                         ],
                         [
@@ -231,8 +231,8 @@ class BpmnInterpreterWorkflow extends Workflow
 
             if ($instanceId !== null) {
                 yield WorkflowStub::sideEffect(function () use ($instanceId, $currentNodeId, $node, $userData) {
-                    WorkflowHistory::create([
-                        'workflow_instance_id' => $instanceId,
+                    ProcessHistory::create([
+                        'process_instance_id' => $instanceId,
                         'bpmn_element_id'      => $currentNodeId,
                         'node_type'            => $node->type,
                         'status'               => 'completed',
@@ -260,7 +260,7 @@ class BpmnInterpreterWorkflow extends Workflow
     /**
      * Helper to find the immediate next node in a straight line (non-gateway paths)
      */
-    public function getNextSequentialNode(WorkflowVersion $version, string $currentNodeId): ?string
+    public function getNextSequentialNode(ProcessVersion $version, string $currentNodeId): ?string
     {
         // If relation is loaded and not empty, use collection; otherwise query directly
         $edge = $version->relationLoaded('edges') && $version->edges->isNotEmpty()
@@ -278,7 +278,7 @@ class BpmnInterpreterWorkflow extends Workflow
         if ($instanceId !== null) {
             // Because side effects cannot be yielded from a void return easily inside the execution structure,
             // we can trigger this directly in a blocking manner since it's the final action of the thread.
-            WorkflowToken::where('durable_workflow_id', $this->uniqueId())->delete();
+            ProcessToken::where('durable_workflow_id', $this->uniqueId())->delete();
         }
     }
 

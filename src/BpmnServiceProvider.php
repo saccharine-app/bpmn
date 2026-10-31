@@ -7,21 +7,29 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Saccharine\Bpmn\Events\BpmnExecutionLogged;
-use Saccharine\Bpmn\Listeners\WorkflowTriggerListener;
+use Saccharine\Bpmn\Listeners\ProcessTriggerListener;
 use Saccharine\Bpmn\Listeners\BpmnConsoleLogListener;
-use Saccharine\Bpmn\Enums\WorkflowPermission;
+use Saccharine\Bpmn\Enums\ProcessPermission;
 use Saccharine\Bpmn\Support\PermissionManifest;
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
-use Saccharine\Bpmn\Models\WorkflowInstance;
-use Saccharine\Bpmn\Policies\WorkflowDefinitionPolicy;
-use Saccharine\Bpmn\Policies\WorkflowInstancePolicy;
+use Saccharine\Bpmn\Models\ProcessDefinition;
+use Saccharine\Bpmn\Models\ProcessInstance;
+use Saccharine\Bpmn\Policies\ProcessDefinitionPolicy;
+use Saccharine\Bpmn\Policies\ProcessInstancePolicy;
 use Saccharine\Bpmn\Filament\BpmnFilamentPlugin;
 
 class BpmnServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        // If the host app has disabled V1, saccharine/bpmn cannot function yet
+        if (config('workflow.v1_enabled') === false) {
+            throw new \RuntimeException(
+                "saccharine/bpmn is currently undergoing an incremental upgrade and requires " .
+                "'DW_V1_ENABLED=true' to be set in your application environment."
+            );
+        }
+
         // Load the database migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
@@ -34,7 +42,7 @@ class BpmnServiceProvider extends ServiceProvider
         $durablePath = is_dir($durableHostPath) ? $durableHostPath : $durablePackagePath;
 
         if (is_dir($durablePath)) {
-            $this->loadMigrationsFrom($durablePath);
+            // $this->loadMigrationsFrom($durablePath);
         }
 
         $this->registerRoutes();
@@ -43,7 +51,7 @@ class BpmnServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'saccharine-bpmn');
 
         // Listen to all events to check for start event triggers
-        Event::listen('*', [WorkflowTriggerListener::class, 'handle']);
+        Event::listen('*', [ProcessTriggerListener::class, 'handle']);
         // Listen to BpmnExecutionLogged events to write log output for each BPMN step
         Event::listen(BpmnExecutionLogged::class, BpmnConsoleLogListener::class);
 
@@ -77,9 +85,9 @@ class BpmnServiceProvider extends ServiceProvider
 
         $this->registerGates();
 
-        // Map the Enum cases into an associative array: ['bpmn:view' => 'View Workflows']
+        // Map the Enum cases into an associative array: ['bpmn:view' => 'View Processes']
         $permissionMap = [];
-        foreach (\Saccharine\Bpmn\Enums\WorkflowPermission::cases() as $permission) {
+        foreach (\Saccharine\Bpmn\Enums\ProcessPermission::cases() as $permission) {
             $permissionMap[$permission->value] = $permission->label();
         }
 
@@ -94,8 +102,8 @@ class BpmnServiceProvider extends ServiceProvider
             )
         ]);
         
-        Gate::policy(WorkflowDefinition::class, WorkflowDefinitionPolicy::class);
-        Gate::policy(WorkflowInstance::class, WorkflowInstancePolicy::class);
+        Gate::policy(ProcessDefinition::class, ProcessDefinitionPolicy::class);
+        Gate::policy(ProcessInstance::class, ProcessInstancePolicy::class);
     }
 
     public function register()
@@ -119,10 +127,10 @@ class BpmnServiceProvider extends ServiceProvider
             return;
         }
 
-        $webPrefix = trim(config('saccharine-bpmn.prefix.web', 'bpmn/workflows'), '/');
+        $webPrefix = trim(config('saccharine-bpmn.prefix.web', 'bpmn/processes'), '/');
         $webMiddleware = config('saccharine-bpmn.middleware.web', ['web', 'auth']);
 
-        // Core Workflow Web & Telemetry Routes
+        // Core Process Web & Telemetry Routes
         Route::prefix($webPrefix)
             ->middleware($webMiddleware)
             ->group(__DIR__ . '/../routes/web.php');
@@ -151,53 +159,53 @@ class BpmnServiceProvider extends ServiceProvider
     protected function registerGates()
     {
         // View the dashboards and editor
-        Gate::define(WorkflowPermission::VIEW->value, function ($user = null) {
+        Gate::define(ProcessPermission::VIEW->value, function ($user = null) {
             if (app()->environment('local')) {
                 return true;
             }
 
-            return $user && $user->can(WorkflowPermission::VIEW->value);
+            return $user && $user->can(ProcessPermission::VIEW->value);
         });
         
-        // Create workflows and save diagram changes
-        Gate::define(WorkflowPermission::EDIT->value, function ($user = null) {
+        // Create processes and save diagram changes
+        Gate::define(ProcessPermission::EDIT->value, function ($user = null) {
             if (app()->environment('local')) {
                 return true;
             }
 
-            return $user && $user->can(WorkflowPermission::EDIT->value);
+            return $user && $user->can(ProcessPermission::EDIT->value);
         });
         
-        // Delete workflows and their versions
-        Gate::define(WorkflowPermission::DELETE->value, function ($user = null) {
+        // Delete processes and their versions
+        Gate::define(ProcessPermission::DELETE->value, function ($user = null) {
             if (app()->environment('local')) {
                 return true;
             }
 
-            return $user && $user->can(WorkflowPermission::DELETE->value);
+            return $user && $user->can(ProcessPermission::DELETE->value);
         });
         
-        // Control running workflow instances
-        Gate::define(WorkflowPermission::SUSPEND_INSTANCE->value, function ($user = null) {
+        // Control running process instances
+        Gate::define(ProcessPermission::SUSPEND_INSTANCE->value, function ($user = null) {
             if (app()->environment('local')) {
                 return true;
             }
 
-            return $user && $user->can(WorkflowPermission::SUSPEND_INSTANCE->value);
+            return $user && $user->can(ProcessPermission::SUSPEND_INSTANCE->value);
         });
-        Gate::define(WorkflowPermission::RESUME_INSTANCE->value, function ($user = null) {
+        Gate::define(ProcessPermission::RESUME_INSTANCE->value, function ($user = null) {
             if (app()->environment('local')) {
                 return true;
             }
 
-            return $user && $user->can(WorkflowPermission::RESUME_INSTANCE->value);
+            return $user && $user->can(ProcessPermission::RESUME_INSTANCE->value);
         });
-        Gate::define(WorkflowPermission::HALT_INSTANCE->value, function ($user = null) {
+        Gate::define(ProcessPermission::HALT_INSTANCE->value, function ($user = null) {
             if (app()->environment('local')) {
                 return true;
             }
 
-            return $user && $user->can(WorkflowPermission::HALT_INSTANCE->value);
+            return $user && $user->can(ProcessPermission::HALT_INSTANCE->value);
         });
     }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $definition->name }} - BPMN Workflow Designer</title>
+    <title>{{ $definition->name }} - BPMN Process Designer</title>
     
     <link rel="stylesheet" href="{{ asset('vendor/saccharine/bpmn/saccharine-bpmn.css') }}">
     <style>
@@ -106,7 +106,7 @@
 
                 const result = await response.json();
                 if (response.ok) {
-                    alert(shouldActivate ? 'Workflow version published and activated!' : 'Draft version saved.');
+                    alert(shouldActivate ? 'Process version published and activated!' : 'Draft version saved.');
                     window.location.reload();
                 } else {
                     alert('Compilation failed: ' + result.message);

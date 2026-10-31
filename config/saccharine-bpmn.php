@@ -61,15 +61,15 @@ return [
     | `prefix` is the single source of truth for the package's URL surface. It
     | drives BOTH:
     |
-    |   * the standalone web routes  -> /bpmn/workflows/definitions
-    |   * the Filament resource slug -> /admin/bpmn/workflows/definitions
+    |   * the standalone web routes  -> /bpmn/processes/definitions
+    |   * the Filament resource slug -> /admin/bpmn/processes/definitions
     |
     | Filament prepends its own panel path (host-controlled, e.g. `admin`) to
     | the resource slug, so this single key relocates both UIs in step.
     |
     */
     'prefix' => [
-        'web' => 'bpmn/workflows',
+        'web' => 'bpmn/processes',
         // Reserved for future headless/external token-based workers
         'api' => 'api/bpmn',
     ],

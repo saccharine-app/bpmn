@@ -3,14 +3,14 @@
 namespace Saccharine\Bpmn\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Services\BpmnParserService;
 
 class BpmnOrderProcessingSeeder extends Seeder
 {
     public function run(BpmnParserService $parser): void
     {
-        $def = WorkflowDefinition::firstOrCreate(
+        $def = ProcessDefinition::firstOrCreate(
             ['key' => 'order-processing'],
             ['name' => 'Demo: Order Processing']
         );

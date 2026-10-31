@@ -2,7 +2,7 @@
 
 namespace Saccharine\Bpmn\Handlers\Traits;
 
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 
 trait EvaluatesBoundaryEvents
@@ -10,7 +10,7 @@ trait EvaluatesBoundaryEvents
     /**
      * Fetch all boundary events attached to a specific node.
      */
-    protected function getAttachedBoundaries(WorkflowVersion $version, string $nodeId)
+    protected function getAttachedBoundaries(ProcessVersion $version, string $nodeId)
     {
         return $version->nodes
             ->where('type', 'boundaryEvent')
@@ -23,7 +23,7 @@ trait EvaluatesBoundaryEvents
      */
     protected function handleErrorBoundary(
         \Throwable $e, 
-        WorkflowVersion $version, 
+        ProcessVersion $version, 
         string $nodeId, 
         BpmnInterpreterWorkflow $workflow, 
         array &$userData

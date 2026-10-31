@@ -1,7 +1,7 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessDefinition;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Workflow\Activity;
 use Workflow\WorkflowStub;
@@ -15,12 +15,12 @@ class CalculateTaxActivity extends Activity
     }
 }
 
-it('executes a workflow path and updates the user data payload', function () {
+it('executes a process path and updates the user data payload', function () {
     // Bind the dummy activity to our package's config registry
     config(['saccharine-bpmn.activities.calculate_tax' => CalculateTaxActivity::class]);
 
     // Scaffold the database state
-    $definition = WorkflowDefinition::create(['name' => 'Checkout', 'key' => 'checkout']);
+    $definition = ProcessDefinition::create(['name' => 'Checkout', 'key' => 'checkout']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     // Nodes

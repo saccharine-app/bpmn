@@ -1,12 +1,12 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Tasks\SubProcessHandler;
 use Workflow\ChildWorkflowStub;
 
 it('yields a child workflow stub for the internal scope and merges the returned payload', function () {
-    $definition = WorkflowDefinition::create(['name' => 'SubProcess Execution', 'key' => 'subprocess-exec']);
+    $definition = ProcessDefinition::create(['name' => 'SubProcess Execution', 'key' => 'subprocess-exec']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>', 'is_active' => true]);
     
     // Scaffold the Parent Node

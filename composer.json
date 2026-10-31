@@ -2,13 +2,13 @@
     "name": "saccharine/bpmn",
     "description": "Saccharine BPMN Execution Engine for Laravel",
     "license": "MIT",
-    "keywords": ["laravel", "bpmn", "workflow", "saccharine", "orchestration"],
+    "keywords": ["laravel", "bpmn", "workflow", "saccharine", "process", "orchestration"],
     "type": "library",
     "require": {
         "php": "^8.3",
         "illuminate/support": "^13.0",
         "symfony/expression-language": "^7.0",
-        "durable-workflow/workflow": "^1.0",
+        "durable-workflow/workflow": "^2.0",
         "tightenco/ziggy": "^2.6"
     },
     "extra": {

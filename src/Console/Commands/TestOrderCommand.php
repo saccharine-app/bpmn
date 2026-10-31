@@ -18,7 +18,7 @@ class TestOrderCommand extends Command
     /**
      * The console command description.
      */
-    protected $description = 'Create a DemoOrder to trigger mapped BPMN model workflows';
+    protected $description = 'Create a DemoOrder to trigger mapped BPMN model processes';
 
     public function handle(): int
     {
@@ -46,7 +46,7 @@ class TestOrderCommand extends Command
         $this->newLine();
 
         $this->comment("The 'demo_order_created' event has been broadcast.");
-        $this->comment("Run 'php artisan queue:work' to process the resulting workflow execution.");
+        $this->comment("Run 'php artisan queue:work' to process the resulting process execution.");
 
         return self::SUCCESS;
     }

@@ -3,19 +3,19 @@
 namespace Workbench\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Services\BpmnParserService;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the Workbench database with a small, self-contained workflow so the
+     * Seed the Workbench database with a small, self-contained process so the
      * dashboard and designer have data to render, and integration tests have a
      * definition to execute.
      */
     public function run(BpmnParserService $parser): void
     {
-        $definition = WorkflowDefinition::firstOrCreate(
+        $definition = ProcessDefinition::firstOrCreate(
             ['key' => 'workbench-onboarding'],
             ['name' => 'Workbench: Customer Onboarding'],
         );

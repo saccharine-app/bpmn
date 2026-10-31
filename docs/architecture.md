@@ -1,6 +1,6 @@
 # **Architecture & Under the Hood**
 
-Saccharine BPMN decouples visual workflow modeling from host domain logic by translating standard BPMN 2.0 XML diagrams into durable, stateful PHP coroutines.
+Saccharine BPMN decouples visual process modeling from host domain logic by translating standard BPMN 2.0 XML diagrams into durable, stateful PHP coroutines.
 
 ```
 ┌──────────────────┐       ┌────────────────────────┐       ┌───────────────────────────┐
@@ -11,7 +11,7 @@ Saccharine BPMN decouples visual workflow modeling from host domain logic by tra
                                                                           ▼
 ┌──────────────────┐       ┌────────────────────────┐       ┌───────────────────────────┐
 │   Live Cockpit   │ <───  │    State Projection    │ <───  │  BpmnInterpreterWorkflow  │
-│  (Token Monitor) │ SQL   │ (workflow_tokens / log)│ side- │   (durable-workflow loop) │
+│  (Token Monitor) │ SQL   │ (process_tokens / log) │ side- │   (durable-workflow loop) │
 └──────────────────┘       └────────────────────────┘ effect└───────────────────────────┘
 ```
 
@@ -21,10 +21,10 @@ Saccharine BPMN decouples visual workflow modeling from host domain logic by tra
 
 Parsing raw BPMN XML during queue execution introduces serialization overhead and prevents indexing. 
 
-When a workflow is saved and compiled:
+When a process is saved and compiled:
 1. `BpmnParserService` validates standard OMG BPMN 2.0 namespaces.
 2. It extracts `<bpmn:process>` nodes, sequence flows, extension elements, and boundary definitions.
-3. It stores the diagram in relational database tables (`workflow_nodes` and `workflow_edges`).
+3. It stores the diagram in relational database tables (`process_nodes` and `process_edges`).
 
 During background execution, graph traversal occurs via indexed database queries rather than in-memory XML parsing.
 
@@ -49,8 +49,8 @@ interface BpmnNodeHandlerInterface
 {
     public function handle(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowNode $node,
-        WorkflowVersion $version,
+        ProcessNode $node,
+        ProcessVersion $version,
         array $userData,
         ?int $instanceId
     ): \Generator;
@@ -71,7 +71,7 @@ return [$nextNodeId, $updatedUserData];
 | `userTask` | `UserTaskHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Awaits inbox signals with optional boundary timer timeouts. |
 | `exclusiveGateway` | `ExclusiveGatewayHandler` | No | Evaluates condition expressions via Symfony Expression Language. |
 | `parallelGateway` | `ParallelGatewayHandler` | No | Spawns child coroutines and establishes an `all()` sync barrier. |
-| `callActivity` | `CallActivityHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Invokes a separate published workflow definition by key. |
+| `callActivity` | `CallActivityHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Invokes a separate published process definition by key. |
 | `subProcess` | `SubProcessHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Scopes tasks into a child workflow with boundary error containment. |
 
 ---
@@ -87,12 +87,12 @@ Standard PHP generators cannot be serialized across queue steps while actively r
 
 ---
 
-## 5. Sandboxed Expression Evaluation (`WorkflowExpressionEvaluator`)
+## 5. Sandboxed Expression Evaluation (`ExpressionEvaluator`)
 
-Gateway condition expressions are evaluated through `WorkflowExpressionEvaluator`, which wraps Symfony's `ExpressionLanguage` in a sandboxed, isolated interpreter:
+Gateway condition expressions are evaluated through `ExpressionEvaluator`, which wraps Symfony's `ExpressionLanguage` in a sandboxed, isolated interpreter:
 
 ```php
-class WorkflowExpressionEvaluator
+class ExpressionEvaluator
 {
     public function evaluate(string $expression, array $userData): bool
     {
@@ -120,6 +120,6 @@ class WorkflowExpressionEvaluator
 Durable workflows serialize execution state into internal logs, which cannot be directly queried with relational SQL.
 
 To support real-time dashboards and monitoring:
-* **Atomic Token Writes**: When entering a node, the engine executes `WorkflowStub::sideEffect()` to record the token's location in `workflow_tokens`. The `sideEffect` wrapper ensures the database write executes only once, preventing duplicates during coroutine replays.
-* **Audit History Trail**: Completed steps are recorded in `workflow_history` alongside payload snapshots.
+* **Atomic Token Writes**: When entering a node, the engine executes `WorkflowStub::sideEffect()` to record the token's location in `process_tokens`. The `sideEffect` wrapper ensures the database write executes only once, preventing duplicates during coroutine replays.
+* **Audit History Trail**: Completed steps are recorded in `process_histories` alongside payload snapshots.
 * **Cockpit Visualization**: The tracking cockpit at `/instances/{id}/track` pairs `bpmn-js/lib/NavigatedViewer` with polling endpoints to render traversed paths in blue and active waiting tokens in pulsing green.

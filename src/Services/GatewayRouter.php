@@ -2,31 +2,31 @@
 
 namespace Saccharine\Bpmn\Services;
 
-use Saccharine\Bpmn\Models\WorkflowVersion;
-use Saccharine\Bpmn\Models\WorkflowEdge;
+use Saccharine\Bpmn\Models\ProcessVersion;
+use Saccharine\Bpmn\Models\ProcessEdge;
 use RuntimeException;
 
 class GatewayRouter
 {
-    protected WorkflowExpressionEvaluator $evaluator;
+    protected ExpressionEvaluator $evaluator;
 
     public function __construct()
     {
-        $this->evaluator = new WorkflowExpressionEvaluator();
+        $this->evaluator = new ExpressionEvaluator();
     }
 
     /**
      * Determines the next node ID by evaluating outgoing edges from a given node.
-     * * @param WorkflowVersion $version The active workflow version model
+     * * @param ProcessVersion $version The active process version model
      * @param string $currentNodeId The bpmn_element_id of the gateway
      * @param array $userData The current state payload
      * @return string The bpmn_element_id of the next node
      * @throws RuntimeException If no valid path is found
      */
-    public function getNextNodeId(WorkflowVersion $version, string $currentNodeId, array $userData): string
+    public function getNextNodeId(ProcessVersion $version, string $currentNodeId, array $userData): string
     {
         // Fetch all outgoing paths from this specific node
-        $outgoingEdges = WorkflowEdge::where('workflow_version_id', $version->id)
+        $outgoingEdges = ProcessEdge::where('process_version_id', $version->id)
             ->where('source_node_id', $currentNodeId)
             ->get();
 
@@ -53,7 +53,7 @@ class GatewayRouter
         $resolvedNodeId = $nextTargetNodeId ?? $defaultRouteNodeId;
 
         if ($resolvedNodeId === null) {
-            throw new RuntimeException("Workflow stalled: No valid path matches the conditions at Gateway [{$currentNodeId}].");
+            throw new RuntimeException("Process stalled: No valid path matches the conditions at Gateway [{$currentNodeId}].");
         }
 
         return $resolvedNodeId;

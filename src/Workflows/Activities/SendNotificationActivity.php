@@ -13,7 +13,7 @@ class SendNotificationActivity extends Activity
     {
         $channel = $userData['notification_channel'] ?? 'mail'; // 'mail', 'webhook', or 'log'
         $recipient = $this->interpolate($userData['notification_to'] ?? '', $userData);
-        $subject = $this->interpolate($userData['notification_subject'] ?? 'Workflow Notification', $userData);
+        $subject = $this->interpolate($userData['notification_subject'] ?? 'Process Notification', $userData);
         $message = $this->interpolate($userData['notification_body'] ?? '', $userData);
 
         $status = 'dispatched';

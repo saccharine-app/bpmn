@@ -4,8 +4,8 @@ namespace Saccharine\Bpmn\Handlers\Nodes\Gateways;
 
 use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\Bpmn\Models\WorkflowNode;
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessNode;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Services\GatewayRouter;
 use Saccharine\Bpmn\Events\BpmnExecutionLogged;
 
@@ -14,8 +14,8 @@ class ExclusiveGatewayHandler implements BpmnNodeHandlerInterface
 {
     public function handle(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowNode $node,
-        WorkflowVersion $version,
+        ProcessNode $node,
+        ProcessVersion $version,
         array $userData,
         ?int $instanceId
     ): \Generator
