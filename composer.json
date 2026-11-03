@@ -7,7 +7,7 @@
     "require": {
         "php": "^8.3",
         "illuminate/support": "^13.0",
-        "symfony/expression-language": "^7.0",
+        "symfony/expression-language": "^8.1",
         "durable-workflow/workflow": "^2.0",
         "tightenco/ziggy": "^2.6"
     },
