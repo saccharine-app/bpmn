@@ -70,7 +70,8 @@ class ProcessInstanceResource extends Resource
                     ->visible(fn (ProcessInstance $record) => $record->status === ProcessInstanceStatus::RUNNING)
                     ->action(function (ProcessInstance $record) {
                         $record->update(['status' => ProcessInstanceStatus::SUSPENDED]);
-                        WorkflowStub::load($record->durable_workflow_id)->suspendWorkflow();
+                        $workflow = WorkflowStub::load($record->durable_workflow_id);
+                        $workflow->submitUpdate('suspendProcess');
                     }),
 
                 Action::make('resume')
@@ -79,7 +80,8 @@ class ProcessInstanceResource extends Resource
                     ->visible(fn (ProcessInstance $record) => $record->status === ProcessInstanceStatus::SUSPENDED)
                     ->action(function (ProcessInstance $record) {
                         $record->update(['status' => ProcessInstanceStatus::RUNNING]);
-                        WorkflowStub::load($record->durable_workflow_id)->resumeWorkflow();
+                        $workflow = WorkflowStub::load($record->durable_workflow_id);
+                        $workflow->submitUpdate('resumeProcess');
                     }),
 
                 Action::make('halt')
@@ -90,7 +92,8 @@ class ProcessInstanceResource extends Resource
                     ->visible(fn (ProcessInstance $record) => in_array($record->status, [ProcessInstanceStatus::RUNNING, ProcessInstanceStatus::SUSPENDED]))
                     ->action(function (ProcessInstance $record) {
                         $record->update(['status' => ProcessInstanceStatus::HALTED]);
-                        WorkflowStub::load($record->durable_workflow_id)->haltWorkflow();
+                        $workflow = WorkflowStub::load($record->durable_workflow_id);
+                        $workflow->submitUpdate('haltProcess');
                     }),
             ]);
     }

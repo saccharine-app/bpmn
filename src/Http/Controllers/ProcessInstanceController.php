@@ -61,7 +61,8 @@ class ProcessInstanceController extends Controller
         $instance->update(['status' => ProcessInstanceStatus::SUSPENDED->value]);
 
         $workflow = WorkflowStub::load($instance->durable_workflow_id);
-        $workflow->suspendWorkflow();
+        // $workflow->suspendWorkflow();
+        $workflow->submitUpdate('suspendProcess');
 
         return back()->with('success', "Process instance [{$id}] suspended.");
     }
@@ -84,7 +85,8 @@ class ProcessInstanceController extends Controller
 
         // Load the durable coroutine and fire a signal to wake it up
         $workflow = WorkflowStub::load($instance->durable_workflow_id);
-        $workflow->resumeWorkflow();
+        // $workflow->resumeWorkflow();
+        $workflow->submitUpdate('resumeProcess');
 
         return back()->with('success', "Process instance [{$id}] resumed.");
     }
@@ -109,7 +111,8 @@ class ProcessInstanceController extends Controller
 
         // Signal the engine to break its execution loop and clean up
         $workflow = WorkflowStub::load($instance->durable_workflow_id);
-        $workflow->haltWorkflow();
+        // $workflow->haltWorkflow();
+        $workflow->submitUpdate('haltProcess');
 
         return back()->with('success', "Process instance [{$id}] permanently halted.");
     }

@@ -67,6 +67,31 @@ it('executes multiple paths in parallel and merges the payload at the join', fun
 
     // Assertions
     $workflow = WorkflowStub::load($workflow->id());
+
+    /* if ($workflow->status() === \Workflow\States\WorkflowFailedStatus::class || $workflow->status() === 'failed') {
+        // Check v2 workflow_failures table
+        $failure = \Illuminate\Support\Facades\DB::table('workflow_failures')
+            ->orderByDesc('id')
+            ->first();
+
+        // Check failed runs in workflow_runs
+        $failedRun = \Illuminate\Support\Facades\DB::table('workflow_runs')
+            ->where('status', 'failed')
+            ->orderByDesc('id')
+            ->first();
+
+        // Inspect recent workflow history events (which record Failure/Error events)
+        $historyEvents = \Illuminate\Support\Facades\DB::table('workflow_history_events')
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get(['event_type', 'payload']);
+
+        dd([
+            'workflow_failure' => $failure,
+            'failed_run'       => $failedRun,
+            'recent_events'    => $historyEvents,
+        ]);
+    } */
     
     // expect($workflow->status())->toBe(\Workflow\States\WorkflowCompletedStatus::class);
     expect($workflow->status())->toBe(\Workflow\V2\Enums\RunStatus::Completed->value);

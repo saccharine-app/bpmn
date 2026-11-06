@@ -33,28 +33,40 @@ class ParallelGatewayHandler implements BpmnNodeHandlerInterface
             );
 
             $parallelStubs = [];
+            $parallelTasks = [];
 
             foreach ($outgoingEdges as $edge) {
                 // Spawn a Child Workflow of the interpreter class,
                 // passing the specific branch's starting node ID
-                $parallelStubs[] = /* ChildWorkflowStub::make(
+                /* $parallelStubs[] = *//* ChildWorkflowStub::make(
                     BpmnInterpreterWorkflow::class,
                     $version->id,
                     $userData,
                     $edge->target_node_id,
                     $instanceId // Pass the parent instance down
-                ); */
+                ); *//*
                 $workflow->makeChildWorkflow(
                     $version->id,
                     $userData,
                     $edge->target_node_id,
                     $instanceId // Pass the parent instance down
+                ); */
+                
+                $targetId = $edge->target_node_id;
+                $parallelTasks[] = fn () => $workflow->makeChildWorkflow(
+                    $version->id,
+                    $userData,
+                    $targetId,
+                    $instanceId
                 );
             }
 
+            
+
             // The Master Workflow sleeps safely here without generating a serialization error.
             // CRITICAL FIX: all() converts the array of stubs into a single PromiseInterface
-            $branchResults = /* yield */ all($parallelStubs);
+            // $branchResults = /* yield */ all($parallelStubs);
+            $branchResults = all($parallelTasks);
 
             /* yield */ $workflow->logTelemetry(
                 BpmnExecutionLogged::LEVEL_GATEWAY,

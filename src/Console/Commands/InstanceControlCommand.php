@@ -51,7 +51,7 @@ class InstanceControlCommand extends Command
                 
                 $instance->update(['status' => ProcessInstanceStatus::SUSPENDED]);
                 // $workflow->suspendWorkflow(); // Fires the #[SignalMethod] on the stub
-                $workflow->submitUpdate('suspendWorkflow'); // Fires the #[UpdateMethod] on the stub
+                $workflow->submitUpdate('suspendProcess'); // Fires the #[UpdateMethod] on the stub
                 
                 $this->info("Successfully suspended Process Instance [{$id}].");
                 break;
@@ -64,7 +64,7 @@ class InstanceControlCommand extends Command
                 
                 $instance->update(['status' => ProcessInstanceStatus::RUNNING]);
                 // $workflow->resumeWorkflow();
-                $workflow->submitUpdate('resumeWorkflow'); // Fires the #[UpdateMethod] on the stub
+                $workflow->submitUpdate('resumeProcess'); // Fires the #[UpdateMethod] on the stub
                 
                 $this->info("Successfully resumed Process Instance [{$id}].");
                 break;
