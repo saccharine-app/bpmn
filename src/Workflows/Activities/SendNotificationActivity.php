@@ -2,14 +2,15 @@
 
 namespace Saccharine\Bpmn\Workflows\Activities;
 
-use Workflow\Activity;
+use Workflow\V2\Activity;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class SendNotificationActivity extends Activity
 {
-    public function execute(array $userData): array
+    // public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         $channel = $userData['notification_channel'] ?? 'mail'; // 'mail', 'webhook', or 'log'
         $recipient = $this->interpolate($userData['notification_to'] ?? '', $userData);

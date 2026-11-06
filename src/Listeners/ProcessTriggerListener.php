@@ -5,7 +5,7 @@ namespace Saccharine\Bpmn\Listeners;
 use Illuminate\Support\Facades\DB;
 use Saccharine\Bpmn\Contracts\BpmnTriggerableEvent;
 use Saccharine\Bpmn\Models\ProcessNode;
-use Workflow\WorkflowStub;
+use Workflow\V2\WorkflowStub;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Models\ProcessInstance;
 use Saccharine\Bpmn\Enums\ProcessInstanceStatus;

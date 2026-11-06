@@ -3,7 +3,7 @@
 use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Events\EndEventHandler;
-use Workflow\WorkflowStub;
+use Workflow\V2\WorkflowStub;
 
 it('returns a null node ID to terminate the execution path', function () {
     $definition = ProcessDefinition::create(['name' => 'End Test', 'key' => 'end-test']);
@@ -15,13 +15,15 @@ it('returns a null node ID to terminate the execution path', function () {
     $workflow = \Mockery::mock(BpmnInterpreterWorkflow::class)->makePartial();
     $handler = new EndEventHandler();
 
-    $generator = $handler->handle($workflow, $endNode, $version, ['status' => 'completed'], null);
+    /* $generator = $handler->handle($workflow, $endNode, $version, ['status' => 'completed'], null);
     
     while ($generator->valid()) { 
         $generator->next(); 
     }
     
-    $result = $generator->getReturn();
+    $result = $generator->getReturn(); */
+
+    $result = $handler->handle($workflow, $endNode, $version, ['status' => 'completed'], null);
 
     expect($result[0])->toBeNull()
         ->and($result[1])->toBe(['status' => 'completed']);

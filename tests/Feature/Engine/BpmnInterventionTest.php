@@ -2,7 +2,7 @@
 
 use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Workflow\WorkflowStub;
+use Workflow\V2\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
 
 it('can permanently halt a running process', function () {
@@ -28,10 +28,16 @@ it('can permanently halt a running process', function () {
 
     // Verify it is running and waiting at the User Task
     $workflow = WorkflowStub::load($workflow->id());
+
+    /* if ($workflow->status() === 'failed') {
+        $failedRecord = \Illuminate\Support\Facades\DB::table('workflows')->where('id', $workflow->id())->first();
+        dd("Workflow failed in the background!", $failedRecord->output);
+    } */
     expect($workflow->running())->toBeTrue();
 
     // Fire the Halt Signal
-    $workflow->haltWorkflow();
+    // $result = $workflow->signal('haltProcess');
+    $workflow->submitUpdate('haltProcess');
     Artisan::call('queue:work', ['--stop-when-empty' => true]);
 
     // Assertions
@@ -62,13 +68,20 @@ it('can suspend a process and safely resume it later', function () {
     $workflow->start($version->id, ['status' => 'fresh']);
     Artisan::call('queue:work', ['--stop-when-empty' => true]);
 
-    // Fire the Suspend Signal
     $workflow = WorkflowStub::load($workflow->id());
-    $workflow->suspendWorkflow();
+    expect($workflow->running())->toBeTrue();
+    
+    // Fire the Suspend Signal
+    // $workflow->suspendWorkflow();
+    $workflow->submitUpdate('suspendProcess');
     Artisan::call('queue:work', ['--stop-when-empty' => true]);
 
     // Try to complete the user task while suspended
-    $workflow->submitUserTask(['action' => 'approved']);
+    // $workflow->submitUserTask(['action' => 'approved']);
+    // Updated Signal approach with durable-workflow V2
+    // $workflow->attemptSignalWithArguments('user-task-submitted', ['action' => 'approved']);
+    // $workflow->attemptSignalWithArguments('submitUserTask', ['action' => 'approved']);
+    $workflow->submitUpdate('submitUserTask', ['action' => 'approved']);
     Artisan::call('queue:work', ['--stop-when-empty' => true]);
 
     // Verify it is STILL running and hasn't advanced to the end!
@@ -77,7 +90,8 @@ it('can suspend a process and safely resume it later', function () {
     expect($workflow->output())->toBeNull(); 
 
     // Resume the Workflow
-    $workflow->resumeWorkflow();
+    // $workflow->resumeWorkflow();
+    $workflow->submitUpdate('resumeProcess');
     Artisan::call('queue:work', ['--stop-when-empty' => true]);
 
     // Verify it woke up, grabbed the task data, and finished

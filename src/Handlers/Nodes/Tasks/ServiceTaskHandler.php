@@ -20,7 +20,7 @@ class ServiceTaskHandler implements BpmnNodeHandlerInterface
         ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator
+    ): array // \Generator
     {
         $activityClass = config("saccharine-bpmn.activities.{$node->implementation}");
 
@@ -31,7 +31,7 @@ class ServiceTaskHandler implements BpmnNodeHandlerInterface
 
             // Yield hands control back to Laravel Workflow to execute this safely on the queues
             // Use the workflow's wrapper
-            $activityResult = yield $workflow->makeActivity($activityClass, $effectiveUserData);
+            $activityResult = /* yield */ $workflow->makeActivity($activityClass, $effectiveUserData);
 
             // Merge the results back into the global state
             $userData = array_merge($userData, $activityResult);

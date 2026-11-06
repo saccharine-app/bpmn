@@ -7,7 +7,7 @@ use Filament\Tables;
 use Filament\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Panel;
-use Workflow\WorkflowStub;
+use Workflow\V2\WorkflowStub;
 use Saccharine\Bpmn\Models\ProcessInstance;
 use Saccharine\Bpmn\Enums\ProcessInstanceStatus;
 use Saccharine\Bpmn\Filament\Resources\ProcessInstanceResource\Pages;

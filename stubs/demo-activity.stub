@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Log;
 
 class DemoGenerateInvoiceActivity extends Activity
 {
-    public function execute(array $userData): array
+    // public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         $orderId = $userData['order_id'] ?? 'UNKNOWN';
         $amount = $userData['amount'] ?? 0;

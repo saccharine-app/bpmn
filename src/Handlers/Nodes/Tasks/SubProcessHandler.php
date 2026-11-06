@@ -19,11 +19,11 @@ class SubProcessHandler implements BpmnNodeHandlerInterface
         ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator {
-        
+    ): array // \Generator
+    {
         try {
             // Yield the scoped child workflow, passing the subProcess node ID
-            $childWorkflowResult = yield $workflow->makeScopedChildWorkflow(
+            $childWorkflowResult = /* yield */ $workflow->makeScopedChildWorkflow(
                 $version->id,
                 $node->bpmn_element_id,
                 $userData,

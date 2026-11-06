@@ -3,12 +3,13 @@
 use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Tasks\ServiceTaskHandler;
-use Workflow\WorkflowStub;
-use Workflow\ActivityStub;
-use Workflow\Activity;
+use Workflow\V2\WorkflowStub;
+// use Workflow\V2\ActivityStub;
+use Workflow\V2\Activity;
 
 class DummyIsolatedActivity extends Activity {
-    public function execute(array $userData): array { 
+    // public function execute(array $userData): array { 
+    public function handle(array $userData): array { 
         return ['action' => 'done']; 
     }
 }
@@ -29,18 +30,21 @@ it('yields an ActivityStub and successfully merges the returned payload', functi
     $version->edges()->create(['bpmn_element_id' => 'Flow_1', 'source_node_id' => 'Task_1', 'target_node_id' => 'Next_1']);
 
     // Mock the workflow to intercept the activity creation
+    // In v2, makeActivity() suspends the Fiber and returns the activity's output directly.
+    // So in an isolated test, our mock simply returns the simulated result array!
     $workflow = \Mockery::mock(BpmnInterpreterWorkflow::class)->makePartial();
     
     // Tell the mock to expect the makeActivity call and return a dummy string/object
     $workflow->shouldReceive('makeActivity')
              ->with(DummyIsolatedActivity::class, ['initial_data' => 123])
              ->once()
-             ->andReturn('mocked_activity_stub');
+             // ->andReturn('mocked_activity_stub');
+             ->andReturn(['simulated_result' => 'success']);
 
     $handler = new ServiceTaskHandler();
 
     $userData = ['initial_data' => 123];
-    $generator = $handler->handle($workflow, $taskNode, $version, $userData, null);
+    /* $generator = $handler->handle($workflow, $taskNode, $version, $userData, null);
 
     // The first yield should halt the handler and return our mocked stub
     $yielded = $generator->current();
@@ -50,7 +54,9 @@ it('yields an ActivityStub and successfully merges the returned payload', functi
     $generator->send(['simulated_result' => 'success']);
 
     // The generator finishes, returning the next node and the newly merged payload
-    $result = $generator->getReturn();
+    $result = $generator->getReturn(); */
+
+    $result = $handler->handle($workflow, $taskNode, $version, $userData, null);
 
     expect($result[0])->toBe('Next_1')
         ->and($result[1])->toBe([

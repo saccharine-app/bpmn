@@ -13,6 +13,6 @@ class ProcessToken extends Model
 
     public function instance(): BelongsTo
     {
-        return $this->belongsTo(PrcoessInstance::class, 'process_instance_id');
+        return $this->belongsTo(ProcessInstance::class, 'process_instance_id');
     }
 }

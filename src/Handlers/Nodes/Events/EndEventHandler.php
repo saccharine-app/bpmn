@@ -15,9 +15,9 @@ class EndEventHandler implements BpmnNodeHandlerInterface
         ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator
+    ): array // \Generator
     {
-        yield from []; // Satisfies the Generator return type
+        // yield from []; // Satisfies the Generator return type
         
         // Terminal node; there is no next node.
         return [null, $userData];

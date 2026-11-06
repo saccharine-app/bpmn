@@ -23,12 +23,12 @@ class BpmnServiceProvider extends ServiceProvider
     public function boot()
     {
         // If the host app has disabled V1, saccharine/bpmn cannot function yet
-        if (config('workflow.v1_enabled') === false) {
+        /* if (config('workflow.v1_enabled') === false) {
             throw new \RuntimeException(
                 "saccharine/bpmn is currently undergoing an incremental upgrade and requires " .
                 "'DW_V1_ENABLED=true' to be set in your application environment."
             );
-        }
+        } */
 
         // Load the database migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
@@ -37,13 +37,13 @@ class BpmnServiceProvider extends ServiceProvider
         // loadMigrationsFrom() itself, so we register its migration directory here.
         // This avoids publishing migrations to the host app. When upgrading to
         // durable-workflow v2 (which loads its own migrations), this line can be removed.
-        $durableHostPath = base_path('vendor/durable-workflow/workflow/src/migrations');
+        /* $durableHostPath = base_path('vendor/durable-workflow/workflow/src/migrations');
         $durablePackagePath = __DIR__ . '/../vendor/durable-workflow/workflow/src/migrations';
         $durablePath = is_dir($durableHostPath) ? $durableHostPath : $durablePackagePath;
 
         if (is_dir($durablePath)) {
             // $this->loadMigrationsFrom($durablePath);
-        }
+        } */
 
         $this->registerRoutes();
 

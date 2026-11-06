@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Gate;
 use Saccharine\Bpmn\Models\ProcessInstance;
 use Saccharine\Bpmn\Enums\ProcessInstanceStatus;
 use Saccharine\Bpmn\Enums\ProcessPermission;
-use Workflow\WorkflowStub;
+use Workflow\V2\WorkflowStub;
 
 class ProcessInstanceController extends Controller
 {
@@ -177,7 +177,10 @@ class ProcessInstanceController extends Controller
         ]);
 
         // Fires #[SignalMethod] submitUserTask($payload) on BpmnInterpreterWorkflow
-        $workflow->submitUserTask($payload);
+        // $workflow->submitUserTask($payload);
+        // Updated Signal approach with durable-workflow V2
+        // $workflow->attemptSignalWithArguments('user-task-submitted', $payload);
+        $workflow->attemptSignalWithArguments('submitUserTask', $payload);
 
         return response()->json([
             'success' => true,

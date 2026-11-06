@@ -3,7 +3,7 @@
 use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Events\StartEventHandler;
-use Workflow\WorkflowStub;
+use Workflow\V2\WorkflowStub;
 
 it('advances the token to the next sequential node', function () {
     $definition = ProcessDefinition::create(['name' => 'Start Test', 'key' => 'start-test']);
@@ -20,7 +20,7 @@ it('advances the token to the next sequential node', function () {
     $userData = ['process_started' => true];
     
     // Execute the handler
-    $generator = $handler->handle($workflow, $startNode, $version, $userData, null);
+    /* $generator = $handler->handle($workflow, $startNode, $version, $userData, null);
     
     // Exhaust the generator (if there are any empty yields)
     while ($generator->valid()) { 
@@ -28,7 +28,9 @@ it('advances the token to the next sequential node', function () {
     }
     
     // Retrieve the final return array
-    $result = $generator->getReturn();
+    $result = $generator->getReturn(); */
+
+    $result = $handler->handle($workflow, $startNode, $version, $userData, null);
 
     // Verify it resolved to the next node and preserved the payload
     expect($result[0])->toBe('Task_1')

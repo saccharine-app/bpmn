@@ -12,7 +12,8 @@ class {{ class }} extends Activity
      * @param array $userData The current state payload of the process.
      * @return array The mutated data to merge back into the process state.
      */
-    public function execute(array $userData): array
+    // public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         // TODO: Implement your domain logic here
 

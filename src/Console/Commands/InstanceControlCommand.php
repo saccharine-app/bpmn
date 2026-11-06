@@ -5,7 +5,7 @@ namespace Saccharine\Bpmn\Console\Commands;
 use Illuminate\Console\Command;
 use Saccharine\Bpmn\Models\ProcessInstance;
 use Saccharine\Bpmn\Enums\ProcessInstanceStatus;
-use Workflow\WorkflowStub;
+use Workflow\V2\WorkflowStub;
 
 class InstanceControlCommand extends Command
 {
@@ -50,7 +50,8 @@ class InstanceControlCommand extends Command
                 }
                 
                 $instance->update(['status' => ProcessInstanceStatus::SUSPENDED]);
-                $workflow->suspendWorkflow(); // Fires the #[SignalMethod] on the stub
+                // $workflow->suspendWorkflow(); // Fires the #[SignalMethod] on the stub
+                $workflow->submitUpdate('suspendWorkflow'); // Fires the #[UpdateMethod] on the stub
                 
                 $this->info("Successfully suspended Process Instance [{$id}].");
                 break;
@@ -62,7 +63,8 @@ class InstanceControlCommand extends Command
                 }
                 
                 $instance->update(['status' => ProcessInstanceStatus::RUNNING]);
-                $workflow->resumeWorkflow();
+                // $workflow->resumeWorkflow();
+                $workflow->submitUpdate('resumeWorkflow'); // Fires the #[UpdateMethod] on the stub
                 
                 $this->info("Successfully resumed Process Instance [{$id}].");
                 break;
@@ -74,7 +76,8 @@ class InstanceControlCommand extends Command
                 }
 
                 $instance->update(['status' => ProcessInstanceStatus::HALTED]);
-                $workflow->haltWorkflow();
+                // $workflow->haltWorkflow();
+                $workflow->submitUpdate('haltProcess'); // Fires the #[UpdateMethod] on the stub
                 
                 $this->info("Successfully halted Process Instance [{$id}].");
                 break;

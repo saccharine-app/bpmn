@@ -2,23 +2,24 @@
 
 use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Workflow\Activity;
-use Workflow\WorkflowStub;
+use Workflow\V2\Activity;
+use Workflow\V2\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
-use Workflow\RetryPolicy;
+// use Workflow\RetryPolicy;
 
 // A dummy activity that is guaranteed to crash instantly without retries
 class FailingApiActivity extends Activity
 {
-    public $tries = 1; // Tell Laravel's queue worker to only try once
+    // public $tries = 1; // Tell Laravel's queue worker to only try once
 
-    public function retryPolicy(): RetryPolicy
+    /* public function retryPolicy(): RetryPolicy
     {
         // Tell Durable Workflow to disable its automatic exponential backoff
         return RetryPolicy::new()->setMaximumAttempts(1);
-    }
+    } */
 
-    public function execute(array $userData): array
+    // public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         throw new \Exception("Simulated API Timeout Failure");
     }
@@ -67,7 +68,8 @@ it('catches an exception using an error boundary event and routes to an alternat
     $workflow = WorkflowStub::load($workflow->id());
     
     // The workflow should complete successfully because the error was handled
-    expect($workflow->status())->toBe(\Workflow\States\WorkflowCompletedStatus::class);
+    // expect($workflow->status())->toBe(\Workflow\States\WorkflowCompletedStatus::class);
+    expect($workflow->status())->toBe(\Workflow\V2\Enums\RunStatus::Completed->value);
 
     $output = $workflow->output();
     expect($output)->toBeArray()
@@ -99,5 +101,6 @@ it('fails the workflow entirely if an exception occurs and no boundary event is 
     $workflow = WorkflowStub::load($workflow->id());
     
     // The workflow should crash and be marked as failed by Durable Workflow
-    expect($workflow->status())->toBe(\Workflow\States\WorkflowFailedStatus::class);
+    // expect($workflow->status())->toBe(\Workflow\States\WorkflowFailedStatus::class);
+    expect($workflow->status())->toBe(\Workflow\V2\Enums\RunStatus::Failed->value);
 });

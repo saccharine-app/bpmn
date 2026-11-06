@@ -3,13 +3,15 @@
 use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Workflow\Activity;
-use Workflow\WorkflowStub;
+use Workflow\V2\Activity;
+use Workflow\V2\Workflow;
+use Workflow\V2\WorkflowStub;
+use function Workflow\V2\activity;
 
 // A dummy activity representing the host application's business logic
-class CalculateTaxActivity extends Activity
+final class CalculateTaxActivity extends Activity
 {
-    public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         return ['tax' => $userData['subtotal'] * 0.10];
     }
@@ -51,7 +53,8 @@ it('executes a process path and updates the user data payload', function () {
     $workflow = WorkflowStub::load($workflow->id());
 
     if ($workflow->status() === 'failed') {
-        $failedRecord = \Workflow\Models\Workflow::find($workflow->id());
+        // $failedRecord = \Workflow\Models\Workflow::find($workflow->id());
+        $failedRecord = \Illuminate\Support\Facades\DB::table('workflows')->where('id', $workflow->id())->first();
         dd("Workflow failed in the background!", $failedRecord->output);
     }
 

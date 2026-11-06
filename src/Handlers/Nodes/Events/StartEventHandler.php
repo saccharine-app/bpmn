@@ -15,12 +15,12 @@ class StartEventHandler implements BpmnNodeHandlerInterface
         ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator
+    ): array // \Generator
     {
         // Find the outgoing edge and advance to the next sequential node
         $nextNodeId = $workflow->getNextSequentialNode($version, $node->bpmn_element_id);
         
-        yield from []; // Satisfies the Generator return type
+        // yield from []; // Satisfies the Generator return type
         return [$nextNodeId, $userData];
     }
 }

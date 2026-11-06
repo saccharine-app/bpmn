@@ -3,7 +3,7 @@
 use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Gateways\ExclusiveGatewayHandler;
-use Workflow\WorkflowStub;
+use Workflow\V2\WorkflowStub;
 
 it('evaluates expression logic and routes the token to the correct path', function () {
     $definition = ProcessDefinition::create(['name' => 'Gateway Test', 'key' => 'gateway-test']);
@@ -29,19 +29,23 @@ it('evaluates expression logic and routes the token to the correct path', functi
 
     // $workflow = WorkflowStub::make(BpmnInterpreterWorkflow::class);
     $workflow = \Mockery::mock(BpmnInterpreterWorkflow::class)->makePartial();
+    $workflow->shouldReceive('logTelemetry')->andReturnNull();
+
     $handler = new ExclusiveGatewayHandler();
 
     // Test Path A execution
-    $generatorA = $handler->handle($workflow, $gatewayNode, $version, ['amount' => 1500], null);
+    /* $generatorA = $handler->handle($workflow, $gatewayNode, $version, ['amount' => 1500], null);
     while ($generatorA->valid()) { $generatorA->next(); }
-    $resultA = $generatorA->getReturn();
+    $resultA = $generatorA->getReturn(); */
+    $resultA = $handler->handle($workflow, $gatewayNode, $version, ['amount' => 1500], null);
     
     expect($resultA[0])->toBe('Task_High');
 
     // Test Path B execution
-    $generatorB = $handler->handle($workflow, $gatewayNode, $version, ['amount' => 500], null);
+    /* $generatorB = $handler->handle($workflow, $gatewayNode, $version, ['amount' => 500], null);
     while ($generatorB->valid()) { $generatorB->next(); }
-    $resultB = $generatorB->getReturn();
+    $resultB = $generatorB->getReturn(); */
+    $resultB = $handler->handle($workflow, $gatewayNode, $version, ['amount' => 500], null);
     
     expect($resultB[0])->toBe('Task_Low');
 });

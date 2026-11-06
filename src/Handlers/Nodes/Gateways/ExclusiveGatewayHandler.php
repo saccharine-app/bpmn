@@ -18,18 +18,18 @@ class ExclusiveGatewayHandler implements BpmnNodeHandlerInterface
         ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator
+    ): array // \Generator
     {
         $router = new GatewayRouter();
         $nextNodeId = $router->getNextNodeId($version, $node->bpmn_element_id, $userData);
         
-        yield $workflow->logTelemetry(
+        /* yield */ $workflow->logTelemetry(
             BpmnExecutionLogged::LEVEL_GATEWAY,
             "Evaluated conditions. Routing token -> [{$nextNodeId}].",
             $node->bpmn_element_id
         );
 
-        yield from []; // Satisfies the Generator return type
+        // yield from []; // Satisfies the Generator return type
         return [$nextNodeId, $userData];
     }
 }

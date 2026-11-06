@@ -2,14 +2,15 @@
 
 use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Workflow\Activity;
-use Workflow\WorkflowStub;
+use Workflow\V2\Activity;
+use Workflow\V2\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
 
 // Two dummy activities to run in parallel
 class ProcessPaymentActivity extends Activity
 {
-    public function execute(array $userData): array
+    // public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         return ['payment_status' => 'cleared'];
     }
@@ -17,7 +18,8 @@ class ProcessPaymentActivity extends Activity
 
 class GenerateInvoiceActivity extends Activity
 {
-    public function execute(array $userData): array
+    // public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         return ['invoice_generated' => true];
     }
@@ -66,7 +68,8 @@ it('executes multiple paths in parallel and merges the payload at the join', fun
     // Assertions
     $workflow = WorkflowStub::load($workflow->id());
     
-    expect($workflow->status())->toBe(\Workflow\States\WorkflowCompletedStatus::class);
+    // expect($workflow->status())->toBe(\Workflow\States\WorkflowCompletedStatus::class);
+    expect($workflow->status())->toBe(\Workflow\V2\Enums\RunStatus::Completed->value);
     
     $result = $workflow->output();
     expect($result)->toBeArray()

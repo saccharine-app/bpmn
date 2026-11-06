@@ -21,8 +21,8 @@ class CallActivityHandler implements BpmnNodeHandlerInterface
         ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator {
-        
+    ): array // \Generator
+    {
         try {
             $targetDefinitionKey = $node->implementation;
             
@@ -36,7 +36,7 @@ class CallActivityHandler implements BpmnNodeHandlerInterface
 
             // Yield the ChildWorkflowStub created by the interpreter
             // We start the target workflow from its beginning (startNodeId = null)
-            $childWorkflowResult = yield $workflow->makeChildWorkflow(
+            $childWorkflowResult = /* yield */ $workflow->makeChildWorkflow(
                 $targetVersion->id, 
                 $userData, 
                 null, 
