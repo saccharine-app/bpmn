@@ -183,7 +183,8 @@ class ProcessInstanceController extends Controller
         // $workflow->submitUserTask($payload);
         // Updated Signal approach with durable-workflow V2
         // $workflow->attemptSignalWithArguments('user-task-submitted', $payload);
-        $workflow->attemptSignalWithArguments('submitUserTask', $payload);
+        // $workflow->attemptSignalWithArguments('submitUserTask', $payload);
+        $workflow->submitUpdate('submitUserTask', $payload);
 
         return response()->json([
             'success' => true,

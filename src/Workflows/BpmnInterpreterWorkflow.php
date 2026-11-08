@@ -270,7 +270,7 @@ class BpmnInterpreterWorkflow extends Workflow
             );
 
             if ($instanceId !== null) {
-                /* yield */ WorkflowStub::sideEffect(function () use ($instanceId, $currentNodeId, $node, $userData) {
+                /* yield *//* WorkflowStub:: */sideEffect(function () use ($instanceId, $currentNodeId, $node, $userData) {
                     ProcessHistory::create([
                         'process_instance_id' => $instanceId,
                         'bpmn_element_id'      => $currentNodeId,
