@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up()
     {
-        if (!Schema::hasTable('process_histories')) {
-            Schema::create('process_histories', function (Blueprint $table) {
+        if (!Schema::hasTable('process_history_events')) {
+            Schema::create('process_history_events', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('process_instance_id')->constrained()->cascadeOnDelete();
                 $table->string('bpmn_element_id');
@@ -23,6 +23,6 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('process_histories');
+        Schema::dropIfExists('process_history_events');
     }
 };

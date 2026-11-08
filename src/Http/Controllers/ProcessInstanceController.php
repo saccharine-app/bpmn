@@ -140,7 +140,7 @@ class ProcessInstanceController extends Controller
 
         $instance = ProcessInstance::with(['tokens', 'version.definition'])->findOrFail($id);
         
-        $history = DB::table('process_histories')
+        $history = DB::table('process_history_events')
             ->where('process_instance_id', $id)
             ->orderBy('id', 'asc')
             ->get();

@@ -16,7 +16,7 @@ use function Workflow\V2\sideEffect;
 use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Models\ProcessEdge;
 use Saccharine\Bpmn\Models\ProcessToken;
-use Saccharine\Bpmn\Models\ProcessHistory;
+use Saccharine\Bpmn\Models\ProcessHistoryEvent;
 use Saccharine\Bpmn\Services\GatewayRouter;
 use Saccharine\Bpmn\Handlers\NodeHandlerFactory;
 use Saccharine\Bpmn\Events\BpmnExecutionLogged;
@@ -271,7 +271,7 @@ class BpmnInterpreterWorkflow extends Workflow
 
             if ($instanceId !== null) {
                 /* yield *//* WorkflowStub:: */sideEffect(function () use ($instanceId, $currentNodeId, $node, $userData) {
-                    ProcessHistory::create([
+                    ProcessHistoryEvent::create([
                         'process_instance_id' => $instanceId,
                         'bpmn_element_id'      => $currentNodeId,
                         'node_type'            => $node->type,

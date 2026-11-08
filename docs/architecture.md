@@ -118,5 +118,5 @@ Gateway condition expressions are evaluated through `ExpressionEvaluator`, wrapp
 Durable workflows serialize execution state into internal event logs. To provide fast SQL queries for user interfaces without loading full execution graphs:
 
 * **Atomic Token Writes**: When entering a node, the engine invokes `Workflow\V2\sideEffect()` to update `process_tokens`. The `sideEffect` wrapper ensures the database mutation executes exactly once per step and is skipped during replay.
-* **Audit History Trail**: Completed steps are recorded in `process_histories` alongside JSON snapshots of `$userData`.
+* **Audit History Trail**: Completed steps are recorded in `process_history_events` alongside JSON snapshots of `$userData`.
 * **Cockpit Visualization**: The tracking cockpit at `/instances/{id}/track` pairs `bpmn-js/lib/NavigatedViewer` with polling endpoints to render traversed paths in blue (`.bpmn-history-completed`), active waiting tokens in pulsing green (`.bpmn-active-token`), and failed nodes in red (`.bpmn-failed-token`).

@@ -5,9 +5,9 @@ namespace Saccharine\Bpmn\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ProcessHistory extends Model
+class ProcessHistoryEvent extends Model
 {
-    protected $table = 'process_histories';
+    protected $table = 'process_history_events';
 
     public $timestamps = false;
     
