@@ -85,7 +85,7 @@ Navigate to `/bpmn/processes/definitions` (or your Filament admin panel) to insp
 ## Technical Requirements
 
 * **PHP:** `^8.3`
-* **Laravel Framework:** `^^13.0`
+* **Laravel Framework:** `^13.0`
 * **durable-workflow/workflow:** `^2.0` (Native Fiber orchestration)
 * **symfony/expression-language:** `^8.1` (Sandboxed evaluation of gateway conditions)
 * **bpmn-js:** Embedded visual client-side modeling and tracking
