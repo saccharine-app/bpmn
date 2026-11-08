@@ -41,6 +41,7 @@ The route `bpmn.index` dynamically forwards users to the appropriate interface:
 3. The built-in Blade dashboard.
 
 To disable the standalone Blade index entirely in a Filament-only app:
+
 ```php
 'dashboard' => false,
 ```
@@ -201,27 +202,26 @@ php artisan bpmn:make-template "Charge Credit Card" --key="charge_card"
 This creates a JSON template in `resources/bpmn/templates/`:
 
 ```json
-[
-  {
-    "name": "Charge Credit Card",
-    "id": "com.app.tasks.ChargeCreditCard",
-    "appliesTo": ["bpmn:ServiceTask"],
-    "properties": [
-      {
-        "label": "Implementation Key",
-        "type": "Hidden",
-        "value": "charge_card",
-        "binding": { "type": "property", "name": "camunda:class" }
-      },
-      {
-        "label": "Charge Description",
-        "type": "String",
-        "value": "Order Payment",
-        "binding": { "type": "camunda:inputParameter", "name": "charge_description" }
-      }
-    ]
-  }
-]
+{
+  "$schema": "https://unpkg.com/@bpmn-io/element-templates@0.4.0/resources/schema.json",
+  "name": "Charge Credit Card",
+  "id": "com.app.tasks.ChargeCreditCard",
+  "appliesTo": ["bpmn:ServiceTask"],
+  "properties": [
+    {
+      "label": "Implementation Key",
+      "type": "Hidden",
+      "value": "charge_card",
+      "binding": { "type": "property", "name": "camunda:class" }
+    },
+    {
+      "label": "Charge Description",
+      "type": "String",
+      "value": "Order Payment",
+      "binding": { "type": "camunda:inputParameter", "name": "charge_description" }
+    }
+  ]
+}
 ```
 
 ---
@@ -253,23 +253,89 @@ Attach an Error Boundary Event to a Service Task, Call Activity, or Sub-Process.
 When a process reaches a User Task, execution suspends indefinitely without consuming queue workers:
 * The engine emits a `UserTaskPending` event.
 * Operators can click the pulsing green node in the **Live Cockpit** (`/instances/{id}/track`) to open an approval modal and submit decisions.
-* Under the hood, submitting a user task invokes an update method on the workflow stub:
-
-  ```php
-  use Workflow\V2\WorkflowStub;
-
-  $instance = ProcessInstance::find($instanceId);
-  $workflow = WorkflowStub::load($instance->durable_workflow_id);
-  
-  $workflow->submitUpdate('submitUserTask', [
-      'decision'    => 'approved',
-      'approved_by' => auth()->user()->name,
-  ]);
-  ```
 
 ---
 
-## 6. Filament Integration
+## 6. Runtime Process Instance Interventions
+
+Active process instances can be monitored and controlled through the CLI, HTTP endpoints, the standalone tracking cockpit, or Filament resource actions.
+
+All interventions use `submitUpdate()` on the durable workflow stub to mutate the workflow state safely across execution replays.
+
+### Available Actions
+
+| Action | State Transition | Description |
+| :--- | :--- | :--- |
+| **List** | — | Displays recent instances, statuses, and durable IDs. |
+| **Suspend** | `RUNNING` $\rightarrow$ `SUSPENDED` | Pauses the workflow at its current execution boundary. The coroutine safely hibernates until resumed. |
+| **Resume** | `SUSPENDED` $\rightarrow$ `RUNNING` | Unpauses the workflow, allowing it to advance on the next queue worker tick. |
+| **Halt** | `RUNNING` / `SUSPENDED` $\rightarrow$ `HALTED` | Permanently terminates execution, cleans up active tokens, and prevents further progression. |
+| **Submit Task** | `RUNNING` (at User Task) | Injects form payloads into a suspended User Task and resumes execution. |
+
+---
+
+### Command-Line Interface (CLI)
+
+The `bpmn:instance` Artisan command provides full terminal control:
+
+```bash
+# List the 50 most recent instances
+php artisan bpmn:instance list
+
+# Suspend a running instance
+php artisan bpmn:instance suspend {id}
+
+# Resume a suspended instance
+php artisan bpmn:instance resume {id}
+
+# Permanently halt an instance
+php artisan bpmn:instance halt {id}
+```
+
+---
+
+### Web & API Endpoints
+
+Interventions are accessible over HTTP (subject to configured route prefixes and `ProcessPermission` gates):
+
+```http
+# Suspend an instance
+POST /bpmn/processes/instances/{id}/suspend
+
+# Resume a suspended instance
+POST /bpmn/processes/instances/{id}/resume
+
+# Permanently halt an instance
+POST /bpmn/processes/instances/{id}/halt
+
+# Fetch active tokens (polled by UI)
+GET /bpmn/processes/instances/{id}/tokens
+
+# Fetch full telemetry & audit history
+GET /bpmn/processes/instances/{id}/telemetry
+
+# Submit human input for an active User Task
+POST /bpmn/processes/instances/{id}/tasks/{elementId}/submit
+Content-Type: application/json
+
+{
+    "payload": {
+        "decision": "approved",
+        "notes": "Reviewed and verified."
+    }
+}
+```
+
+---
+
+### Interactive Cockpit & Filament Controls
+
+* **Live Cockpit (`/instances/{id}/track`):** Top header buttons allow instant `Suspend`, `Resume`, and `Halt` actions. Clicking on an active, pulsing green User Task node opens an approval modal directly on the canvas to submit payloads in real time.
+* **Filament Resources:** If using `ProcessInstanceResource`, table rows include individual action buttons for `Suspend`, `Resume`, `Halt`, and a `Live Cockpit` link with integrated confirmation modals.
+
+---
+
+## 7. Filament Integration
 
 Scaffold the optional Filament resources:
 
