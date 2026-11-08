@@ -16,7 +16,7 @@ Before proposing major new features, review our current implementation boundarie
 * Multi-instance activity loops (sequential and parallel).
 * Complex event sub-processes and compensation events.
 * Dynamic form schema bindings (e.g., `form-js`) for User Tasks.
-* Workflow version migration tooling for in-flight instances.
+* Process version migration tooling for in-flight instances.
 
 If you are planning an architectural change or a new BPMN node handler, please **open an Issue or RFC first** so we can coordinate design direction before you write code.
 

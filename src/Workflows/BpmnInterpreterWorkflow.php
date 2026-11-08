@@ -2,17 +2,21 @@
 
 namespace Saccharine\Bpmn\Workflows;
 
-use Workflow\Workflow;
-use Workflow\WorkflowStub;
-use Workflow\ActivityStub;
-use Workflow\ChildWorkflowStub;
-use Workflow\SignalMethod;
-use function Workflow\await;
-use function Workflow\all;
-use Saccharine\Bpmn\Models\WorkflowVersion;
-use Saccharine\Bpmn\Models\WorkflowEdge;
-use Saccharine\Bpmn\Models\WorkflowToken;
-use Saccharine\Bpmn\Models\WorkflowHistory;
+use Workflow\V2\Workflow;
+use Workflow\V2\WorkflowStub;
+// use Workflow\ActivityStub;
+// use Workflow\ChildWorkflowStub;
+// use Workflow\SignalMethod;
+use Workflow\UpdateMethod;
+use Workflow\V2\Attributes\Signal;
+use function Workflow\V2\activity;
+use function Workflow\V2\child;
+use function Workflow\V2\await;
+use function Workflow\V2\sideEffect;
+use Saccharine\Bpmn\Models\ProcessVersion;
+use Saccharine\Bpmn\Models\ProcessEdge;
+use Saccharine\Bpmn\Models\ProcessToken;
+use Saccharine\Bpmn\Models\ProcessHistoryEvent;
 use Saccharine\Bpmn\Services\GatewayRouter;
 use Saccharine\Bpmn\Handlers\NodeHandlerFactory;
 use Saccharine\Bpmn\Events\BpmnExecutionLogged;
@@ -26,6 +30,8 @@ class BpmnInterpreterWorkflow extends Workflow
     private bool $isSuspended = false;
     private bool $isHalted = false;
 
+    private array $pendingUserTaskPayloads = [];
+
     public function isSuspended(): bool
     {
         return $this->isSuspended;
@@ -37,47 +43,73 @@ class BpmnInterpreterWorkflow extends Workflow
     }
 
     // Define a generic signal receiver that pipes data into the durable Inbox
-    #[SignalMethod]
-    public function submitUserTask(array $payload)
+    // #[SignalMethod]
+    #[UpdateMethod]
+    public function submitUserTask(array $payload): array
     {
-        $this->inbox->receive($payload);
+        // $this->inbox->receive($payload);
+        $this->pendingUserTaskPayloads[] = $payload;
+
+        return $this->pendingUserTaskPayloads;
     }
 
     // Workflow intervention signals
-    #[SignalMethod]
-    public function suspendWorkflow()
+    // #[SignalMethod]
+    #[UpdateMethod]
+    public function suspendProcess(): bool
     {
         $this->isSuspended = true;
+
+        return $this->isSuspended;
     }
 
-    #[SignalMethod]
-    public function resumeWorkflow()
+    // #[SignalMethod]
+    #[UpdateMethod]
+    public function resumeProcess(): bool
     {
         $this->isSuspended = false;
+
+        return $this->isSuspended;
     }
 
-    #[SignalMethod]
-    public function haltWorkflow()
+    // #[SignalMethod]
+    #[UpdateMethod]
+    public function haltProcess(): bool
     {
         $this->isHalted = true;
+
+        return $this->isHalted;
     }
     
     /**
      * Wrapper for durable-workflow's Inbox::hasUnread() method.
      * This isolated testing, since Inbox is declared as final.
      */
-    public function hasUnreadInbox()
+    /* public function hasUnreadInbox()
     {
         return $this->inbox->hasUnread();
+    } */
+    public function hasUnreadInbox(): bool
+    {
+        return count($this->pendingUserTaskPayloads) > 0;
     }
 
     /**
      * Wrapper for durable-workflow's Inbox::nextUnread() method.
      * This isolated testing, since Inbox is declared as final.
      */
-    public function readNextInboxMessage(): mixed
+    /* public function readNextInboxMessage(): mixed
     {
         return $this->inbox->nextUnread();
+    } */
+    public function readNextInboxMessage(): mixed
+    {
+        return array_shift($this->pendingUserTaskPayloads);
+    }
+
+    public function awaitUserTaskCompletion(): void
+    {
+        await(fn () => count($this->inboxPayloads) > 0 || /* $this->isSuspended || */$this->isHalted);
     }
 
     /**
@@ -85,7 +117,7 @@ class BpmnInterpreterWorkflow extends Workflow
      */
     public function awaitPromise(\Closure $condition)
     {
-        return \Workflow\await($condition);
+        return await($condition);
     }
 
     /**
@@ -93,7 +125,7 @@ class BpmnInterpreterWorkflow extends Workflow
      */
     public function awaitWithTimeoutPromise(string $duration, \Closure $condition)
     {
-        return \Workflow\awaitWithTimeout($duration, $condition);
+        return awaitWithTimeout($duration, $condition);
     }
 
     /**
@@ -102,7 +134,8 @@ class BpmnInterpreterWorkflow extends Workflow
      */
     public function makeActivity(string $activityClass, array $userData)
     {
-        return \Workflow\ActivityStub::make($activityClass, $userData);
+        // return \Workflow\ActivityStub::make($activityClass, $userData);
+        return activity($activityClass, $userData);
     }
 
     /**
@@ -111,7 +144,8 @@ class BpmnInterpreterWorkflow extends Workflow
      */
     public function makeChildWorkflow(int $versionId, array $userData, ?string $startNodeId = null, ?int $instanceId = null)
     {
-        return \Workflow\ChildWorkflowStub::make(self::class, $versionId, $userData, $startNodeId, $instanceId);
+        // return \Workflow\ChildWorkflowStub::make(self::class, $versionId, $userData, $startNodeId, $instanceId);
+        return child(self::class, $versionId, $userData, $startNodeId, $instanceId);
     }
 
     /**
@@ -120,7 +154,7 @@ class BpmnInterpreterWorkflow extends Workflow
      */
     public function makeScopedChildWorkflow(int $versionId, string $subProcessNodeId, array $userData, ?int $instanceId = null)
     {
-        $version = WorkflowVersion::with('nodes')->find($versionId);
+        $version = ProcessVersion::with('nodes')->find($versionId);
         
         // Find the start event strictly scoped inside this sub-process
         $startNode = $version->nodes
@@ -132,24 +166,26 @@ class BpmnInterpreterWorkflow extends Workflow
             throw new RuntimeException("BPMN Error: No startEvent found inside Sub-Process [{$subProcessNodeId}].");
         }
 
-        return \Workflow\ChildWorkflowStub::make(self::class, $versionId, $userData, $startNode->bpmn_element_id, $instanceId);
+        // return \Workflow\ChildWorkflowStub::make(self::class, $versionId, $userData, $startNode->bpmn_element_id, $instanceId);
+        return child(self::class, $versionId, $userData, $startNode->bpmn_element_id, $instanceId);
     }
 
     // Add the optional 3rd parameter for branch executions
-    public function execute(
+    //public function execute(
+    public function handle(
         int $versionId,
         array $userData,
         ?string $startNodeId = null,
         ?int $instanceId = null
     ) {
         // Note: Querying the DB inside a workflow is safe ONLY IF the data is immutable.
-        // Since WorkflowVersions and their nodes never change once published,
+        // Since ProcessVersions and their nodes never change once published,
         // this is fully deterministic.
-        $version = WorkflowVersion::with(['nodes', 'edges'])->findOrFail($versionId);
+        $version = ProcessVersion::with(['nodes', 'edges'])->findOrFail($versionId);
 
         $this->instanceId = $instanceId;
 
-        // If no start node is provided, this is the Master Workflow starting from the beginning
+        // If no start node is provided, this is the Master Process starting from the beginning
         if ($startNodeId === null) {
             // Find the global start event (it must NOT belong to a sub-process)
             $startNode = $version->nodes
@@ -167,7 +203,7 @@ class BpmnInterpreterWorkflow extends Workflow
         }
 
         // When the workflow initiates:
-        yield $this->logTelemetry(
+        /* yield */ $this->logTelemetry(
             BpmnExecutionLogged::LEVEL_INFO, 
             "Process started from node [{$currentNodeId}].", 
             $currentNodeId
@@ -176,9 +212,9 @@ class BpmnInterpreterWorkflow extends Workflow
         while ($currentNodeId !== null) {
             // HALT CHECK: Immediately break the loop and terminate the process
             if ($this->isHalted) {
-                yield $this->logTelemetry(
+                /* yield */ $this->logTelemetry(
                     BpmnExecutionLogged::LEVEL_ERROR, 
-                    "Workflow halted by operator intervention. Terminating execution.", 
+                    "Process halted by operator intervention. Terminating execution.", 
                     $currentNodeId
                 );
                 // You can optionally inject a 'halted_at' flag into the payload
@@ -188,24 +224,28 @@ class BpmnInterpreterWorkflow extends Workflow
 
             // SUSPENSION CHECK: Hibernate safely until resumed (or halted while sleeping)
             if ($this->isSuspended) {
-                yield $this->logTelemetry(
+                /* yield */ $this->logTelemetry(
                     BpmnExecutionLogged::LEVEL_WAIT, 
-                    "Workflow suspended via operator signal. Hibernating...", 
+                    "Process suspended via operator signal. Hibernating...", 
                     $currentNodeId
                 );
-                yield await(fn () => !$this->isSuspended || $this->isHalted);
+                /* yield */ await(fn () => !$this->isSuspended || $this->isHalted);
                 
+                // Blocks here safely until the 'resume' signal is sent
+                // await('resume');
+                // $this->isSuspended = false; // Reset once woken up
+
                 // Continue forces the loop to re-evaluate the Halt check immediately upon waking up
                 continue; 
             }
 
             // Token tracker: SideEffect ensures this database query only runs exactly once per step, never on replay
             if ($instanceId !== null) {
-                yield WorkflowStub::sideEffect(function () use ($instanceId, $currentNodeId) {
-                    WorkflowToken::updateOrCreate(
+                /* yield *//* WorkflowStub:: */sideEffect(function () use ($instanceId, $currentNodeId) {
+                    ProcessToken::updateOrCreate(
                         [
-                            'workflow_instance_id' => $instanceId,
-                            'durable_workflow_id'  => $this->uniqueId(),
+                            'process_instance_id' => $instanceId,
+                            'durable_workflow_id'  => $this->workflowId(),
                         ],
                         [
                             'bpmn_element_id' => $currentNodeId,
@@ -221,7 +261,7 @@ class BpmnInterpreterWorkflow extends Workflow
 
             // DELEGATE EXECUTION
             // We use 'yield from' because the handler itself contains yields (Activities/Awaits)
-            [$nextNodeId, $userData] = yield from $handler->handle(
+            [$nextNodeId, $userData] = /* yield from */ $handler->handle(
                 $this, 
                 $node, 
                 $version, 
@@ -230,9 +270,9 @@ class BpmnInterpreterWorkflow extends Workflow
             );
 
             if ($instanceId !== null) {
-                yield WorkflowStub::sideEffect(function () use ($instanceId, $currentNodeId, $node, $userData) {
-                    WorkflowHistory::create([
-                        'workflow_instance_id' => $instanceId,
+                /* yield *//* WorkflowStub:: */sideEffect(function () use ($instanceId, $currentNodeId, $node, $userData) {
+                    ProcessHistoryEvent::create([
+                        'process_instance_id' => $instanceId,
                         'bpmn_element_id'      => $currentNodeId,
                         'node_type'            => $node->type,
                         'status'               => 'completed',
@@ -260,7 +300,7 @@ class BpmnInterpreterWorkflow extends Workflow
     /**
      * Helper to find the immediate next node in a straight line (non-gateway paths)
      */
-    public function getNextSequentialNode(WorkflowVersion $version, string $currentNodeId): ?string
+    public function getNextSequentialNode(ProcessVersion $version, string $currentNodeId): ?string
     {
         // If relation is loaded and not empty, use collection; otherwise query directly
         $edge = $version->relationLoaded('edges') && $version->edges->isNotEmpty()
@@ -278,7 +318,7 @@ class BpmnInterpreterWorkflow extends Workflow
         if ($instanceId !== null) {
             // Because side effects cannot be yielded from a void return easily inside the execution structure,
             // we can trigger this directly in a blocking manner since it's the final action of the thread.
-            WorkflowToken::where('durable_workflow_id', $this->uniqueId())->delete();
+            ProcessToken::where('durable_workflow_id', $this->workflowId())->delete();
         }
     }
 
@@ -290,7 +330,7 @@ class BpmnInterpreterWorkflow extends Workflow
     {
         $instanceId = $this->instanceId;
 
-        return WorkflowStub::sideEffect(function () use ($type, $message, $instanceId, $nodeId, $context) {
+        return /* WorkflowStub:: */sideEffect(function () use ($type, $message, $instanceId, $nodeId, $context) {
             event(new BpmnExecutionLogged($type, $message, $instanceId, $nodeId, $context));
         });
     }

@@ -4,52 +4,71 @@ namespace Saccharine\Bpmn\Handlers\Nodes\Gateways;
 
 use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\Bpmn\Models\WorkflowNode;
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessNode;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Events\BpmnExecutionLogged;
-use Workflow\ChildWorkflowStub;
-use function Workflow\all;
+// use Workflow\ChildWorkflowStub;
+use function Workflow\V2\all;
+use function Workflow\V2\child;
 
 // Parallel Gateways (The AND Split/Join mechanism)
 class ParallelGatewayHandler implements BpmnNodeHandlerInterface
 {
     public function handle(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowNode $node,
-        WorkflowVersion $version,
+        ProcessNode $node,
+        ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator
+    ): array // \Generator
     {
         $outgoingEdges = $version->edges->where('source_node_id', $node->bpmn_element_id);
 
         // CASE A: It is a SPLIT (Multiple outgoing paths)
         if ($outgoingEdges->count() > 1) {
-            yield $workflow->logTelemetry(
+            /* yield */ $workflow->logTelemetry(
                 BpmnExecutionLogged::LEVEL_GATEWAY,
                 "Parallel Split: Spawning " . $outgoingEdges->count() . " child workflow branches.",
                 $node->bpmn_element_id
             );
 
             $parallelStubs = [];
+            $parallelTasks = [];
 
             foreach ($outgoingEdges as $edge) {
                 // Spawn a Child Workflow of the interpreter class,
                 // passing the specific branch's starting node ID
-                $parallelStubs[] = ChildWorkflowStub::make(
+                /* $parallelStubs[] = *//* ChildWorkflowStub::make(
                     BpmnInterpreterWorkflow::class,
                     $version->id,
                     $userData,
                     $edge->target_node_id,
                     $instanceId // Pass the parent instance down
+                ); *//*
+                $workflow->makeChildWorkflow(
+                    $version->id,
+                    $userData,
+                    $edge->target_node_id,
+                    $instanceId // Pass the parent instance down
+                ); */
+                
+                $targetId = $edge->target_node_id;
+                $parallelTasks[] = fn () => $workflow->makeChildWorkflow(
+                    $version->id,
+                    $userData,
+                    $targetId,
+                    $instanceId
                 );
             }
 
+            
+
             // The Master Workflow sleeps safely here without generating a serialization error.
             // CRITICAL FIX: all() converts the array of stubs into a single PromiseInterface
-            $branchResults = yield all($parallelStubs);
+            // $branchResults = /* yield */ all($parallelStubs);
+            $branchResults = all($parallelTasks);
 
-            yield $workflow->logTelemetry(
+            /* yield */ $workflow->logTelemetry(
                 BpmnExecutionLogged::LEVEL_GATEWAY,
                 "Parallel Join: All concurrent branches resolved. Synchronizing payload.",
                 $node->bpmn_element_id
@@ -74,7 +93,7 @@ class ParallelGatewayHandler implements BpmnNodeHandlerInterface
      */
     private function findPostJoinNode(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowVersion $version,
+        ProcessVersion $version,
         string $splitGatewayId
     ): ?string
     {

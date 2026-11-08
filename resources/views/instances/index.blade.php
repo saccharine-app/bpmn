@@ -12,10 +12,10 @@
         <div class="mb-8 flex items-center justify-between border-b pb-6">
             <div>
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Active Instances</h1>
-                <p class="text-sm text-gray-500 mt-1">Monitor tokens and control live workflow executions.</p>
+                <p class="text-sm text-gray-500 mt-1">Monitor tokens and control live process executions.</p>
             </div>
             <a href="{{ \Saccharine\Bpmn\Support\BpmnRouteHelper::dashboardUrl() }}" class="text-sm font-semibold text-indigo-600 hover:text-indigo-900">
-                &larr; Back to Workflow Definitions
+                &larr; Back to Process Definitions
             </a>
         </div>
 
@@ -90,7 +90,7 @@
                                     Live Cockpit
                                 </a>
 
-                                @can(\Saccharine\Bpmn\Enums\WorkflowPermission::SUSPEND_INSTANCE->value)
+                                @can(\Saccharine\Bpmn\Enums\ProcessPermission::SUSPEND_INSTANCE->value)
                                     @if($statusValue === 'running')
                                         <form action="{{ route('bpmn.instances.suspend', $instance->id) }}" method="POST" class="inline-block">
                                             @csrf
@@ -99,7 +99,7 @@
                                     @endif
                                 @endcan
 
-                                @can(\Saccharine\Bpmn\Enums\WorkflowPermission::RESUME_INSTANCE->value)
+                                @can(\Saccharine\Bpmn\Enums\ProcessPermission::RESUME_INSTANCE->value)
                                     @if($statusValue === 'suspended')
                                         <form action="{{ route('bpmn.instances.resume', $instance->id) }}" method="POST" class="inline-block">
                                             @csrf
@@ -108,9 +108,9 @@
                                     @endif
                                 @endcan
 
-                                @can(\Saccharine\Bpmn\Enums\WorkflowPermission::HALT_INSTANCE->value)
+                                @can(\Saccharine\Bpmn\Enums\ProcessPermission::HALT_INSTANCE->value)
                                     @if(in_array($statusValue, ['running', 'suspended']))
-                                        <form action="{{ route('bpmn.instances.halt', $instance->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Permanently halt this workflow?');">
+                                        <form action="{{ route('bpmn.instances.halt', $instance->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Permanently halt this process?');">
                                             @csrf
                                             <button type="submit" class="text-red-600 hover:text-red-900 font-semibold text-xs">Halt</button>
                                         </form>
@@ -121,7 +121,7 @@
                     @empty
                         <tr>
                             <td colspan="6" class="py-12 text-center text-gray-500 text-sm">
-                                No workflow instances found.
+                                No process instances found.
                             </td>
                         </tr>
                     @endforelse

@@ -3,9 +3,9 @@
 namespace Saccharine\Bpmn\Console\Commands;
 
 use Illuminate\Console\Command;
-use Saccharine\Bpmn\Models\WorkflowInstance;
-use Saccharine\Bpmn\Enums\WorkflowInstanceStatus;
-use Workflow\WorkflowStub;
+use Saccharine\Bpmn\Models\ProcessInstance;
+use Saccharine\Bpmn\Enums\ProcessInstanceStatus;
+use Workflow\V2\WorkflowStub;
 
 class InstanceControlCommand extends Command
 {
@@ -14,12 +14,12 @@ class InstanceControlCommand extends Command
      */
     protected $signature = 'bpmn:instance 
                             {action : The intervention action (list, suspend, resume, halt)} 
-                            {id? : The relational ID of the workflow instance}';
+                            {id? : The relational ID of the process instance}';
 
     /**
      * The console command description.
      */
-    protected $description = 'Control or list the execution state of a running BPMN workflow instance';
+    protected $description = 'Control or list the execution state of a running BPMN process instance';
 
     public function handle()
     {
@@ -33,10 +33,10 @@ class InstanceControlCommand extends Command
         // For all other actions, the 'id' is strictly required
         $id = $this->argument('id');
 
-        $instance = WorkflowInstance::find($id);
+        $instance = ProcessInstance::find($id);
 
         if (!$instance) {
-            $this->error("Workflow instance [{$id}] not found in the database.");
+            $this->error("Process instance [{$id}] not found in the database.");
             return;
         }
 
@@ -44,39 +44,42 @@ class InstanceControlCommand extends Command
 
         switch ($action) {
             case 'suspend':
-                if ($instance->status !== WorkflowInstanceStatus::RUNNING) {
+                if ($instance->status !== ProcessInstanceStatus::RUNNING) {
                     $this->warn("Cannot suspend: Instance is currently [{$instance->status->value}].");
                     return;
                 }
                 
-                $instance->update(['status' => WorkflowInstanceStatus::SUSPENDED]);
-                $workflow->suspendWorkflow(); // Fires the #[SignalMethod] on the stub
+                $instance->update(['status' => ProcessInstanceStatus::SUSPENDED]);
+                // $workflow->suspendWorkflow(); // Fires the #[SignalMethod] on the stub
+                $workflow->submitUpdate('suspendProcess'); // Fires the #[UpdateMethod] on the stub
                 
-                $this->info("Successfully suspended Workflow Instance [{$id}].");
+                $this->info("Successfully suspended Process Instance [{$id}].");
                 break;
 
             case 'resume':
-                if ($instance->status !== WorkflowInstanceStatus::SUSPENDED) {
+                if ($instance->status !== ProcessInstanceStatus::SUSPENDED) {
                     $this->warn("Cannot resume: Instance is currently [{$instance->status->value}].");
                     return;
                 }
                 
-                $instance->update(['status' => WorkflowInstanceStatus::RUNNING]);
-                $workflow->resumeWorkflow();
+                $instance->update(['status' => ProcessInstanceStatus::RUNNING]);
+                // $workflow->resumeWorkflow();
+                $workflow->submitUpdate('resumeProcess'); // Fires the #[UpdateMethod] on the stub
                 
-                $this->info("Successfully resumed Workflow Instance [{$id}].");
+                $this->info("Successfully resumed Process Instance [{$id}].");
                 break;
 
             case 'halt':
-                if (in_array($instance->status, [WorkflowInstanceStatus::COMPLETED, WorkflowInstanceStatus::FAILED, WorkflowInstanceStatus::HALTED])) {
+                if (in_array($instance->status, [ProcessInstanceStatus::COMPLETED, ProcessInstanceStatus::FAILED, ProcessInstanceStatus::HALTED])) {
                     $this->warn("Cannot halt: Instance is already in a terminal state [{$instance->status->value}].");
                     return;
                 }
 
-                $instance->update(['status' => WorkflowInstanceStatus::HALTED]);
-                $workflow->haltWorkflow();
+                $instance->update(['status' => ProcessInstanceStatus::HALTED]);
+                // $workflow->haltWorkflow();
+                $workflow->submitUpdate('haltProcess'); // Fires the #[UpdateMethod] on the stub
                 
-                $this->info("Successfully halted Workflow Instance [{$id}].");
+                $this->info("Successfully halted Process Instance [{$id}].");
                 break;
 
             default:
@@ -91,13 +94,13 @@ class InstanceControlCommand extends Command
     protected function listInstances()
     {
         // Fetch the 50 most recent instances, eager loading the definition mapping
-        $instances = WorkflowInstance::with('version.definition')
+        $instances = ProcessInstance::with('version.definition')
             ->orderBy('id', 'desc')
             ->take(50)
             ->get();
 
         if ($instances->isEmpty()) {
-            $this->info("No workflow instances found.");
+            $this->info("No process instances found.");
             return;
         }
 

@@ -50,14 +50,4 @@ class TestCase extends Orchestra
             'driver' => 'null',
         ]);
     }
-
-    /**
-     * Load the third-party Durable Workflow migrations that the engine depends
-     * on. The package's own migrations are already loaded by the service
-     * provider, and Workbench additionally loads `workbench/database/migrations`.
-     */
-    protected function defineDatabaseMigrations()
-    {
-        $this->loadMigrationsFrom(__DIR__ . '/../vendor/durable-workflow/workflow/src/migrations');
-    }
 }

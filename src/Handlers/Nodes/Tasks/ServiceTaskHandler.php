@@ -4,8 +4,8 @@ namespace Saccharine\Bpmn\Handlers\Nodes\Tasks;
 
 use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\Bpmn\Models\WorkflowNode;
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessNode;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Handlers\Traits\EvaluatesBoundaryEvents;
 use Throwable;
 
@@ -16,11 +16,11 @@ class ServiceTaskHandler implements BpmnNodeHandlerInterface
 
     public function handle(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowNode $node,
-        WorkflowVersion $version,
+        ProcessNode $node,
+        ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator
+    ): array // \Generator
     {
         $activityClass = config("saccharine-bpmn.activities.{$node->implementation}");
 
@@ -31,7 +31,7 @@ class ServiceTaskHandler implements BpmnNodeHandlerInterface
 
             // Yield hands control back to Laravel Workflow to execute this safely on the queues
             // Use the workflow's wrapper
-            $activityResult = yield $workflow->makeActivity($activityClass, $effectiveUserData);
+            $activityResult = /* yield */ $workflow->makeActivity($activityClass, $effectiveUserData);
 
             // Merge the results back into the global state
             $userData = array_merge($userData, $activityResult);

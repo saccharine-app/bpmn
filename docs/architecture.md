@@ -1,6 +1,6 @@
-# **Architecture & Under the Hood**
+# Architecture & Under the Hood
 
-Saccharine BPMN decouples visual workflow modeling from host domain logic by translating standard BPMN 2.0 XML diagrams into durable, stateful PHP coroutines.
+Saccharine BPMN decouples visual process modeling from host domain logic by translating standard BPMN 2.0 XML diagrams into durable, stateful PHP Fibers.
 
 ```
 ┌──────────────────┐       ┌────────────────────────┐       ┌───────────────────────────┐
@@ -11,7 +11,7 @@ Saccharine BPMN decouples visual workflow modeling from host domain logic by tra
                                                                           ▼
 ┌──────────────────┐       ┌────────────────────────┐       ┌───────────────────────────┐
 │   Live Cockpit   │ <───  │    State Projection    │ <───  │  BpmnInterpreterWorkflow  │
-│  (Token Monitor) │ SQL   │ (workflow_tokens / log)│ side- │   (durable-workflow loop) │
+│  (Token Monitor) │ SQL   │ (process_tokens / log) │ side- │    (PHP Fiber runtime)    │
 └──────────────────┘       └────────────────────────┘ effect└───────────────────────────┘
 ```
 
@@ -21,22 +21,22 @@ Saccharine BPMN decouples visual workflow modeling from host domain logic by tra
 
 Parsing raw BPMN XML during queue execution introduces serialization overhead and prevents indexing. 
 
-When a workflow is saved and compiled:
+When a process is saved and compiled:
 1. `BpmnParserService` validates standard OMG BPMN 2.0 namespaces.
 2. It extracts `<bpmn:process>` nodes, sequence flows, extension elements, and boundary definitions.
-3. It stores the diagram in relational database tables (`workflow_nodes` and `workflow_edges`).
+3. It stores the diagram in relational database tables (`process_nodes` and `process_edges`).
 
 During background execution, graph traversal occurs via indexed database queries rather than in-memory XML parsing.
 
 ---
 
-## 2. Coroutine State Machine (`BpmnInterpreterWorkflow`)
+## 2. Fiber State Machine (`BpmnInterpreterWorkflow`)
 
-The execution engine is implemented as a single coroutine workflow extending `Workflow\Workflow` from the `durable-workflow` package.
+The execution engine is implemented as a durable workflow extending `Workflow\V2\Workflow` from the `durable-workflow` v2 package.
 
-* **Replay Determinism**: Workflow state is reconstructed from historical events on wake-up.
-* **Non-Blocking Sleep**: When hibernating at a User Task or boundary timer, no worker processes or active threads are held open.
-* **Infinite Execution**: Long-running processes spanning days or weeks survive server reboots and deployments.
+* **Fiber-Based Cooperative Multitasking**: Instead of PHP generators yielding promises (`yield from`), execution runs on native PHP 8.1+ Fibers. Suspension and resumption happen transparently inside framework helpers (`activity()`, `await()`, `child()`, `sideEffect()`).
+* **Replay Determinism**: When a workflow wakes up from an external signal or background job completion, historical steps return cached results from the event log without re-executing external side effects.
+* **Non-Blocking Sleep**: When hibernating at a User Task or boundary timer, worker processes terminate and release system memory while the process state remains durably persisted in the relational database.
 
 ---
 
@@ -45,81 +45,78 @@ The execution engine is implemented as a single coroutine workflow extending `Wo
 The interpreter loop delegates execution to isolated handlers via `NodeHandlerFactory`:
 
 ```php
+namespace Saccharine\Bpmn\Contracts;
+
+use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
+use Saccharine\Bpmn\Models\ProcessNode;
+use Saccharine\Bpmn\Models\ProcessVersion;
+
 interface BpmnNodeHandlerInterface
 {
+    /**
+     * @return array [?string $nextNodeId, array $updatedUserData]
+     */
     public function handle(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowNode $node,
-        WorkflowVersion $version,
+        ProcessNode $node,
+        ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator;
+    ): array;
 }
 ```
 
-Each handler yields generator promises (activities, child workflows, or inbox awaits) and returns a two-tuple containing the next node identifier and the updated state payload:
+Because Fibers suspend from any depth in the call stack, handlers execute as synchronous methods returning a two-tuple `[?string $nextNodeId, array $userData]`:
 
-```php
-return [$nextNodeId, $updatedUserData];
-```
-
-| Node Type | Handler | Boundary Events | Execution Mechanism |
+| Node Type | Handler Class | Boundary Events | Execution Mechanism |
 | :--- | :--- | :--- | :--- |
 | `startEvent` | `StartEventHandler` | No | Resolves outgoing sequence flows and advances. |
 | `endEvent` | `EndEventHandler` | No | Cleans up active tokens and terminates the branch. |
-| `serviceTask` | `ServiceTaskHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Yields an `ActivityStub` to the background queue worker. |
-| `userTask` | `UserTaskHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Awaits inbox signals with optional boundary timer timeouts. |
+| `serviceTask` | `ServiceTaskHandler` | Yes (via `EvaluatesBoundaryEvents`) | Calls `$workflow->makeActivity(...)` (`activity()`), suspending until worker returns. |
+| `userTask` | `UserTaskHandler` | Yes (via `EvaluatesBoundaryEvents`) | Suspends via `$workflow->awaitPromise(...)` or boundary timer check. |
 | `exclusiveGateway` | `ExclusiveGatewayHandler` | No | Evaluates condition expressions via Symfony Expression Language. |
-| `parallelGateway` | `ParallelGatewayHandler` | No | Spawns child coroutines and establishes an `all()` sync barrier. |
-| `callActivity` | `CallActivityHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Invokes a separate published workflow definition by key. |
-| `subProcess` | `SubProcessHandler` | Yes (via `EvaluatesBoundaryEvents` trait) | Scopes tasks into a child workflow with boundary error containment. |
+| `parallelGateway` | `ParallelGatewayHandler` | No | Dispatches concurrent closures via `Workflow\V2\all()`. |
+| `callActivity` | `CallActivityHandler` | Yes (via `EvaluatesBoundaryEvents`) | Invokes a separate published process definition via `child()`. |
+| `subProcess` | `SubProcessHandler` | Yes (via `EvaluatesBoundaryEvents`) | Scopes tasks into a child workflow with boundary error containment. |
 
 ---
 
 ## 4. Parallel Splitting & Child Workflow Synchronization
 
-Standard PHP generators cannot be serialized across queue steps while actively running. To support parallel processing:
+In `durable-workflow` v2, calling `child()` immediately suspends the active fiber unless deferred. To execute parallel branches concurrently:
 
-1. When reaching a **Parallel Gateway Split**, the engine spawns independent instances of `BpmnInterpreterWorkflow` via `ChildWorkflowStub::make()`.
-2. Each child coroutine begins execution at the starting node of its branch.
-3. The parent workflow pauses at a `yield all($stubs)` barrier.
-4. When all branches arrive at the converging join node, the parent workflow resumes, merges the branch payload mutations, and advances to the post-join node.
+1. When reaching a **Parallel Gateway Split**, the handler builds an array of closures wrapping `child()` invocations:
+   ```php
+   $parallelTasks = [];
+   foreach ($outgoingEdges as $edge) {
+       $targetId = $edge->target_node_id;
+       $parallelTasks[] = fn () => $workflow->makeChildWorkflow(
+           $version->id,
+           $userData,
+           $targetId,
+           $instanceId
+       );
+   }
+   ```
+2. The array of closures is passed into `Workflow\V2\all($parallelTasks)`, which executes each branch concurrently across the queue.
+3. When all child branches hit the converging join node (`return [null, $userData]`), `all()` resumes and merges payload mutations into the parent workflow state.
 
 ---
 
-## 5. Sandboxed Expression Evaluation (`WorkflowExpressionEvaluator`)
+## 5. Sandboxed Expression Evaluation (`ExpressionEvaluator`)
 
-Gateway condition expressions are evaluated through `WorkflowExpressionEvaluator`, which wraps Symfony's `ExpressionLanguage` in a sandboxed, isolated interpreter:
+Gateway condition expressions are evaluated through `ExpressionEvaluator`, wrapping Symfony's `ExpressionLanguage` in a sandboxed interpreter:
 
-```php
-class WorkflowExpressionEvaluator
-{
-    public function evaluate(string $expression, array $userData): bool
-    {
-        try {
-            return (bool) $this->expressionEngine->evaluate($expression, $userData);
-        } catch (Throwable $e) {
-            Log::error("BPMN Expression Evaluation Failed: '{$expression}'", [
-                'error' => $e->getMessage(),
-                'payload' => $userData,
-            ]);
-            return false;
-        }
-    }
-}
-```
-
-* **No raw `eval()`**: Conditions are parsed safely through Symfony ExpressionLanguage.
-* **Payload-scoped variables**: The `$userData` array is injected into the expression scope, allowing conditions like `order_total >= 1000` or `status == "approved"`.
-* **Graceful failure**: A malformed expression is caught, logged, and returns `false` rather than crashing the workflow.
+* **No raw `eval()`**: Expressions are parsed safely into an Abstract Syntax Tree (AST).
+* **Payload-scoped variables**: `$userData` is injected into the evaluation scope, allowing rules like `total >= 1000` or `status == "approved" and role in ["admin", "manager"]`.
+* **Graceful fallback**: A malformed expression is logged and returns `false`, preventing unhandled crashes from aborting the workflow queue worker.
 
 ---
 
 ## 6. State Projection & Live Cockpit Telemetry
 
-Durable workflows serialize execution state into internal logs, which cannot be directly queried with relational SQL.
+Durable workflows serialize execution state into internal event logs. To provide fast SQL queries for user interfaces without loading full execution graphs:
 
-To support real-time dashboards and monitoring:
-* **Atomic Token Writes**: When entering a node, the engine executes `WorkflowStub::sideEffect()` to record the token's location in `workflow_tokens`. The `sideEffect` wrapper ensures the database write executes only once, preventing duplicates during coroutine replays.
-* **Audit History Trail**: Completed steps are recorded in `workflow_history` alongside payload snapshots.
-* **Cockpit Visualization**: The tracking cockpit at `/instances/{id}/track` pairs `bpmn-js/lib/NavigatedViewer` with polling endpoints to render traversed paths in blue and active waiting tokens in pulsing green.
+* **Atomic Token Writes**: When entering a node, the engine invokes `Workflow\V2\sideEffect()` to update `process_tokens`. The `sideEffect` wrapper ensures the database mutation executes exactly once per step and is skipped during replay.
+* **Audit History Trail**: Completed steps are recorded in `process_history_events` alongside JSON snapshots of `$userData`.
+* **Cockpit Visualization**: The tracking cockpit at `/instances/{id}/track` pairs `bpmn-js/lib/NavigatedViewer` with polling endpoints to render traversed paths in blue (`.bpmn-history-completed`), active waiting tokens in pulsing green (`.bpmn-active-token`), and failed nodes in red (`.bpmn-failed-token`).

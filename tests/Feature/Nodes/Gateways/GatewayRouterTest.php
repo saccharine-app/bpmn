@@ -1,14 +1,14 @@
 <?php
 
 use Saccharine\Bpmn\Services\GatewayRouter;
-use Saccharine\Bpmn\Models\WorkflowDefinition;
-use Saccharine\Bpmn\Models\WorkflowVersion;
-use Saccharine\Bpmn\Models\WorkflowEdge;
-use Saccharine\Bpmn\Models\WorkflowNode;
+use Saccharine\Bpmn\Models\ProcessDefinition;
+use Saccharine\Bpmn\Models\ProcessVersion;
+use Saccharine\Bpmn\Models\ProcessEdge;
+use Saccharine\Bpmn\Models\ProcessNode;
 
 it('routes a token through an exclusive gateway based on user data', function () {
     // Scaffold the database state
-    $definition = WorkflowDefinition::create(['name' => 'Purchasing', 'key' => 'purchase']);
+    $definition = ProcessDefinition::create(['name' => 'Purchasing', 'key' => 'purchase']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     // Create the Gateway Node
@@ -50,7 +50,7 @@ it('routes a token through an exclusive gateway based on user data', function ()
 });
 
 it('falls back to a default route if no conditions match', function () {
-    $definition = WorkflowDefinition::create(['name' => 'Routing', 'key' => 'routing']);
+    $definition = ProcessDefinition::create(['name' => 'Routing', 'key' => 'routing']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     // Path A has a condition that will fail
@@ -78,7 +78,7 @@ it('falls back to a default route if no conditions match', function () {
 });
 
 it('throws an exception if a gateway hits a dead end', function () {
-    $definition = WorkflowDefinition::create(['name' => 'DeadEnd', 'key' => 'dead-end']);
+    $definition = ProcessDefinition::create(['name' => 'DeadEnd', 'key' => 'dead-end']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     $version->edges()->create([
@@ -92,4 +92,4 @@ it('throws an exception if a gateway hits a dead end', function () {
     
     // We expect this to throw a specific RuntimeException because it has nowhere to go
     $router->getNextNodeId($version, 'Gateway_Broken', ['score' => 50]);
-})->throws(RuntimeException::class, 'Workflow stalled: No valid path matches the conditions');
+})->throws(RuntimeException::class, 'Process stalled: No valid path matches the conditions');

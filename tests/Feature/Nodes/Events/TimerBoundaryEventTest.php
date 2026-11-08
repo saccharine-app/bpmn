@@ -1,11 +1,11 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
 use Saccharine\Bpmn\Handlers\Nodes\Tasks\UserTaskHandler;
 
 it('routes to the timer boundary event path when the timeout expires', function () {
-    $definition = WorkflowDefinition::create(['name' => 'Timer Test', 'key' => 'timer-test']);
+    $definition = ProcessDefinition::create(['name' => 'Timer Test', 'key' => 'timer-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>', 'is_active' => true]);
     
     $userTask = $version->nodes()->create(['bpmn_element_id' => 'Task_User', 'type' => 'userTask']);
@@ -27,7 +27,7 @@ it('routes to the timer boundary event path when the timeout expires', function 
 
     // Mock the workflow
     $workflow = \Mockery::mock(BpmnInterpreterWorkflow::class)->makePartial();
-    $workflow->shouldReceive('uniqueId')->andReturn('test-id-123');
+    $workflow->shouldReceive('workflowId')->andReturn('test-id-123');
     $workflow->shouldReceive('isSuspended')->andReturn(false);
     $workflow->shouldReceive('isHalted')->andReturn(false);
     
@@ -41,12 +41,13 @@ it('routes to the timer boundary event path when the timeout expires', function 
     // Mock awaitWithTimeoutPromise so it doesn't touch durable-workflow internals
     $workflow->shouldReceive('awaitWithTimeoutPromise')
         ->once()
-        ->andReturn('mocked_await_timeout');
+        // ->andReturn('mocked_await_timeout');
+        ->andReturn(false);
 
     $handler = new UserTaskHandler();
     $userData = ['initial' => 'data'];
     
-    $generator = $handler->handle($workflow, $userTask, $version, $userData, null);
+    /* $generator = $handler->handle($workflow, $userTask, $version, $userData, null);
 
     // Step through yields until we hit the awaitWithTimeout promise (or an awaitable)
     while ($generator->valid()) {
@@ -69,7 +70,9 @@ it('routes to the timer boundary event path when the timeout expires', function 
     }
 
     // The generator finishes, returning the alternate node ID and payload
-    $result = $generator->getReturn();
+    $result = $generator->getReturn(); */
+
+    $result = $handler->handle($workflow, $userTask, $version, $userData, null);
 
     expect($result[0])->toBe('Next_Timeout')
         ->and($result[1])->toBe([
@@ -79,7 +82,7 @@ it('routes to the timer boundary event path when the timeout expires', function 
 });
 
 it('routes to the normal path if the human completes the task before the timer expires', function () {
-    $definition = WorkflowDefinition::create(['name' => 'Timer Test 2', 'key' => 'timer-test-2']);
+    $definition = ProcessDefinition::create(['name' => 'Timer Test 2', 'key' => 'timer-test-2']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>', 'is_active' => true]);
     
     $userTask = $version->nodes()->create(['bpmn_element_id' => 'Task_User', 'type' => 'userTask']);
@@ -95,7 +98,7 @@ it('routes to the normal path if the human completes the task before the timer e
     $version->edges()->create(['bpmn_element_id' => 'Flow_Normal', 'source_node_id' => 'Task_User', 'target_node_id' => 'Next_Standard']);
 
     $workflow = \Mockery::mock(BpmnInterpreterWorkflow::class)->makePartial();
-    $workflow->shouldReceive('uniqueId')->andReturn('test-id-456');
+    $workflow->shouldReceive('workflowId')->andReturn('test-id-456');
     $workflow->shouldReceive('isSuspended')->andReturn(false);
     $workflow->shouldReceive('isHalted')->andReturn(false);
 
@@ -109,10 +112,10 @@ it('routes to the normal path if the human completes the task before the timer e
     // Mock awaitWithTimeoutPromise so it doesn't touch durable-workflow internals
     $workflow->shouldReceive('awaitWithTimeoutPromise')
         ->once()
-        ->andReturn('mocked_await_timeout');
+        ->andReturn(true);
 
     $handler = new UserTaskHandler();
-    $generator = $handler->handle($workflow, $userTask, $version, [], null);
+    /* $generator = $handler->handle($workflow, $userTask, $version, [], null);
 
     // Step through yields until we hit the awaitWithTimeout promise (or an awaitable)
     while ($generator->valid()) {
@@ -134,7 +137,9 @@ it('routes to the normal path if the human completes the task before the timer e
         $generator->next();
     }
 
-    $result = $generator->getReturn();
+    $result = $generator->getReturn(); */
+
+    $result = $handler->handle($workflow, $userTask, $version, [], null);
 
     // It should proceed down the normal path, completely ignoring the boundary event,
     // and successfully merge the human's inbox payload.

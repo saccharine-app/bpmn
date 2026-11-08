@@ -1,7 +1,7 @@
 {
   "name": "@saccharine/bpmn",
   "version": "1.0.0",
-  "description": "A lightweight, native PHP workflow orchestrator and visual designer for Laravel. This package allows you to model business processes visually using BPMN 2.0 and execute them as durable, stateful background jobs—without any external Java dependencies (like Camunda or Zeebe).",
+  "description": "A lightweight, native PHP process orchestrator and visual designer for Laravel. This package allows you to model business processes visually using BPMN 2.0 and execute them as durable, stateful background jobs—without any external Java dependencies (like Camunda or Zeebe).",
   "main": "index.js",
   "directories": {
     "test": "tests"

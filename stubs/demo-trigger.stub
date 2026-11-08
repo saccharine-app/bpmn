@@ -20,7 +20,7 @@ class DemoOrderPlaced implements BpmnTriggerableEvent
         return 'demo_order_' . $this->orderId;
     }
 
-    public function getWorkflowPayload(): array
+    public function getProcessPayload(): array
     {
         return [
             'order_id'      => $this->orderId,

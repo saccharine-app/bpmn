@@ -17,7 +17,7 @@ class {{ class }} implements BpmnTriggerableEvent
     ) {}
 
     /**
-     * Define the unique lock key to prevent duplicate workflow executions.
+     * Define the unique lock key to prevent duplicate process executions.
      */
     public function getBusinessKey(): string
     {
@@ -28,7 +28,7 @@ class {{ class }} implements BpmnTriggerableEvent
     /**
      * Define the initial data injected into the BPMN payload.
      */
-    public function getWorkflowPayload(): array
+    public function getProcessPayload(): array
     {
         return [
             // 'domain_id' => $this->domainObjectId,

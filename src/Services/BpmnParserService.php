@@ -2,14 +2,14 @@
 
 namespace Saccharine\Bpmn\Services;
 
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Illuminate\Support\Facades\DB;
 use SimpleXMLElement;
 use Exception;
 
 class BpmnParserService
 {
-    public function parseAndStore(WorkflowVersion $version, string $xmlString): void
+    public function parseAndStore(ProcessVersion $version, string $xmlString): void
     {
         $xml = new SimpleXMLElement($xmlString);
 

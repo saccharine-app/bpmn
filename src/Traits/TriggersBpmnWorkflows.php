@@ -4,9 +4,9 @@ namespace Saccharine\Bpmn\Traits;
 
 use Saccharine\Bpmn\Events\ModelEventTrigger;
 
-trait TriggersBpmnWorkflows
+trait TriggersBpmnProcesses
 {
-    public static function bootTriggersBpmnWorkflows(): void
+    public static function bootTriggersBpmnProcesses(): void
     {
         static::created(function ($model) {
             ModelEventTrigger::dispatch($model, 'created');

@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\File;
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,7 +20,7 @@ use Saccharine\Bpmn\Models\WorkflowDefinition;
 const SACCHARINE_BPMN_WORKBENCH_PACKAGE_PATH = __DIR__ . '/../../..';
 
 it('renders the designer page with the workbench action buttons', function () {
-    $definition = WorkflowDefinition::create([
+    $definition = ProcessDefinition::create([
         'name' => 'Order Fulfilment',
         'key'  => 'order-fulfilment',
     ]);
@@ -37,7 +37,7 @@ it('renders the designer page with the workbench action buttons', function () {
 });
 
 it('registers the workbench event bridge before initializing the designer', function () {
-    $definition = WorkflowDefinition::create([
+    $definition = ProcessDefinition::create([
         'name' => 'Order Fulfilment',
         'key'  => 'order-fulfilment',
     ]);
@@ -83,7 +83,7 @@ it('ships a compiled bundle in sync with the designer source', function () {
 });
 
 it('renders an absolute version-save URL the browser cannot resolve against the designer path', function () {
-    $definition = WorkflowDefinition::create([
+    $definition = ProcessDefinition::create([
         'name' => 'Order Fulfilment',
         'key'  => 'order-fulfilment',
     ]);
@@ -91,7 +91,7 @@ it('renders an absolute version-save URL the browser cannot resolve against the 
     $html = $this->get(route('bpmn.design', $definition->id))->getContent();
 
     // A relative `fetch('api/bpmn/...')` would resolve against
-    // /bpmn/workflows/definitions/{id}/design and 404 with a combined path.
+    // /bpmn/processes/definitions/{id}/design and 404 with a combined path.
     expect($html)
         ->toContain(implode("", ["fetch(`", route('bpmn.definitions.versions.store', $definition->id)]))
         ->not->toContain("fetch(`bpmn/");

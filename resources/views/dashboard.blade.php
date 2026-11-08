@@ -12,16 +12,16 @@
         <!-- Header -->
         <div class="mb-10 flex items-center justify-between border-b pb-6">
             <div>
-                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">BPMN Workflow Orchestrator</h1>
-                <p class="text-sm text-gray-500 mt-1">Manage, model, and deploy durable background workflows inside Laravel.</p>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">BPMN Process Orchestrator</h1>
+                <p class="text-sm text-gray-500 mt-1">Manage, model, and deploy durable background processes inside Laravel.</p>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Left Panel: Form to Create Workflows -->
-             @can(\Saccharine\Bpmn\Enums\WorkflowPermission::EDIT->value)
+            <!-- Left Panel: Form to Create Processes -->
+             @can(\Saccharine\Bpmn\Enums\ProcessPermission::EDIT->value)
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">Create New Workflow</h2>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Create New Process</h2>
                 
                 <form action="{{ route('bpmn.store') }}" method="POST" class="space-y-4">
                     @csrf
@@ -44,18 +44,18 @@
             </div>
             @else
             <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 h-fit text-center">
-                <p class="text-sm text-gray-500">You do not have permission to create new workflows.</p>
+                <p class="text-sm text-gray-500">You do not have permission to create new processes.</p>
             </div>
             @endcan
 
-            <!-- Right Panel: List of Current Workflows -->
+            <!-- Right Panel: List of Current Processes -->
             <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">Active Workflow Definitions</h2>
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Active Process Definitions</h2>
 
                 @if($definitions->isEmpty())
                     <div class="text-center py-12 border-2 border-dashed border-gray-200 rounded-md">
-                        <p class="text-gray-400 text-sm">No workflow definitions found.</p>
-                        <p class="text-xs text-gray-400 mt-1">Use the panel on the left to create your first executable workflow blueprint.</p>
+                        <p class="text-gray-400 text-sm">No process definitions found.</p>
+                        <p class="text-xs text-gray-400 mt-1">Use the panel on the left to create your first executable process blueprint.</p>
                     </div>
                 @else
                     <div class="overflow-x-auto">
@@ -79,7 +79,7 @@
                                             </span>
                                         </td>
                                         <td class="py-4 px-4 text-right">
-                                            @can(\Saccharine\Bpmn\Enums\WorkflowPermission::EDIT->value)
+                                            @can(\Saccharine\Bpmn\Enums\ProcessPermission::EDIT->value)
                                             <a href="{{ route('bpmn.design', $def->id) }}" class="inline-flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-900">
                                                 Design & Model
                                                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>

@@ -4,8 +4,8 @@ namespace Saccharine\Bpmn\Filament;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
-use Saccharine\Bpmn\Filament\Resources\WorkflowDefinitionResource;
-use Saccharine\Bpmn\Filament\Resources\WorkflowInstanceResource;
+use Saccharine\Bpmn\Filament\Resources\ProcessDefinitionResource;
+use Saccharine\Bpmn\Filament\Resources\ProcessInstanceResource;
 
 class BpmnFilamentPlugin implements Plugin
 {
@@ -28,8 +28,8 @@ class BpmnFilamentPlugin implements Plugin
     {
         $panel
             ->resources([
-                WorkflowDefinitionResource::class,
-                WorkflowInstanceResource::class,
+                ProcessDefinitionResource::class,
+                ProcessInstanceResource::class,
             ])
             ->pages([])
             ->middleware([]);

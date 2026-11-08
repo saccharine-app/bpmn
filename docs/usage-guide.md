@@ -1,6 +1,6 @@
-# **Saccharine BPMN Usage Guide**
+# Saccharine BPMN Usage Guide
 
-This guide covers configuring the engine, authoring triggers and activities, designing workflows, managing human tasks, and integrating with Filament.
+This guide covers configuring the engine, authoring triggers and activities, designing processes, managing human tasks, and integrating with Filament.
 
 ---
 
@@ -10,13 +10,13 @@ The published configuration file lives at `config/saccharine-bpmn.php`.
 
 ### Granular URL Routing & Middleware
 
-The package provides fine-grained control over web and API routes through the `config/saccharine-bpmn.php` file, allowing you to define separate prefixes and middleware stacks.
+The package provides fine-grained control over web and API routes, allowing you to define custom URL prefixes and middleware stacks:
 
 ```php
 // config/saccharine-bpmn.php
 'prefix' => [
-    'web' => 'bpmn/workflows', // Default web route prefix
-    'api' => 'api/bpmn',       // Default API route prefix (optional)
+    'web' => 'bpmn/processes', // Default web route prefix
+    'api' => 'api/bpmn',       // Default API route prefix
 ],
 
 'middleware' => [
@@ -25,34 +25,36 @@ The package provides fine-grained control over web and API routes through the `c
 ],
 ```
 
-The `prefix.web` configuration controls the standalone Blade dashboard and associated web routes. The `prefix.api` routes are optional and only registered if the `routes/api.php` file exists and contains content.
-
-| Surface | Default URL (Web Prefix) | Default URL (API Prefix) | Route Name |
-| :--- | :--- | :--- | :--- |
-| **Standalone Dashboard** | `/bpmn/workflows/definitions` | N/A | `bpmn.index` |
-| **Filament Panel Table** | `/admin/bpmn/workflows/definitions` | N/A | `filament.admin.resources.bpmn.workflows.definitions.index` |
-| **Visual Designer** | `/bpmn/workflows/definitions/{id}/design` | N/A | `bpmn.design` |
-| **Instance Cockpit** | `/bpmn/workflows/instances/{id}/track` | N/A | `bpmn.instances.track` |
-| **Instance Registry** | `/bpmn/workflows/instances` | N/A | `bpmn.instances.index` |
-| **External API (if enabled)** | N/A | `/api/bpmn/external` | `bpmn.api.external` |
-
+| Surface | Default URL (Web Prefix) | Route Name |
+| :--- | :--- | :--- |
+| **Standalone Dashboard** | `/bpmn/processes/definitions` | `bpmn.index` |
+| **Filament Panel Table** | `/admin/bpmn/processes/definitions` | `filament.admin.resources.bpmn.processes.definitions.index` |
+| **Visual Designer** | `/bpmn/processes/definitions/{id}/design` | `bpmn.design` |
+| **Instance Cockpit** | `/bpmn/processes/instances/{id}/track` | `bpmn.instances.track` |
+| **Instance Registry** | `/bpmn/processes/instances` | `bpmn.instances.index` |
 
 ### Standalone vs. Filament Auto-Resolution
+
 The route `bpmn.index` dynamically forwards users to the appropriate interface:
 1. `config('saccharine-bpmn.dashboard_url')` if explicitly set.
 2. The Filament resource table if registered in an active panel.
 3. The built-in Blade dashboard.
 
 To disable the standalone Blade index entirely in a Filament-only app:
+
 ```php
 'dashboard' => false,
 ```
 
 ### Securing Web Routes
-By default, `middleware` is set to `['web']` for local evaluation. In production environments, protect these endpoints:
+
+By default, `middleware.web` is set to `['web']` for local evaluation. In production environments, protect these endpoints:
 
 ```php
-'middleware' => ['web', 'auth'],
+'middleware' => [
+    'web' => ['web', 'auth'],
+    'api' => ['api'],
+],
 ```
 
 > **Note for Filament Users:** Laravel's default `auth` middleware expects a route named `login`. If your application relies on Filament's authentication routes, configure the unauthenticated redirect in `bootstrap/app.php`:
@@ -66,9 +68,10 @@ By default, `middleware` is set to `['web']` for local evaluation. In production
 
 ## 2. Defining Domain Activities
 
-Activities represent units of background work executed by Service Tasks.
+Activities represent units of background work executed by Service Tasks. In `durable-workflow` v2, activities extend `Workflow\V2\Activity` and implement `handle()`.
 
 ### Generating an Activity
+
 ```bash
 php artisan bpmn:make-activity SendInvoiceActivity
 ```
@@ -78,11 +81,11 @@ This creates `app/Workflows/Activities/SendInvoiceActivity.php`:
 ```php
 namespace App\Workflows\Activities;
 
-use Workflow\Activity;
+use Workflow\V2\Activity;
 
 class SendInvoiceActivity extends Activity
 {
-    public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         $orderId = $userData['order_id'];
         
@@ -97,6 +100,7 @@ class SendInvoiceActivity extends Activity
 ```
 
 ### Registering Activities
+
 Register the mapping in `config/saccharine-bpmn.php`:
 
 ```php
@@ -109,22 +113,23 @@ Register the mapping in `config/saccharine-bpmn.php`:
 
 ## 3. Triggers & Event-Driven Launching
 
-Workflows can be started automatically by listening for domain events or Eloquent model changes.
+Processes can be started automatically by listening for domain events or Eloquent model changes.
 
 ### Model Lifecycle Triggers
-Add the `TriggersBpmnWorkflows` trait to any Eloquent model:
+
+Add the `TriggersBpmnProcesses` trait to any Eloquent model:
 
 ```php
 use Illuminate\Database\Eloquent\Model;
-use Saccharine\Bpmn\Traits\TriggersBpmnWorkflows;
+use Saccharine\Bpmn\Traits\TriggersBpmnProcesses;
 
 class Order extends Model
 {
-    use TriggersBpmnWorkflows;
+    use TriggersBpmnProcesses;
 }
 ```
 
-When an order is created, the engine matches any active workflow with a Message Start Event configured with the alias `order_created`. The model attributes and lifecycle action are automatically injected into the initial payload:
+When an order is created, `ProcessTriggerListener` catches the event and matches any active process with a Message Start Event configured with the alias `order_created`. Model attributes and lifecycle metadata are injected into the initial payload:
 
 ```json
 {
@@ -137,6 +142,7 @@ When an order is created, the engine matches any active workflow with a Message 
 ```
 
 ### Custom Event Triggers
+
 Generate custom trigger events:
 
 ```bash
@@ -162,7 +168,7 @@ class CustomerOnboardedTrigger implements BpmnTriggerableEvent
         return "customer_onboarded_{$this->customerId}";
     }
 
-    public function getWorkflowPayload(): array
+    public function getProcessPayload(): array
     {
         return ['customer_id' => $this->customerId];
     }
@@ -181,12 +187,14 @@ Register the trigger alias in `config/saccharine-bpmn.php`:
 
 ## 4. Visual Designer & Element Templates
 
-Access the designer by opening `/bpmn/workflows/definitions/{id}/design`.
+Access the designer by opening `/bpmn/processes/definitions/{id}/design`.
 
 ### Element Templates
-Element templates allow developers to expose pre-configured Service Tasks with user-friendly form fields directly in the bpmn-js properties panel.
+
+Element templates allow developers to expose pre-configured Service Tasks with user-friendly form fields directly in the `bpmn-js` properties panel.
 
 Generate a template:
+
 ```bash
 php artisan bpmn:make-template "Charge Credit Card" --key="charge_card"
 ```
@@ -194,81 +202,136 @@ php artisan bpmn:make-template "Charge Credit Card" --key="charge_card"
 This creates a JSON template in `resources/bpmn/templates/`:
 
 ```json
-[
-  {
-    "name": "Charge Credit Card",
-    "id": "com.app.tasks.ChargeCreditCard",
-    "appliesTo": ["bpmn:ServiceTask"],
-    "properties": [
-      {
-        "label": "Implementation Key",
-        "type": "Hidden",
-        "value": "charge_card",
-        "binding": { "type": "property", "name": "camunda:class" }
-      },
-      {
-        "label": "Charge Description",
-        "type": "String",
-        "value": "Order Payment",
-        "binding": { "type": "camunda:inputParameter", "name": "charge_description" }
-      }
-    ]
-  }
-]
+{
+  "$schema": "https://unpkg.com/@bpmn-io/element-templates@0.4.0/resources/schema.json",
+  "name": "Charge Credit Card",
+  "id": "com.app.tasks.ChargeCreditCard",
+  "appliesTo": ["bpmn:ServiceTask"],
+  "properties": [
+    {
+      "label": "Implementation Key",
+      "type": "Hidden",
+      "value": "charge_card",
+      "binding": { "type": "property", "name": "camunda:class" }
+    },
+    {
+      "label": "Charge Description",
+      "type": "String",
+      "value": "Order Payment",
+      "binding": { "type": "camunda:inputParameter", "name": "charge_description" }
+    }
+  ]
+}
 ```
 
 ---
 
-## 5. Supported Node Types & Handler Matrix
-
-The execution engine delegates each BPMN node type to an isolated handler via `NodeHandlerFactory`. Boundary events (error and timer) are not standalone node types; they are evaluated through the `EvaluatesBoundaryEvents` trait mixed into `ServiceTaskHandler`, `UserTaskHandler`, `SubProcessHandler`, and `CallActivityHandler`.
-
-| Node Type | Handler Class | Boundary Event Support | Execution Mechanism |
-| :--- | :--- | :--- | :--- |
-| `startEvent` | `StartEventHandler` | No | Resolves outgoing sequence flows and advances. |
-| `endEvent` | `EndEventHandler` | No | Cleans up active tokens and terminates the branch. |
-| `serviceTask` | `ServiceTaskHandler` | Yes | Yields an `ActivityStub` to the background queue worker. |
-| `userTask` | `UserTaskHandler` | Yes | Awaits inbox signals with optional boundary timer timeouts. |
-| `exclusiveGateway` | `ExclusiveGatewayHandler` | No | Evaluates condition expressions via Symfony Expression Language. |
-| `parallelGateway` | `ParallelGatewayHandler` | No | Spawns child coroutines and establishes an `all()` sync barrier. |
-| `callActivity` | `CallActivityHandler` | Yes | Invokes a separate published workflow definition by key. |
-| `subProcess` | `SubProcessHandler` | Yes | Scopes tasks into a child workflow with boundary error containment. |
-
-Boundary events (error or timer) attached to any of the above handlers are evaluated by the `EvaluatesBoundaryEvents` trait. When an activity throws an exception, an attached Error Boundary Event catches it, injects `_error_caught` into the payload, and routes down the boundary sequence flow. When a User Task has an attached Timer Boundary Event, the engine waits for either a human signal or timer expiry via `awaitWithTimeoutPromise()`.
-
----
-
-## 6. Advanced BPMN Node Patterns
+## 5. Advanced BPMN Node Patterns
 
 ### Exclusive Gateways (XOR)
-Define conditional branches using Symfony Expression Language inside the Sequence Flow's condition expression:
-* `amount >= 1000`
+
+Define conditional branches using Symfony Expression Language inside sequence flow condition expressions:
+* `total >= 1000`
 * `status == "approved" and role in ["admin", "manager"]`
 
 Leave one outgoing edge empty without an expression to designate it as the default/fallback route.
 
 ### Parallel Gateways (AND Split/Join)
-* **Split**: Multiple outgoing sequence flows from a Parallel Gateway spawn independent child coroutines executed concurrently on the queue.
-* **Join**: Converging sequence flows into a Parallel Gateway wait until all parallel branches complete before advancing. Variable mutations from all concurrent branches are merged back into the main payload.
+
+* **Split:** Outgoing sequence flows from a Parallel Gateway spawn independent child coroutines executed concurrently on the queue using closures passed to `Workflow\V2\all()`.
+* **Join:** Converging sequence flows wait at the synchronization barrier until all concurrent paths complete. Mutated payloads are merged back into the main process state.
 
 ### Error Boundary Events
-Attach an Error Boundary Event directly to a Service Task. If the activity throws an unhandled exception, the engine catches it, skips standard queue retry policies, injects `_error_caught` into the payload, and navigates down the boundary sequence flow.
+
+Attach an Error Boundary Event to a Service Task, Call Activity, or Sub-Process. If an activity throws an unhandled exception:
+1. `EvaluatesBoundaryEvents` catches the exception.
+2. The engine checks for an attached error boundary event.
+3. It bypasses queue retry policies, injects `_error_caught` into the payload, and navigates down the boundary sequence flow.
 
 ### User Tasks & Human Approvals
-When a workflow reaches a User Task, execution suspends indefinitely without consuming worker resources.
-* The engine emits a `UserTaskPending` event.
-* Operators can click the pulsing node in the **Live Cockpit** (`/instances/{id}/track`) to submit approval decisions and resume the workflow.
-* Alternatively, submit signals programmatically:
-  ```php
-  use Workflow\WorkflowStub;
 
-  $instance = WorkflowInstance::find($instanceId);
-  $workflow = WorkflowStub::load($instance->durable_workflow_id);
-  $workflow->submitUserTask([
-      'decision' => 'approved',
-      'user_id'  => auth()->id(),
-  ]);
-  ```
+When a process reaches a User Task, execution suspends indefinitely without consuming queue workers:
+* The engine emits a `UserTaskPending` event.
+* Operators can click the pulsing green node in the **Live Cockpit** (`/instances/{id}/track`) to open an approval modal and submit decisions.
+
+---
+
+## 6. Runtime Process Instance Interventions
+
+Active process instances can be monitored and controlled through the CLI, HTTP endpoints, the standalone tracking cockpit, or Filament resource actions.
+
+All interventions use `submitUpdate()` on the durable workflow stub to mutate the workflow state safely across execution replays.
+
+### Available Actions
+
+| Action | State Transition | Description |
+| :--- | :--- | :--- |
+| **List** | — | Displays recent instances, statuses, and durable IDs. |
+| **Suspend** | `RUNNING` $\rightarrow$ `SUSPENDED` | Pauses the workflow at its current execution boundary. The coroutine safely hibernates until resumed. |
+| **Resume** | `SUSPENDED` $\rightarrow$ `RUNNING` | Unpauses the workflow, allowing it to advance on the next queue worker tick. |
+| **Halt** | `RUNNING` / `SUSPENDED` $\rightarrow$ `HALTED` | Permanently terminates execution, cleans up active tokens, and prevents further progression. |
+| **Submit Task** | `RUNNING` (at User Task) | Injects form payloads into a suspended User Task and resumes execution. |
+
+---
+
+### Command-Line Interface (CLI)
+
+The `bpmn:instance` Artisan command provides full terminal control:
+
+```bash
+# List the 50 most recent instances
+php artisan bpmn:instance list
+
+# Suspend a running instance
+php artisan bpmn:instance suspend {id}
+
+# Resume a suspended instance
+php artisan bpmn:instance resume {id}
+
+# Permanently halt an instance
+php artisan bpmn:instance halt {id}
+```
+
+---
+
+### Web & API Endpoints
+
+Interventions are accessible over HTTP (subject to configured route prefixes and `ProcessPermission` gates):
+
+```http
+# Suspend an instance
+POST /bpmn/processes/instances/{id}/suspend
+
+# Resume a suspended instance
+POST /bpmn/processes/instances/{id}/resume
+
+# Permanently halt an instance
+POST /bpmn/processes/instances/{id}/halt
+
+# Fetch active tokens (polled by UI)
+GET /bpmn/processes/instances/{id}/tokens
+
+# Fetch full telemetry & audit history
+GET /bpmn/processes/instances/{id}/telemetry
+
+# Submit human input for an active User Task
+POST /bpmn/processes/instances/{id}/tasks/{elementId}/submit
+Content-Type: application/json
+
+{
+    "payload": {
+        "decision": "approved",
+        "notes": "Reviewed and verified."
+    }
+}
+```
+
+---
+
+### Interactive Cockpit & Filament Controls
+
+* **Live Cockpit (`/instances/{id}/track`):** Top header buttons allow instant `Suspend`, `Resume`, and `Halt` actions. Clicking on an active, pulsing green User Task node opens an approval modal directly on the canvas to submit payloads in real time.
+* **Filament Resources:** If using `ProcessInstanceResource`, table rows include individual action buttons for `Suspend`, `Resume`, `Halt`, and a `Live Cockpit` link with integrated confirmation modals.
 
 ---
 
@@ -277,10 +340,10 @@ When a workflow reaches a User Task, execution suspends indefinitely without con
 Scaffold the optional Filament resources:
 
 ```bash
-php artisan bpmn:filament --demo
+php artisan bpmn:publish-filament-stubs
 ```
 
 This publishes:
-* `WorkflowDefinitionResource`: Manage definitions and open the designer.
-* `WorkflowInstanceResource`: Monitor executions, active tokens, and manual interventions.
+* `ProcessDefinitionResource`: Manage definitions and open the visual designer in a new tab.
+* `ProcessInstanceResource`: Monitor live token badges and issue operator interventions (Suspend, Resume, Halt).
 * `DemoOrderResource`: Interactive CRUD for testing model event triggers.

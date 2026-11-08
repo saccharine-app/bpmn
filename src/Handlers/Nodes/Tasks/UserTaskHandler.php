@@ -4,12 +4,12 @@ namespace Saccharine\Bpmn\Handlers\Nodes\Tasks;
 
 use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\Bpmn\Models\WorkflowNode;
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessNode;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Events\BpmnExecutionLogged;
 use Saccharine\Bpmn\Handlers\Traits\EvaluatesBoundaryEvents;
-use function Workflow\await;
-use function Workflow\awaitWithTimeout;
+use function Workflow\V2\await;
+use function Workflow\V2\awaitWithTimeout;
 
 class UserTaskHandler implements BpmnNodeHandlerInterface
 {
@@ -17,20 +17,20 @@ class UserTaskHandler implements BpmnNodeHandlerInterface
 
     public function handle(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowNode $node,
-        WorkflowVersion $version,
+        ProcessNode $node,
+        ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator
+    ): array // \Generator
     {
         // Announce to the host application that a human is needed
         event(new \Saccharine\Bpmn\Events\UserTaskPending(
-            $workflow->uniqueId(), 
+            $workflow->workflowId(), 
             $node->name,
             $userData
         ));
 
-        yield $workflow->logTelemetry(
+        /* yield */ $workflow->logTelemetry(
             BpmnExecutionLogged::LEVEL_WAIT,
             "User Task [{$node->name}] reached. Workflow hibernating in database awaiting signal.",
             $node->bpmn_element_id
@@ -51,7 +51,7 @@ class UserTaskHandler implements BpmnNodeHandlerInterface
             
             // Wait for the human OR the timer to expire
             $completedInTime =
-                yield $workflow->awaitWithTimeoutPromise($timeoutDuration, $closure);
+                /* yield */ $workflow->awaitWithTimeoutPromise($timeoutDuration, $closure);
 
             if (!$completedInTime && !$workflow->isSuspended() && !$workflow->isHalted()) {
                 // The timer expired! The human was too slow.
@@ -61,9 +61,9 @@ class UserTaskHandler implements BpmnNodeHandlerInterface
             }
         } else {
             // Standard wait (sleep forever until human acts)
-            yield $workflow->awaitPromise($closure);
+            /* yield */ $workflow->awaitPromise($closure);
 
-            yield $workflow->logTelemetry(
+            /* yield */ $workflow->logTelemetry(
                 BpmnExecutionLogged::LEVEL_TASK,
                 "Signal received for [{$node->name}]. Resuming process.",
                 $node->bpmn_element_id

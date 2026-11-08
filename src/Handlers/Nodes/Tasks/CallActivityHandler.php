@@ -4,9 +4,9 @@ namespace Saccharine\Bpmn\Handlers\Nodes\Tasks;
 
 use Saccharine\Bpmn\Contracts\BpmnNodeHandlerInterface;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Saccharine\Bpmn\Models\WorkflowNode;
-use Saccharine\Bpmn\Models\WorkflowVersion;
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessNode;
+use Saccharine\Bpmn\Models\ProcessVersion;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Handlers\Traits\EvaluatesBoundaryEvents;
 use Throwable;
 use RuntimeException;
@@ -17,17 +17,17 @@ class CallActivityHandler implements BpmnNodeHandlerInterface
     
     public function handle(
         BpmnInterpreterWorkflow $workflow,
-        WorkflowNode $node,
-        WorkflowVersion $version,
+        ProcessNode $node,
+        ProcessVersion $version,
         array $userData,
         ?int $instanceId
-    ): \Generator {
-        
+    ): array // \Generator
+    {
         try {
             $targetDefinitionKey = $node->implementation;
             
             // Look up the target workflow definition and its active version
-            $targetDefinition = WorkflowDefinition::where('key', $targetDefinitionKey)->first();
+            $targetDefinition = ProcessDefinition::where('key', $targetDefinitionKey)->first();
             $targetVersion = $targetDefinition ? $targetDefinition->versions()->where('is_active', true)->first() : null;
 
             if (!$targetDefinition || !$targetVersion) {
@@ -36,7 +36,7 @@ class CallActivityHandler implements BpmnNodeHandlerInterface
 
             // Yield the ChildWorkflowStub created by the interpreter
             // We start the target workflow from its beginning (startNodeId = null)
-            $childWorkflowResult = yield $workflow->makeChildWorkflow(
+            $childWorkflowResult = /* yield */ $workflow->makeChildWorkflow(
                 $targetVersion->id, 
                 $userData, 
                 null, 

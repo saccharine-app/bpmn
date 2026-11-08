@@ -3,14 +3,14 @@
 namespace Saccharine\Bpmn\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Services\BpmnParserService;
 
 class BpmnParallelFulfillmentSeeder extends Seeder
 {
     public function run(BpmnParserService $parser): void
     {
-        $def = WorkflowDefinition::firstOrCreate(
+        $def = ProcessDefinition::firstOrCreate(
             ['key' => 'parallel-fulfillment'],
             ['name' => 'Demo: Parallel Fulfillment']
         );
@@ -29,7 +29,7 @@ class BpmnParallelFulfillmentSeeder extends Seeder
         <bpmn:outgoing>Flow_To_Split</bpmn:outgoing>
     </bpmn:startEvent>
     
-    <bpmn:parallelGateway id="Gateway_Split" name="Fork Workflows">
+    <bpmn:parallelGateway id="Gateway_Split" name="Fork Process">
         <bpmn:incoming>Flow_To_Split</bpmn:incoming>
         <bpmn:outgoing>Flow_Branch_Payment</bpmn:outgoing>
         <bpmn:outgoing>Flow_Branch_Warehouse</bpmn:outgoing>

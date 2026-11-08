@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Log;
 
 class DemoGenerateInvoiceActivity extends Activity
 {
-    public function execute(array $userData): array
+    // public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         $orderId = $userData['order_id'] ?? 'UNKNOWN';
         $amount = $userData['amount'] ?? 0;
@@ -22,7 +23,7 @@ class DemoGenerateInvoiceActivity extends Activity
         // Simulate a real-world Laravel interaction (e.g., generating a PDF or calling Stripe)
         Log::info("BPMN DEMO: Generating invoice for Order #{$orderId} in the amount of $" . number_format($amount, 2));
 
-        // Return the mutated data to append to the workflow state
+        // Return the mutated data to append to the process state
         return [
             'invoice_generated' => true,
             'invoice_timestamp' => now()->toDateTimeString(),

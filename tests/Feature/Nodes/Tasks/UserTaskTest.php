@@ -1,14 +1,14 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
-use Saccharine\Bpmn\Models\WorkflowVersion;
+use Saccharine\Bpmn\Models\ProcessDefinition;
+use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Workflow\WorkflowStub;
+use Workflow\V2\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
 
 it('pauses execution at a userTask and resumes when a signal is received', function () {
     // Scaffold database state
-    $definition = WorkflowDefinition::create(['name' => 'Human Verification', 'key' => 'human-verify']);
+    $definition = ProcessDefinition::create(['name' => 'Human Verification', 'key' => 'human-verify']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     // Nodes
@@ -43,7 +43,8 @@ it('pauses execution at a userTask and resumes when a signal is received', funct
     ];
     
     // Call the newly defined SignalMethod directly on the stub!
-    $workflow->submitUserTask($formResponsePayload);
+    // $workflow->submitUserTask($formResponsePayload);
+    $workflow->submitUpdate('submitUserTask', $formResponsePayload);
 
     // Run the worker again to pick up the signal and finish the loop
     Artisan::call('queue:work', ['--stop-when-empty' => true]);

@@ -1,15 +1,16 @@
 <?php
 
-use Saccharine\Bpmn\Models\WorkflowDefinition;
+use Saccharine\Bpmn\Models\ProcessDefinition;
 use Saccharine\Bpmn\Workflows\BpmnInterpreterWorkflow;
-use Workflow\Activity;
-use Workflow\WorkflowStub;
+use Workflow\V2\Activity;
+use Workflow\V2\WorkflowStub;
 use Illuminate\Support\Facades\Artisan;
 
 // Two dummy activities to run in parallel
 class ProcessPaymentActivity extends Activity
 {
-    public function execute(array $userData): array
+    // public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         return ['payment_status' => 'cleared'];
     }
@@ -17,7 +18,8 @@ class ProcessPaymentActivity extends Activity
 
 class GenerateInvoiceActivity extends Activity
 {
-    public function execute(array $userData): array
+    // public function execute(array $userData): array
+    public function handle(array $userData): array
     {
         return ['invoice_generated' => true];
     }
@@ -28,7 +30,7 @@ it('executes multiple paths in parallel and merges the payload at the join', fun
     config(['saccharine-bpmn.activities.generate_invoice' => GenerateInvoiceActivity::class]);
 
     // Scaffold Database
-    $definition = WorkflowDefinition::create(['name' => 'Parallel Processing', 'key' => 'parallel-test']);
+    $definition = ProcessDefinition::create(['name' => 'Parallel Processing', 'key' => 'parallel-test']);
     $version = $definition->versions()->create(['version' => 1, 'bpmn_xml' => '<xml/>']);
 
     // Nodes
@@ -65,8 +67,34 @@ it('executes multiple paths in parallel and merges the payload at the join', fun
 
     // Assertions
     $workflow = WorkflowStub::load($workflow->id());
+
+    /* if ($workflow->status() === \Workflow\States\WorkflowFailedStatus::class || $workflow->status() === 'failed') {
+        // Check v2 workflow_failures table
+        $failure = \Illuminate\Support\Facades\DB::table('workflow_failures')
+            ->orderByDesc('id')
+            ->first();
+
+        // Check failed runs in workflow_runs
+        $failedRun = \Illuminate\Support\Facades\DB::table('workflow_runs')
+            ->where('status', 'failed')
+            ->orderByDesc('id')
+            ->first();
+
+        // Inspect recent workflow history events (which record Failure/Error events)
+        $historyEvents = \Illuminate\Support\Facades\DB::table('workflow_history_events')
+            ->orderByDesc('id')
+            ->limit(10)
+            ->get(['event_type', 'payload']);
+
+        dd([
+            'workflow_failure' => $failure,
+            'failed_run'       => $failedRun,
+            'recent_events'    => $historyEvents,
+        ]);
+    } */
     
-    expect($workflow->status())->toBe(\Workflow\States\WorkflowCompletedStatus::class);
+    // expect($workflow->status())->toBe(\Workflow\States\WorkflowCompletedStatus::class);
+    expect($workflow->status())->toBe(\Workflow\V2\Enums\RunStatus::Completed->value);
     
     $result = $workflow->output();
     expect($result)->toBeArray()

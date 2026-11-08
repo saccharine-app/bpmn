@@ -3,11 +3,11 @@
 namespace Saccharine\Bpmn\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Saccharine\Bpmn\Traits\TriggersBpmnWorkflows;
+use Saccharine\Bpmn\Traits\TriggersBpmnProcesses;
 
 class DemoOrder extends Model
 {
-    use TriggersBpmnWorkflows;
+    use TriggersBpmnProcesses;
 
     protected $table = 'bpmn_demo_orders';
 
