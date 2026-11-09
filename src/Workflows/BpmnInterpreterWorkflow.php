@@ -13,6 +13,7 @@ use function Workflow\V2\activity;
 use function Workflow\V2\child;
 use function Workflow\V2\await;
 use function Workflow\V2\sideEffect;
+use function Workflow\V2\timer;
 use Saccharine\Bpmn\Models\ProcessVersion;
 use Saccharine\Bpmn\Models\ProcessEdge;
 use Saccharine\Bpmn\Models\ProcessToken;
@@ -126,6 +127,11 @@ class BpmnInterpreterWorkflow extends Workflow
     public function awaitWithTimeoutPromise(string $duration, \Closure $condition)
     {
         return awaitWithTimeout($duration, $condition);
+    }
+
+    public function timerPromise(string $duration): void
+    {
+        timer($duration);
     }
 
     /**

@@ -59,7 +59,7 @@ class BpmnParserService
                 'startEvent', 'endEvent', 
                 'serviceTask', 'userTask', 
                 'exclusiveGateway', 'parallelGateway',
-                'boundaryEvent',
+                'boundaryEvent', 'intermediateCatchEvent',
                 'callActivity',
                 'subProcess'
             ];
@@ -127,6 +127,19 @@ class BpmnParserService
                             $implementation = !empty($timerDef) ? (string) $timerDef[0] : 'PT1H'; // Default to 1 hour if missing
                         } elseif (!empty($element->xpath('.//bpmn:messageEventDefinition'))) {
                             $eventDefType = 'message';
+                        }
+                    }
+                    
+                    if ($type === 'intermediateCatchEvent') {
+                        if (!empty($element->xpath('.//bpmn:timerEventDefinition'))) {
+                            $eventDefType = 'timer';
+                            $timerDef = $element->xpath('.//bpmn:timerEventDefinition/bpmn:timeDuration');
+                            $implementation = !empty($timerDef) ? (string) $timerDef[0] : 'PT1H';
+                        } elseif (!empty($element->xpath('.//bpmn:messageEventDefinition'))) {
+                            $eventDefType = 'message';
+                            $msgDef = $element->xpath('.//bpmn:messageEventDefinition');
+                            $messageRef = (string) $msgDef[0]['messageRef'];
+                            $implementation = $messageMap[$messageRef] ?? $messageRef;
                         }
                     }
 

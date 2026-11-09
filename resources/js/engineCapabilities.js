@@ -11,8 +11,10 @@ export const DEFAULT_SUPPORTED_ELEMENTS = [
     'bpmn:StartEvent',
     'bpmn:EndEvent',
     'bpmn:BoundaryEvent',
+    'bpmn:IntermediateCatchEvent',
 
     // Activities / Tasks
+    'bpmn:Task',
     'bpmn:ServiceTask',
     'bpmn:UserTask',
     'bpmn:CallActivity',
@@ -20,7 +22,11 @@ export const DEFAULT_SUPPORTED_ELEMENTS = [
 
     // Gateways
     'bpmn:ExclusiveGateway',
-    'bpmn:ParallelGateway'
+    'bpmn:ParallelGateway',
+
+    // Organizational
+    'bpmn:Group',
+    'bpmn:Lane', 'bpmn:LaneSet'
 ];
 
 /**
@@ -43,6 +49,11 @@ export const ELEMENT_UI_MAPPING = {
         contextPad: ['append.intermediate-event'],
         replace: ['replace-with-error-boundary']
     },
+    'bpmn:IntermediateCatchEvent': {
+        palette: ['create.intermediate-event'],
+        contextPad: ['append.intermediate-event', 'append.timer-intermediate-event'],
+        replace: ['replace-with-intermediate-catch-none', 'replace-with-timer-intermediate-catch']
+    },
     'bpmn:ServiceTask': {
         palette: ['create.service-task'],
         contextPad: ['append.service-task'],
@@ -62,16 +73,6 @@ export const ELEMENT_UI_MAPPING = {
         palette: ['create.subprocess-expanded', 'create.sub-process-expanded'],
         contextPad: ['append.subprocess-expanded'],
         replace: ['replace-with-expanded-subprocess', 'replace-with-collapsed-subprocess']
-    },
-    'bpmn:ExclusiveGateway': {
-        palette: ['create.exclusive-gateway'],
-        contextPad: ['append.exclusive-gateway'],
-        replace: ['replace-with-exclusive-gateway']
-    },
-    'bpmn:ParallelGateway': {
-        palette: ['create.parallel-gateway'],
-        contextPad: ['append.parallel-gateway'],
-        replace: ['replace-with-parallel-gateway']
     },
     'bpmn:Task': {
         palette: ['create.task'],
@@ -98,10 +99,25 @@ export const ELEMENT_UI_MAPPING = {
         contextPad: ['append.receive-task'],
         replace: ['replace-with-receive-task']
     },
-    'bpmn:IntermediateCatchEvent': {
-        palette: ['create.intermediate-event'],
-        contextPad: ['append.intermediate-event'],
-        replace: ['replace-with-intermediate-catch-none']
+    'bpmn:ExclusiveGateway': {
+        palette: ['create.exclusive-gateway'],
+        contextPad: ['append.exclusive-gateway'],
+        replace: ['replace-with-exclusive-gateway']
+    },
+    'bpmn:ParallelGateway': {
+        palette: ['create.parallel-gateway'],
+        contextPad: ['append.parallel-gateway'],
+        replace: ['replace-with-parallel-gateway']
+    },
+    'bpmn:Lane': {
+        palette: ['create.participant-expanded'],
+        contextPad: [],
+        replace: []
+    },
+    'bpmn:Group': {
+        palette: ['create.group'],
+        contextPad: [],
+        replace: []
     }
 };
 

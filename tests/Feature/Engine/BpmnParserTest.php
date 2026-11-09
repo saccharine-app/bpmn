@@ -72,7 +72,6 @@ it('throws an exception when parsing completely malformed xml', function () {
     $parser->parseAndStore($version, $xmlString);
 })->throws(Exception::class);
 
-
 it('throws an exception when the xml lacks a process element', function () {
     $definition = ProcessDefinition::create([
         'name' => 'No Process XML',
@@ -96,7 +95,6 @@ it('throws an exception when the xml lacks a process element', function () {
     $parser = new BpmnParserService();
     $parser->parseAndStore($version, $xmlString);
 })->throws(Exception::class, 'Invalid BPMN file: <bpmn:process> element not found.');
-
 
 it('throws an exception if the standard BPMN namespace is incorrect', function () {
     $definition = ProcessDefinition::create([
