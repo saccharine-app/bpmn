@@ -1,5 +1,4 @@
 ---
-extends: docs
 section: docs_content
 title: Architecture, Limitations & Roadmap
 description: Deep dive into XPath graph decomposition, PHP Fiber node handlers, deterministic replay, current BPMN 2.0 boundaries, and the v1.0 roadmap.

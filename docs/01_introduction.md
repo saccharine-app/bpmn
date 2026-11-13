@@ -1,5 +1,4 @@
 ---
-extends: docs
 section: docs_content
 title: Introduction & Overview
 description: Saccharine BPMN turns standardized visual process diagrams into executable, queue-driven workflows inside your Laravel application.

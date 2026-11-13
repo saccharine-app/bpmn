@@ -1,5 +1,4 @@
 ---
-extends: docs
 section: docs_content
 title: Operations, Telemetry & Filament
 description: Monitor live tokens in the Cockpit, control running instances via CLI, HTTP, or PHP, and integrate with Filament v5 and Filament Shield.

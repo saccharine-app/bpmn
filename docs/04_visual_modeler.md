@@ -1,5 +1,4 @@
 ---
-extends: docs
 section: docs_content
 title: Visual Modeler & Element Templates
 description: Author BPMN 2.0 diagrams in the browser, manage draft and active versions, and build custom Element Template forms for domain tasks.

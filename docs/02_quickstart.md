@@ -1,5 +1,4 @@
 ---
-extends: docs
 section: docs_content
 title: Quickstart Guide
 description: Get up and running with Saccharine BPMN in under five minutes.

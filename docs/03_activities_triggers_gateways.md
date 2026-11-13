@@ -1,5 +1,4 @@
 ---
-extends: docs
 section: docs_content
 title: Activities, Triggers & Gateways
 description: Connect Laravel domain logic to BPMN diagrams using durable activities, Eloquent model hooks, sandboxed gateway expressions, and boundary events.
